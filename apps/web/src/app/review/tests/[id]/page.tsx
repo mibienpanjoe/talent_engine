@@ -19,7 +19,12 @@ export default async function TestPage({
     <>
       <SiteHeader />
       <main id="main" className="page-width campaign-editor">
-        <PublicFormView key={result.data.snapshot_id} form={result.data} test />
+        <PublicFormView
+          key={result.data.snapshot_id}
+          form={result.data}
+          campaignId={result.data.campaign_id}
+          test
+        />
       </main>
     </>
   );

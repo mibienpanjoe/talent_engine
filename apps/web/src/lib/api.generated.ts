@@ -40,6 +40,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/applications/{application_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read */
+        get: operations["read_application"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/campaigns": {
         parameters: {
             query?: never;
@@ -74,6 +91,23 @@ export interface paths {
         head?: never;
         /** Patch */
         patch: operations["update_campaign"];
+        trace?: never;
+    };
+    "/api/v1/campaigns/{campaign_id}/applications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Listing */
+        get: operations["list_applications"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/campaigns/{campaign_id}/closures": {
@@ -138,6 +172,23 @@ export interface paths {
         put?: never;
         /** Publish */
         post: operations["publish_campaign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/campaigns/{campaign_id}/test-applications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Test Submit */
+        post: operations["submit_test_application"];
         delete?: never;
         options?: never;
         head?: never;
@@ -212,6 +263,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/public/campaigns/{public_token}/applications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Submit */
+        post: operations["submit_application"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/snapshots/{snapshot_id}/policy": {
         parameters: {
             query?: never;
@@ -250,6 +318,85 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ApplicationDetail */
+        ApplicationDetail: {
+            /** Answers */
+            answers: (components["schemas"]["ShortAnswer"] | components["schemas"]["LongAnswer"] | components["schemas"]["EmailAnswer"] | components["schemas"]["NumberAnswer"] | components["schemas"]["DateAnswer"] | components["schemas"]["ChoiceAnswer"] | components["schemas"]["ChoicesAnswer"] | components["schemas"]["UrlAnswer"] | components["schemas"]["FileAnswer"])[];
+            application: components["schemas"]["ApplicationSummary"];
+            /** Effective Evaluation */
+            effective_evaluation?: null;
+            /** Pending Evaluation Ids */
+            pending_evaluation_ids?: string[];
+            snapshot: components["schemas"]["PublishedSnapshot"];
+            /** Uploads */
+            uploads?: {
+                [key: string]: unknown;
+            }[];
+        };
+        /** ApplicationPage */
+        ApplicationPage: {
+            /** Counts */
+            counts: {
+                [key: string]: number;
+            };
+            /** Items */
+            items: components["schemas"]["ApplicationSummary"][];
+            /** List Revision */
+            list_revision: string;
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /** ApplicationSummary */
+        ApplicationSummary: {
+            /** Calculation */
+            calculation?: null;
+            /**
+             * Campaign Id
+             * Format: uuid
+             */
+            campaign_id: string;
+            contact: components["schemas"]["Contact"];
+            /**
+             * Decision
+             * @enum {string}
+             */
+            decision: "to_review" | "shortlisted" | "not_selected";
+            /** Effective Evaluation Id */
+            effective_evaluation_id?: string | null;
+            /** Eligibility */
+            eligibility?: null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "real" | "test";
+            /**
+             * Processing State
+             * @enum {string}
+             */
+            processing_state: "queued" | "collecting" | "evaluating" | "completed" | "completed_partial" | "failed";
+            /** Rank */
+            rank?: null;
+            /**
+             * Received At
+             * Format: date-time
+             */
+            received_at: string;
+            /** Review Revision */
+            review_revision: number;
+            /**
+             * Snapshot Id
+             * Format: uuid
+             */
+            snapshot_id: string;
+            /** Views */
+            views?: string[];
+        };
         /** Campaign */
         Campaign: {
             /** Active Snapshot Id */
@@ -290,10 +437,68 @@ export interface components {
             /** Next Cursor */
             next_cursor: string | null;
         };
+        /** ChoiceAnswer */
+        ChoiceAnswer: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "single_choice";
+            /**
+             * Question Id
+             * Format: uuid
+             */
+            question_id: string;
+            /**
+             * Value
+             * Format: uuid
+             */
+            value: string;
+        };
+        /** ChoicesAnswer */
+        ChoicesAnswer: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "multiple_choice";
+            /**
+             * Question Id
+             * Format: uuid
+             */
+            question_id: string;
+            /** Value */
+            value: string[];
+        };
+        /** Contact */
+        Contact: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Name */
+            name: string;
+        };
         /** CsrfToken */
         CsrfToken: {
             /** Csrf Token */
             csrf_token: string;
+        };
+        /** DateAnswer */
+        DateAnswer: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "date";
+            /**
+             * Question Id
+             * Format: uuid
+             */
+            question_id: string;
+            /** Value */
+            value: string;
         };
         /** DateCondition */
         DateCondition: {
@@ -343,6 +548,24 @@ export interface components {
              */
             source: "draft" | "published";
         };
+        /** EmailAnswer */
+        EmailAnswer: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "email";
+            /**
+             * Question Id
+             * Format: uuid
+             */
+            question_id: string;
+            /**
+             * Value
+             * Format: email
+             */
+            value: string;
+        };
         /** EmptyInput */
         EmptyInput: Record<string, never>;
         /** Error */
@@ -366,6 +589,21 @@ export interface components {
             code: string;
             /** Path */
             path: string;
+        };
+        /** FileAnswer */
+        FileAnswer: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "file";
+            /**
+             * Question Id
+             * Format: uuid
+             */
+            question_id: string;
+            /** Value */
+            value: string[];
         };
         /** FormLimits */
         FormLimits: {
@@ -420,6 +658,36 @@ export interface components {
             /** Csrf Token */
             csrf_token: string;
             reviewer: components["schemas"]["Reviewer"];
+        };
+        /** LongAnswer */
+        LongAnswer: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "long_text";
+            /**
+             * Question Id
+             * Format: uuid
+             */
+            question_id: string;
+            /** Value */
+            value: string;
+        };
+        /** NumberAnswer */
+        NumberAnswer: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "number";
+            /**
+             * Question Id
+             * Format: uuid
+             */
+            question_id: string;
+            /** Value */
+            value: number;
         };
         /** Option */
         Option: {
@@ -583,6 +851,16 @@ export interface components {
             /** Numerator */
             numerator: string;
         };
+        /** Receipt */
+        Receipt: {
+            /** Receipt Ref */
+            receipt_ref: string;
+            /**
+             * Received At
+             * Format: date-time
+             */
+            received_at: string;
+        };
         /** Requirement */
         Requirement: {
             /** Assessment Mode */
@@ -626,6 +904,21 @@ export interface components {
             /** Login */
             login: string;
         };
+        /** ShortAnswer */
+        ShortAnswer: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "short_text";
+            /**
+             * Question Id
+             * Format: uuid
+             */
+            question_id: string;
+            /** Value */
+            value: string;
+        };
         /** SlotsCondition */
         SlotsCondition: {
             /**
@@ -640,6 +933,77 @@ export interface components {
              * Format: uuid
              */
             question_id: string;
+        };
+        /** SubmissionInput */
+        SubmissionInput: {
+            /** Answers */
+            answers: (components["schemas"]["ShortAnswer"] | components["schemas"]["LongAnswer"] | components["schemas"]["EmailAnswer"] | components["schemas"]["NumberAnswer"] | components["schemas"]["DateAnswer"] | components["schemas"]["ChoiceAnswer"] | components["schemas"]["ChoicesAnswer"] | components["schemas"]["UrlAnswer"] | components["schemas"]["FileAnswer"])[];
+            contact: components["schemas"]["Contact"];
+            /**
+             * Snapshot Id
+             * Format: uuid
+             */
+            snapshot_id: string;
+            /** Upload Session Id */
+            upload_session_id?: string | null;
+            /** Upload Token */
+            upload_token?: string | null;
+        };
+        /** TestForm */
+        TestForm: {
+            /**
+             * Campaign Id
+             * Format: uuid
+             */
+            campaign_id: string;
+            /** Deadline */
+            deadline: string | null;
+            /** Description */
+            description: string;
+            /** Domain */
+            domain: string;
+            limits?: components["schemas"]["FormLimits"];
+            /**
+             * Processing Notice
+             * @default Vos réponses sont enregistrées pour la revue de cette campagne. Leur analyse peut prendre du temps ; la décision appartient au responsable. Ne transmettez que les informations nécessaires.
+             */
+            processing_notice: string;
+            /** Questions */
+            questions: components["schemas"]["Question"][];
+            /**
+             * Snapshot Id
+             * Format: uuid
+             */
+            snapshot_id: string;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "open" | "closed";
+            /** Target Level */
+            target_level: string;
+            /** Title */
+            title: string;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "training" | "recruitment";
+        };
+        /** UrlAnswer */
+        UrlAnswer: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "url";
+            /**
+             * Question Id
+             * Format: uuid
+             */
+            question_id: string;
+            /** Value */
+            value: string;
         };
         /** ValidationError */
         ValidationError: {
@@ -853,6 +1217,91 @@ export interface operations {
             };
             /** @description Too Many Requests */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    read_application: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                application_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationDetail"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1168,6 +1617,94 @@ export interface operations {
             };
             /** @description Precondition Required */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    list_applications: {
+        parameters: {
+            query?: {
+                limit?: number;
+                cursor?: string | null;
+            };
+            header?: never;
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApplicationPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1501,6 +2038,97 @@ export interface operations {
             };
         };
     };
+    submit_test_application: {
+        parameters: {
+            query?: never;
+            header?: {
+                "idempotency-key"?: string | null;
+            };
+            path: {
+                campaign_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmissionInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Receipt"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     create_test_snapshot: {
         parameters: {
             query?: never;
@@ -1709,6 +2337,97 @@ export interface operations {
             };
         };
     };
+    submit_application: {
+        parameters: {
+            query?: never;
+            header?: {
+                "idempotency-key"?: string | null;
+            };
+            path: {
+                public_token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmissionInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Receipt"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
     read_policy: {
         parameters: {
             query?: never;
@@ -1802,7 +2521,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PublicForm"];
+                    "application/json": components["schemas"]["TestForm"];
                 };
             };
             /** @description Unauthorized */

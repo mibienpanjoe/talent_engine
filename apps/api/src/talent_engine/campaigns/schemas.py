@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import Annotated, Literal
 from uuid import UUID
 
@@ -27,7 +27,29 @@ FAMILIES = {
 
 
 class Model(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", hide_input_in_errors=True)
+
+    @model_validator(mode="before")
+    @classmethod
+    def valid_unicode(cls, value):
+        def check(item):
+            if isinstance(item, str):
+                if "\x00" in item:
+                    raise ValueError("NUL is not allowed")
+                item.encode("utf-8", errors="strict")
+            elif isinstance(item, dict):
+                for key, child in item.items():
+                    check(key)
+                    check(child)
+            elif isinstance(item, list):
+                for child in item:
+                    check(child)
+
+        try:
+            check(value)
+        except UnicodeEncodeError as error:
+            raise ValueError("Invalid Unicode") from error
+        return value
 
 
 class Option(Model):
@@ -169,6 +191,9 @@ class DraftConfiguration(Model):
                 and requirement.condition_rule.question_id not in ids
             ):
                 raise ValueError("Unknown condition source")
+        if self.deadline:
+            self.deadline = self.deadline.astimezone(timezone.utc)
+        self.questions.sort(key=lambda q: q.position)
         return self
 
 

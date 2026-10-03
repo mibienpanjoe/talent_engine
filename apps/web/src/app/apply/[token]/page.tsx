@@ -23,7 +23,11 @@ export default async function ApplyPage({
     <>
       <SiteHeader />
       <main id="main" className="page-width campaign-editor">
-        <PublicFormView key={result.data.snapshot_id} form={result.data} />
+        <PublicFormView
+          key={result.data.snapshot_id}
+          form={result.data}
+          publicToken={token}
+        />
       </main>
     </>
   );

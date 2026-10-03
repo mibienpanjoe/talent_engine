@@ -1,6 +1,240 @@
 {
   "components": {
     "schemas": {
+      "ApplicationDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "answers": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "date": "#/components/schemas/DateAnswer",
+                  "email": "#/components/schemas/EmailAnswer",
+                  "file": "#/components/schemas/FileAnswer",
+                  "long_text": "#/components/schemas/LongAnswer",
+                  "multiple_choice": "#/components/schemas/ChoicesAnswer",
+                  "number": "#/components/schemas/NumberAnswer",
+                  "short_text": "#/components/schemas/ShortAnswer",
+                  "single_choice": "#/components/schemas/ChoiceAnswer",
+                  "url": "#/components/schemas/UrlAnswer"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/ShortAnswer"
+                },
+                {
+                  "$ref": "#/components/schemas/LongAnswer"
+                },
+                {
+                  "$ref": "#/components/schemas/EmailAnswer"
+                },
+                {
+                  "$ref": "#/components/schemas/NumberAnswer"
+                },
+                {
+                  "$ref": "#/components/schemas/DateAnswer"
+                },
+                {
+                  "$ref": "#/components/schemas/ChoiceAnswer"
+                },
+                {
+                  "$ref": "#/components/schemas/ChoicesAnswer"
+                },
+                {
+                  "$ref": "#/components/schemas/UrlAnswer"
+                },
+                {
+                  "$ref": "#/components/schemas/FileAnswer"
+                }
+              ]
+            },
+            "title": "Answers",
+            "type": "array"
+          },
+          "application": {
+            "$ref": "#/components/schemas/ApplicationSummary"
+          },
+          "effective_evaluation": {
+            "title": "Effective Evaluation",
+            "type": "null"
+          },
+          "pending_evaluation_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Pending Evaluation Ids",
+            "type": "array"
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/PublishedSnapshot"
+          },
+          "uploads": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Uploads",
+            "type": "array"
+          }
+        },
+        "required": [
+          "snapshot",
+          "application",
+          "answers"
+        ],
+        "title": "ApplicationDetail",
+        "type": "object"
+      },
+      "ApplicationPage": {
+        "additionalProperties": false,
+        "properties": {
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Counts",
+            "type": "object"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ApplicationSummary"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "list_revision": {
+            "title": "List Revision",
+            "type": "string"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor",
+          "list_revision",
+          "counts"
+        ],
+        "title": "ApplicationPage",
+        "type": "object"
+      },
+      "ApplicationSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "calculation": {
+            "title": "Calculation",
+            "type": "null"
+          },
+          "campaign_id": {
+            "format": "uuid",
+            "title": "Campaign Id",
+            "type": "string"
+          },
+          "contact": {
+            "$ref": "#/components/schemas/Contact"
+          },
+          "decision": {
+            "enum": [
+              "to_review",
+              "shortlisted",
+              "not_selected"
+            ],
+            "title": "Decision",
+            "type": "string"
+          },
+          "effective_evaluation_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Evaluation Id"
+          },
+          "eligibility": {
+            "title": "Eligibility",
+            "type": "null"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "real",
+              "test"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "processing_state": {
+            "enum": [
+              "queued",
+              "collecting",
+              "evaluating",
+              "completed",
+              "completed_partial",
+              "failed"
+            ],
+            "title": "Processing State",
+            "type": "string"
+          },
+          "rank": {
+            "title": "Rank",
+            "type": "null"
+          },
+          "received_at": {
+            "format": "date-time",
+            "title": "Received At",
+            "type": "string"
+          },
+          "review_revision": {
+            "title": "Review Revision",
+            "type": "integer"
+          },
+          "snapshot_id": {
+            "format": "uuid",
+            "title": "Snapshot Id",
+            "type": "string"
+          },
+          "views": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Views",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "campaign_id",
+          "snapshot_id",
+          "mode",
+          "contact",
+          "received_at",
+          "processing_state",
+          "decision",
+          "review_revision"
+        ],
+        "title": "ApplicationSummary",
+        "type": "object"
+      },
       "Campaign": {
         "additionalProperties": false,
         "properties": {
@@ -126,6 +360,87 @@
         "title": "CampaignPage",
         "type": "object"
       },
+      "ChoiceAnswer": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "single_choice",
+            "title": "Kind",
+            "type": "string"
+          },
+          "question_id": {
+            "format": "uuid",
+            "title": "Question Id",
+            "type": "string"
+          },
+          "value": {
+            "format": "uuid",
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question_id",
+          "kind",
+          "value"
+        ],
+        "title": "ChoiceAnswer",
+        "type": "object"
+      },
+      "ChoicesAnswer": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "multiple_choice",
+            "title": "Kind",
+            "type": "string"
+          },
+          "question_id": {
+            "format": "uuid",
+            "title": "Question Id",
+            "type": "string"
+          },
+          "value": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 20,
+            "title": "Value",
+            "type": "array"
+          }
+        },
+        "required": [
+          "question_id",
+          "kind",
+          "value"
+        ],
+        "title": "ChoicesAnswer",
+        "type": "object"
+      },
+      "Contact": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "format": "email",
+            "maxLength": 320,
+            "title": "Email",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "email"
+        ],
+        "title": "Contact",
+        "type": "object"
+      },
       "CsrfToken": {
         "additionalProperties": false,
         "properties": {
@@ -140,6 +455,32 @@
           "csrf_token"
         ],
         "title": "CsrfToken",
+        "type": "object"
+      },
+      "DateAnswer": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "date",
+            "title": "Kind",
+            "type": "string"
+          },
+          "question_id": {
+            "format": "uuid",
+            "title": "Question Id",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question_id",
+          "kind",
+          "value"
+        ],
+        "title": "DateAnswer",
         "type": "object"
       },
       "DateCondition": {
@@ -260,6 +601,34 @@
         "title": "DuplicationInput",
         "type": "object"
       },
+      "EmailAnswer": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "email",
+            "title": "Kind",
+            "type": "string"
+          },
+          "question_id": {
+            "format": "uuid",
+            "title": "Question Id",
+            "type": "string"
+          },
+          "value": {
+            "format": "email",
+            "maxLength": 320,
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question_id",
+          "kind",
+          "value"
+        ],
+        "title": "EmailAnswer",
+        "type": "object"
+      },
       "EmptyInput": {
         "additionalProperties": false,
         "properties": {},
@@ -333,6 +702,37 @@
           "code"
         ],
         "title": "ErrorDetail",
+        "type": "object"
+      },
+      "FileAnswer": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "file",
+            "title": "Kind",
+            "type": "string"
+          },
+          "question_id": {
+            "format": "uuid",
+            "title": "Question Id",
+            "type": "string"
+          },
+          "value": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 5,
+            "title": "Value",
+            "type": "array"
+          }
+        },
+        "required": [
+          "question_id",
+          "kind",
+          "value"
+        ],
+        "title": "FileAnswer",
         "type": "object"
       },
       "FormLimits": {
@@ -443,6 +843,66 @@
           "csrf_token"
         ],
         "title": "LoginResult",
+        "type": "object"
+      },
+      "LongAnswer": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "long_text",
+            "title": "Kind",
+            "type": "string"
+          },
+          "question_id": {
+            "format": "uuid",
+            "title": "Question Id",
+            "type": "string"
+          },
+          "value": {
+            "maxLength": 10000,
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question_id",
+          "kind",
+          "value"
+        ],
+        "title": "LongAnswer",
+        "type": "object"
+      },
+      "NumberAnswer": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "number",
+            "title": "Kind",
+            "type": "string"
+          },
+          "question_id": {
+            "format": "uuid",
+            "title": "Question Id",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "integer"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "question_id",
+          "kind",
+          "value"
+        ],
+        "title": "NumberAnswer",
         "type": "object"
       },
       "Option": {
@@ -931,6 +1391,26 @@
         "title": "Rational",
         "type": "object"
       },
+      "Receipt": {
+        "additionalProperties": false,
+        "properties": {
+          "receipt_ref": {
+            "title": "Receipt Ref",
+            "type": "string"
+          },
+          "received_at": {
+            "format": "date-time",
+            "title": "Received At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "receipt_ref",
+          "received_at"
+        ],
+        "title": "Receipt",
+        "type": "object"
+      },
       "Requirement": {
         "additionalProperties": false,
         "properties": {
@@ -1053,6 +1533,33 @@
         "title": "Reviewer",
         "type": "object"
       },
+      "ShortAnswer": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "short_text",
+            "title": "Kind",
+            "type": "string"
+          },
+          "question_id": {
+            "format": "uuid",
+            "title": "Question Id",
+            "type": "string"
+          },
+          "value": {
+            "maxLength": 500,
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question_id",
+          "kind",
+          "value"
+        ],
+        "title": "ShortAnswer",
+        "type": "object"
+      },
       "SlotsCondition": {
         "additionalProperties": false,
         "properties": {
@@ -1083,6 +1590,216 @@
           "option_ids"
         ],
         "title": "SlotsCondition",
+        "type": "object"
+      },
+      "SubmissionInput": {
+        "additionalProperties": false,
+        "properties": {
+          "answers": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "date": "#/components/schemas/DateAnswer",
+                  "email": "#/components/schemas/EmailAnswer",
+                  "file": "#/components/schemas/FileAnswer",
+                  "long_text": "#/components/schemas/LongAnswer",
+                  "multiple_choice": "#/components/schemas/ChoicesAnswer",
+                  "number": "#/components/schemas/NumberAnswer",
+                  "short_text": "#/components/schemas/ShortAnswer",
+                  "single_choice": "#/components/schemas/ChoiceAnswer",
+                  "url": "#/components/schemas/UrlAnswer"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/ShortAnswer"
+                },
+                {
+                  "$ref": "#/components/schemas/LongAnswer"
+                },
+                {
+                  "$ref": "#/components/schemas/EmailAnswer"
+                },
+                {
+                  "$ref": "#/components/schemas/NumberAnswer"
+                },
+                {
+                  "$ref": "#/components/schemas/DateAnswer"
+                },
+                {
+                  "$ref": "#/components/schemas/ChoiceAnswer"
+                },
+                {
+                  "$ref": "#/components/schemas/ChoicesAnswer"
+                },
+                {
+                  "$ref": "#/components/schemas/UrlAnswer"
+                },
+                {
+                  "$ref": "#/components/schemas/FileAnswer"
+                }
+              ]
+            },
+            "maxItems": 50,
+            "title": "Answers",
+            "type": "array"
+          },
+          "contact": {
+            "$ref": "#/components/schemas/Contact"
+          },
+          "snapshot_id": {
+            "format": "uuid",
+            "title": "Snapshot Id",
+            "type": "string"
+          },
+          "upload_session_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upload Session Id"
+          },
+          "upload_token": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 43,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upload Token"
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "contact",
+          "answers"
+        ],
+        "title": "SubmissionInput",
+        "type": "object"
+      },
+      "TestForm": {
+        "additionalProperties": false,
+        "properties": {
+          "campaign_id": {
+            "format": "uuid",
+            "title": "Campaign Id",
+            "type": "string"
+          },
+          "deadline": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deadline"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "domain": {
+            "title": "Domain",
+            "type": "string"
+          },
+          "limits": {
+            "$ref": "#/components/schemas/FormLimits"
+          },
+          "processing_notice": {
+            "default": "Vos réponses sont enregistrées pour la revue de cette campagne. Leur analyse peut prendre du temps ; la décision appartient au responsable. Ne transmettez que les informations nécessaires.",
+            "title": "Processing Notice",
+            "type": "string"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/Question"
+            },
+            "title": "Questions",
+            "type": "array"
+          },
+          "snapshot_id": {
+            "format": "uuid",
+            "title": "Snapshot Id",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "open",
+              "closed"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "target_level": {
+            "title": "Target Level",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "training",
+              "recruitment"
+            ],
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "state",
+          "title",
+          "description",
+          "type",
+          "domain",
+          "target_level",
+          "deadline",
+          "questions",
+          "campaign_id"
+        ],
+        "title": "TestForm",
+        "type": "object"
+      },
+      "UrlAnswer": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "url",
+            "title": "Kind",
+            "type": "string"
+          },
+          "question_id": {
+            "format": "uuid",
+            "title": "Question Id",
+            "type": "string"
+          },
+          "value": {
+            "maxLength": 2048,
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question_id",
+          "kind",
+          "value"
+        ],
+        "title": "UrlAnswer",
         "type": "object"
       },
       "ValidationError": {
@@ -1343,6 +2060,109 @@
         "summary": "Login",
         "tags": [
           "access"
+        ]
+      }
+    },
+    "/api/v1/applications/{application_id}": {
+      "get": {
+        "operationId": "read_application",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "application_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Application Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Content Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Read",
+        "tags": [
+          "applications"
         ]
       }
     },
@@ -1772,6 +2592,138 @@
         "summary": "Patch",
         "tags": [
           "campaigns"
+        ]
+      }
+    },
+    "/api/v1/campaigns/{campaign_id}/applications": {
+      "get": {
+        "operationId": "list_applications",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Content Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Listing",
+        "tags": [
+          "applications"
         ]
       }
     },
@@ -2257,6 +3209,135 @@
         ]
       }
     },
+    "/api/v1/campaigns/{campaign_id}/test-applications": {
+      "post": {
+        "operationId": "submit_test_application",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "campaign_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Campaign Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "idempotency-key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmissionInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Content Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Test Submit",
+        "tags": [
+          "applications"
+        ]
+      }
+    },
     "/api/v1/campaigns/{campaign_id}/test-snapshots": {
       "post": {
         "operationId": "create_test_snapshot",
@@ -2536,6 +3617,134 @@
         ]
       }
     },
+    "/api/v1/public/campaigns/{public_token}/applications": {
+      "post": {
+        "operationId": "submit_application",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "public_token",
+            "required": true,
+            "schema": {
+              "title": "Public Token",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "idempotency-key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmissionInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Receipt"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Content Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Submit",
+        "tags": [
+          "applications"
+        ]
+      }
+    },
     "/api/v1/snapshots/{snapshot_id}/policy": {
       "get": {
         "operationId": "read_policy",
@@ -2649,7 +3858,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/PublicForm"
+                  "$ref": "#/components/schemas/TestForm"
                 }
               }
             },

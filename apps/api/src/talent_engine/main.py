@@ -11,11 +11,13 @@ from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException
 
 from talent_engine.access import build_access_router
+from talent_engine.applications.router import build_application_router
+from talent_engine.body_limit import BodyLimit
 from talent_engine.campaigns.lifecycle import build_lifecycle_router
 from talent_engine.campaigns.router import build_campaign_router
 from talent_engine.config import Settings
 from talent_engine.database import build_engine
-from talent_engine.errors import AccessError, Error, error_payload
+from talent_engine.errors import AccessError, Error, ErrorDetail, error_payload
 
 
 class Health(BaseModel):
@@ -39,6 +41,8 @@ def create_app(
     app.include_router(build_access_router(engine, settings))
     app.include_router(build_campaign_router(engine, settings))
     app.include_router(build_lifecycle_router(engine, settings))
+    app.include_router(build_application_router(engine, settings))
+    app.add_middleware(BodyLimit)
 
     @app.exception_handler(AccessError)
     async def access_error(request: Request, error: AccessError):
@@ -55,7 +59,17 @@ def create_app(
     async def validation_error(request: Request, error: RequestValidationError):
         return JSONResponse(
             status_code=422,
-            content=error_payload("validation_error", "Invalid request"),
+            content=error_payload(
+                "validation_error",
+                "Invalid request",
+                [
+                    ErrorDetail(
+                        path=".".join(str(x) for x in item["loc"])[:500],
+                        code=item["type"][:100],
+                    )
+                    for item in error.errors()[:50]
+                ],
+            ),
             headers={"Cache-Control": "no-store"},
         )
 

@@ -72,6 +72,10 @@ class PublicForm(Model):
     )
 
 
+class TestForm(PublicForm):
+    campaign_id: UUID
+
+
 class Rational(Model):
     numerator: str
     denominator: str
@@ -424,7 +428,7 @@ def build_lifecycle_router(engine, settings):
 
     @router.get(
         "/test-snapshots/{snapshot_id}",
-        response_model=PublicForm,
+        response_model=TestForm,
         operation_id="test_form",
     )
     def test_form(snapshot_id: UUID, response: Response, session=Depends(read_guard)):
@@ -443,7 +447,7 @@ def build_lifecycle_router(engine, settings):
             campaign = owned(db, row["campaign_id"], session["reviewer_id"])
             result = form_result(db, campaign, row)
         headers(response)
-        return result
+        return TestForm(**result.model_dump(), campaign_id=campaign["id"])
 
     @router.get(
         "/snapshots/{snapshot_id}/policy",

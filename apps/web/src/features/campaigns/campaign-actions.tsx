@@ -98,6 +98,11 @@ export function CampaignActions({
       className="campaign-actions"
       aria-label="Publication et cycle de campagne"
     >
+      <p>
+        <Link href={`/review/campaigns/${campaign.id}/applications`}>
+          Voir les candidatures reçues
+        </Link>
+      </p>
       <h2>
         {
           {

@@ -147,3 +147,12 @@ nouvelle intention de dépôt, jamais un remplacement silencieux de la clé.
 
 La [suppression](../../SECURITY.md) coordonne base, worker et volume.
 Les détails d'API et contraintes de données sont définis en T05.
+
+
+## Implémentation T16
+
+La réception JSON réelle et les essais privés enregistrent candidature,
+exécution, tâche, reçu et gel dans une transaction PostgreSQL. Le rejeu
+précède les contrôles de version, fermeture et échéance. La liste privée
+exclut les essais ; le dossier retourne le snapshot reçu avec ses réponses.
+Les documents et le traitement des tâches relèvent de T17 et T18.

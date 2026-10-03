@@ -80,3 +80,5 @@ textarea.ui-input { resize:vertical; }
 .campaign-actions { border-bottom:1px solid var(--border); padding-bottom:2rem; margin-block:2rem; }
 .campaign-actions h2 { font-size:1.25rem; }
 .public-form { display:grid; gap:1.5rem; margin-top:2rem; }
+.submission-fields { display:grid; gap:1.5rem; padding:0; margin:0; border:0; min-width:0; }
+.submission-fields legend { font-weight:600; margin-bottom:1rem; }
