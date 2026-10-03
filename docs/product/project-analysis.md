@@ -1,7 +1,7 @@
 # Talent Engine — Analyse initiale
 
 **Date :** 2026-10-03  
-**Statut :** analyse documentaire ; arbitrages ouverts ; aucune implémentation vérifiée.  
+**Statut :** analyse initiale historique ; arbitrages détaillés dans les contrats T01–T06 et le registre de décisions ; aucun runtime vérifié.
 **Sources :** [cadrage](project-overview.md), puis [spécification du moteur](../evaluation/evaluation-engine-spec.md).
 
 ## 1. Objectif et valeur du produit

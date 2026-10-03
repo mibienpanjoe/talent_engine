@@ -31,5 +31,6 @@ Chaque écosystème garde ses dépendances et sa configuration. Le dépôt poss�
 une organisation commune pour ses contrats, sa démonstration et son démarrage.
 
 L'emplacement du worker, les outils de dépendances et le détail de la structure
-interne restent proposés. Cette décision n'autorise pas à les présenter comme
-déjà validés ou implémentés.
+interne étaient proposés à la date de cette décision ; ils sont maintenant
+complétés dans [ADR-0003](0003-tooling-and-contract-generation.md) et
+[ADR-0004](0004-postgresql-analysis-worker.md). Leur runtime reste à vérifier.

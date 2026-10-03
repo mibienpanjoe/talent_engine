@@ -20,7 +20,9 @@ Une alternative entièrement TypeScript était également présentée.
 - Le calcul et les politiques ont une seule implémentation métier côté backend.
 - Les versions, l'exécution des tâches et le détail du monorepo restent ouverts.
 
-Le maintien d'un worker persistant est une proposition distincte à détailler.
+Les détails ouverts à la date de cette décision sont maintenant complétés par
+[ADR-0003](0003-tooling-and-contract-generation.md) et
+[ADR-0004](0004-postgresql-analysis-worker.md), sans changement de stack.
 Cette ADR ne valide pas des commandes, une installation ou un runtime existants.
 
 ## Alternatives considérées
