@@ -68,7 +68,7 @@ justification référencées. Le résultat global conserve tous les détails :
 Les alertes de compétences indispensables sont séparées conformément à la
 politique. Une décision humaine n'efface jamais l'admissibilité ni une alerte.
 L'état d'exécution (`queued` à `failed`) appartient au traitement, pas à ce
-résultat. Le futur contrat `docs/review/review-and-corrections.md` définira
+résultat. Le [contrat de revue](../review/review-and-corrections.md) définit
 la projection effective et l'appartenance aux files en T03.
 
 ## 4. Oracles et contrôle
