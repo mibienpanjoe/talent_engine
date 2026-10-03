@@ -1,8 +1,8 @@
 # Talent Engine — Carte documentaire et organisation proposée
 
 **Date :** 2026-10-03  
-**Statut :** proposition de structure inspirée de FIRA ; seuls les fichiers
-explicitement signalés comme existants ont été créés.
+**Statut :** structure documentaire ; contrats T01–T06 présents, runtime non créé.
+Les fichiers non signalés comme présents restent des cibles.
 
 ## 1. Point d'entrée actuel
 
@@ -30,8 +30,8 @@ présents sur disque.
 
 ```text
 README.md                                 présentation et démarrage vérifié
-CONTRIBUTING.md                            organisation et définition de terminé
-SECURITY.md                                confiance, secrets, fichiers et données
+CONTRIBUTING.md                            présent : contribution et définition de terminé
+SECURITY.md                                présent : accès, collecte et purge
 docs/
   documentation-map.md                    présent : navigation et structure proposée
   product/
@@ -43,27 +43,27 @@ docs/
   campaigns/
     campaign-and-form-contract.md         présent : besoin, questions, versions et publication
   applications/
-    submission-contract.md                réception, fichiers et idempotence
+    submission-contract.md                présent : réception, fichiers et idempotence
   evaluation/
     evaluation-engine-spec.md             présent : spécification source du moteur
-    evaluation-contract.md                états, admissibilité, score et files
-    policies-and-rubrics.md                compilation, poids et niveaux versionnés
+    evaluation-contract.md                présent : états, admissibilité et score
+    policies-and-rubrics.md                présent : compilation, poids et barèmes
     evidence-and-provenance.md             extraits, références et sources répétées
   review/
-    review-and-corrections.md              décisions, corrections et résultat effectif
+    review-and-corrections.md              présent : files, corrections et versions
   data/
-    canonical-model.md                    entités, relations et invariants
-    data-dictionary.md                    types, nullabilité et versions
+    canonical-model.md                    présent : entités, relations et invariants
+    data-dictionary.md                    présent : types, nullabilité et versions
   architecture/
     repository-structure.md               présent : proposition d'organisation du code
-    system-architecture.md                modules, dépendances et exécution
-    api-contract.md                       routes et schémas métier avant génération
+    system-architecture.md                présent : modules, outils et runtime cible
+    api-contract.md                       présent : routes et OpenAPI de conception
   integrations/
     document-and-web-extraction.md        PDF, OCR, portfolios et GitHub bornés
     ai-adapters.md                        génération, embeddings et OCR
     local-freellmapi.md                    présent : installation et limites vérifiées
   operations/
-    analysis-lifecycle.md                 tâches, tentatives, reprise et incidents
+    analysis-lifecycle.md                 présent : tâches, tentatives et reprise
     local-development.md                  démarrage réel et modes de démonstration
   design/
     visual-identity.md                    présent : direction sombre proposée
@@ -75,12 +75,19 @@ docs/
   adr/
     0001-application-nextjs-fastapi-postgresql.md  présent : stack retenue
     0002-monorepo-web-et-api.md            présent : monorepo retenu
+    0003-tooling-and-contract-generation.md      présent : outils et génération
+    0004-postgresql-analysis-worker.md            présent : worker durable
     NNNN-title.md                         décisions suivantes
 ```
 
 Créer chaque document lorsqu'il possède un contenu utile, des dépendances
 identifiées et un propriétaire de contrat. Éviter les fichiers vides et les
 copies de l'overview.
+
+Les schémas HTTP typés se trouvent dans
+[contracts/api-design.openapi.json](../contracts/api-design.openapi.json),
+contrat manuel de conception distinct du futur export serveur. Les oracles
+numériques fictifs sont sous `fixtures/expected-results/`.
 
 ## 3. Ordre de rédaction et provenance
 
@@ -129,3 +136,21 @@ reste distinct de la documentation durable sous `docs/`.
 Les assets partagés de marque sont conservés dans `assets/brand/` et décrits
 dans [le guide des assets](design/brand-assets.md). Leurs intégrations dans le
 frontend seront ajoutées au bootstrap.
+
+## 6. Lecture de la phase contrats terminée
+
+Après le contrat de campagne, lire :
+
+- [Politiques et barèmes](evaluation/policies-and-rubrics.md),
+  [évaluation](evaluation/evaluation-contract.md),
+  [revue/corrections](review/review-and-corrections.md).
+- [Réception](applications/submission-contract.md),
+  [exécution](operations/analysis-lifecycle.md), [sécurité](../SECURITY.md).
+- [Modèle](data/canonical-model.md), [dictionnaire](data/data-dictionary.md),
+  [API](architecture/api-contract.md).
+- [Architecture](architecture/system-architecture.md),
+  [contribution](../CONTRIBUTING.md), ADR-0003/0004.
+
+Les textes initialement proposés conservent leur contexte historique ; les
+contrats propriétaires détaillés fixent maintenant les règles de réalisation.
+Les capacités d’intégration et de runtime attendent leurs preuves dédiées.

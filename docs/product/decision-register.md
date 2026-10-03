@@ -1,4 +1,4 @@
-# Talent Engine — Registre des décisions ouvertes
+# Talent Engine — Registre des décisions et vérifications
 
 **Date :** 2026-10-03  
 **Statut :** registre vivant ; les résolutions explicites figurent en section 2.  
@@ -28,9 +28,11 @@ les sources n'est pas remise en discussion sans conflit précis.
 | DEC-13 | Organisation de contribution | Préciser équipe, conventions locales, branches et contrôles ; adapter aux besoins de Talent Engine. | CONTRIBUTING et guidance agents. |
 | DEC-14 | Structure du dépôt et outils | Monorepo proposé, API et worker dans un package Python, frontend par fonctionnalités ; pnpm et uv proposés. | [Structure proposée](../architecture/repository-structure.md) et bootstrap. |
 
-Cet ordre suit les dépendances métier. Certains choix techniques peuvent être
-discutés en parallèle ; les décisions restent ouvertes jusqu'à leur résolution
-explicite. Aucun délai, budget, volume, barème ou fournisseur n'est inventé.
+Cet ordre suit les dépendances métier. La phase contrats T01–T06 a été demandée explicitement par le mainteneur.
+Les confirmations directes (stack, monorepo, gel) sont distinguées des détails
+d’implémentation arrêtés par l’assistant pour exécuter cette phase. Les barèmes
+et limites de démo sont des choix documentés, pas des valeurs métier mesurées.
+Échéance, budget, capacité et fournisseurs restent non inventés.
 
 ## 2. Trace des résolutions
 
@@ -43,14 +45,28 @@ explicite. Aucun délai, budget, volume, barème ou fournisseur n'est inventé.
 | DEC-05 | Référence T02 définie, non calibrée | Politiques fictives 40/35/25, six barèmes complets et sept oracles numériques ; choix d’implémentation de la phase contrats, pas validation sur personnes réelles. | [Politiques](../evaluation/policies-and-rubrics.md), fixtures attendues. |
 | DEC-06 | Référence T03 définie | Score null et couverture en liste, bornes dans le détail ; vues avec recouvrement explicite et all exhaustif ; rang exact de compétition uniquement pour ready. | [Revue](../review/review-and-corrections.md). |
 | DEC-07 | Référence T03 définie | Base immuable et corrections historisées ; réanalyse inactive jusqu’à activation explicite, report sélectif contrôlé ou nouvelle base confirmée. | [Revue](../review/review-and-corrections.md). |
-| DEC-08 | Stack retenue ; détails ouverts | Proposition TypeScript/Next.js et Python/FastAPI retenue avec la base PostgreSQL suggérée. [ADR-0001](../adr/0001-application-nextjs-fastapi-postgresql.md). | Overview, architecture et API. |
+| DEC-08 | Stack acceptée ; détails T06 retenus, installation non vérifiée | Next.js 16/Node 24, Python 3.13/FastAPI 0.142, PostgreSQL 17 ; versions cibles et patches candidats dans architecture, locks testés au bootstrap. | [Architecture](../architecture/system-architecture.md), [ADR-0003](../adr/0003-tooling-and-contract-generation.md). |
 | DEC-09 | Référence T04 définie | Transaction candidature/réponses/uploads/tâche/clé, rejeu canonique ; worker PostgreSQL avec lease et fencing, étapes/checkpoints, trois tentatives et relance ciblée. | [Réception](../applications/submission-contract.md), [exécution](../operations/analysis-lifecycle.md). |
 | DEC-10 | Référence T04 définie | Session responsable et CSRF ; uploads privés bornés, collecte publique limitée, rétention démo et purge durable avec contrôle des tâches en vol. | [Protection](../../SECURITY.md), réception et exécution. |
 | DEC-11 | Orientation retenue ; intégration non vérifiée | Mainteneur : FreeLLMAPI déjà installé et configuré. Container arrêté constaté ; démarrage seulement lorsque nécessaire ; modèles, quotas et capacités à vérifier en direct. | [Note d'intégration locale](../integrations/local-freellmapi.md). |
 | DEC-12 | Référence fournie ; jeu raster généré, design produit proposé | Préférence sombre conservée. Référence « Signal » déclinée en sept PNG inspectés : signatures, symboles et app icon. Masters vectoriels et validation sur écrans produit restent ouverts. | [Direction visuelle](../design/visual-identity.md) et [assets](../design/brand-assets.md). |
-| DEC-13 | Organisation résolue ; conventions ouvertes | Mainteneur seul avec l'assistant ; aucun changement de périmètre. Branches et livraison à définir. | Contribution. |
-| DEC-14 | Monorepo accepté ; détails ouverts | Un dépôt avec `apps/web/` et `apps/api/` retenu dans [ADR-0002](../adr/0002-monorepo-web-et-api.md). Worker, structure interne et outils proposés ; aucun code applicatif créé. | Structure du dépôt et bootstrap. |
+| DEC-13 | Organisation acceptée ; conventions T06 définies | Étapes séquentielles avec vérification/revue/commit ; main conservée, plans locaux ignorés ; push distinct sur demande, définition de terminé et commandes cibles. | [Contribution](../../CONTRIBUTING.md). |
+| DEC-14 | Monorepo accepté ; détails T06 retenus, bootstrap à faire | pnpm/uv, backend modulaire et worker partageant package/image ; client local au web généré depuis OpenAPI ; tâches PostgreSQL, pas de broker supplémentaire. | [ADR-0003](../adr/0003-tooling-and-contract-generation.md), [ADR-0004](../adr/0004-postgresql-analysis-worker.md). |
 
 Décomposer les lignes groupées au fil des résolutions.
 Une recommandation n'est pas une décision acceptée. Une décision documentaire
 n'est pas une preuve d'implémentation ou de validation runtime.
+
+## 3. Clôture de la phase contrats
+
+T01–T06 disposent de contrats propriétaires, modèle/dictionnaire, OpenAPI de
+conception, ADR et conventions de contribution. Les références détaillées
+servent au bootstrap ; une demande d’exécution n’est pas reformulée en
+confirmation individuelle de tous les seuils ou versions par le mainteneur.
+Les décisions ci-dessus ne certifient pas leur implémentation.
+
+Restent à **vérifier au moment prévu**, sans rouvrir les choix déjà confirmés :
+patches/locks compatibles T07–T08, transactions/authentification et UI en
+fondations/tranches, fournisseurs/embeddings/OCR T21–T27, calibration avant
+personnes réelles, CI distante après push autorisé. L’échéance, les volumes et
+le budget n’ont pas été fournis ; aucun périmètre n’est réduit implicitement.

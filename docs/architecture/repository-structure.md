@@ -1,9 +1,14 @@
 # Talent Engine — Structure du dépôt proposée
 
 **Date :** 2026-10-03  
-**Statut :** monorepo retenu ; structure interne et outils proposés ; aucun squelette applicatif créé.  
+**Statut :** monorepo retenu ; détails arrêtés en T06, aucun squelette applicatif créé.
 **Dépendances :** [stack retenue](../adr/0001-application-nextjs-fastapi-postgresql.md),
 [cadrage MVP](../product/mvp-requirements-and-acceptance.md).
+
+Référence actuelle : [architecture système](system-architecture.md),
+[ADR-0003](../adr/0003-tooling-and-contract-generation.md) et
+[ADR-0004](../adr/0004-postgresql-analysis-worker.md). Les mentions de proposition
+ci-dessous décrivent leur origine ; les choix T06 servent maintenant au bootstrap.
 
 ## 1. Recommandation
 
@@ -176,7 +181,7 @@ de développement une fois leurs implémentations disponibles.
 FastAPI et ses schémas serveur produisent `contracts/openapi.json`. Les types
 TypeScript de `lib/api/generated/` dérivent de cet export. Les fichiers générés
 sont identifiés et leur fraîcheur doit être vérifiée lors d'un changement de
-contrat. Les outils de génération précis restent à choisir.
+contrat. Les outils de génération sont arrêtés en T06 : openapi-typescript et openapi-fetch, avec versions exactes verrouillées au bootstrap.
 
 Les versions des langages et bibliothèques seront figées au bootstrap.
 Les commandes proposées ne sont pas annoncées comme exécutables avant cela.
@@ -202,8 +207,8 @@ un résultat préchargé avec une analyse exécutée.
 5. pnpm + uv et points d'entrée communs dans un Makefile.
 
 Le choix monorepo est consigné dans ADR-0002. Son acceptation ne vaut pas
-acceptation implicite des autres détails ci-dessus. Les choix du worker et des
-outils de dépendances sont présentés au mainteneur pour résolution.
+acceptation implicite des autres détails ci-dessus. Le worker et les outils de dépendances sont arrêtés dans ADR-0003/0004
+pour la phase contrats demandée ; leur installation reste à vérifier.
 
 ## 9. Sources techniques vérifiées
 

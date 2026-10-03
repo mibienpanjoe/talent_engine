@@ -27,8 +27,9 @@ développement et un recrutement marketing junior.
 
 ## État du projet
 
-Le dépôt contient le cadrage MVP, les spécifications proposées, les décisions
-de stack et de monorepo, ainsi que les assets de marque. L'application reste
+Le dépôt contient le cadrage MVP, les contrats métier et HTTP, le modèle de
+données, les décisions d'architecture et les assets de marque. La phase
+contrats T01–T06 est documentée ; l'application reste
 à implémenter : il n'y a actuellement ni commande de démarrage, ni démo
 exécutable, ni suite de tests applicatifs.
 
@@ -67,9 +68,10 @@ s'interprètent dans une campagne et servent à organiser la revue.
 | Dépôt | Monorepo avec `apps/web/` et `apps/api/` |
 | Direction visuelle | Thème sombre proposé, identité « Signal » |
 
-La [structure détaillée](docs/architecture/repository-structure.md) précise les
-responsabilités et les choix ouverts. Les outils de dépendances, les versions
-et l'emplacement du worker restent en discussion.
+La [structure détaillée](docs/architecture/repository-structure.md) et
+l'[architecture système](docs/architecture/system-architecture.md) fixent les
+responsabilités, pnpm/uv, les versions cibles et le worker Python avec tâches
+PostgreSQL. Leur installation et leur fonctionnement restent à vérifier.
 
 ```text
 assets/brand/    Logos, symboles, icône d'application et manifest
