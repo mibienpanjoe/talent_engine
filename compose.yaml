@@ -1,0 +1,57 @@
+services:
+  db:
+    image: postgres:17@sha256:d74eeac9a635390a49bc21bd49fccd973de707e2a53a76ac49b552b8712ec46f
+    environment:
+      POSTGRES_USER: talent
+      POSTGRES_DB: talent
+      POSTGRES_PASSWORD: ${TALENT_DB_PASSWORD:?Set TALENT_DB_PASSWORD in .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U talent -d talent"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+  api:
+    image: ${COMPOSE_PROJECT_NAME:-talent-engine}-api
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      TALENT_DATABASE_URL: postgresql+psycopg://talent:${TALENT_DB_PASSWORD}@db:5432/talent
+    ports:
+      - "127.0.0.1:${TALENT_API_PORT:-8001}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health/ready', timeout=4)"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    restart: unless-stopped
+  migrate:
+    image: ${COMPOSE_PROJECT_NAME:-talent-engine}-api
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      TALENT_DATABASE_URL: postgresql+psycopg://talent:${TALENT_DB_PASSWORD}@db:5432/talent
+    command: ["alembic", "upgrade", "head"]
+    profiles: ["tools"]
+    depends_on:
+      db:
+        condition: service_healthy
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "127.0.0.1:${TALENT_WEB_PORT:-3003}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+volumes:
+  postgres_data:

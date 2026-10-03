@@ -17,12 +17,13 @@ revendiqué, revoir/corriger, noter preuves localement, **committer avant la
 suivante**. En cas d'échec, corriger et reprouver la même étape ; ne pas la
 cocher sur la promesse qu'une étape future la fera fonctionner.
 
-`main` reste la branche par défaut. Conserver la branche de travail actuelle
-sauf demande explicite ; une branche courte peut être choisie avec le
-mainteneur pour les évolutions suivantes. Commits atomiques `docs:`, `feat:`,
-`fix:`, `test:`, `chore:` ou `ci:` avec raison claire. Stage par chemins
-explicites et revue du staged. Commit et push sont deux actions distinctes :
-pas de push, PR, merge, tag, réécriture ou déploiement sans demande applicable.
+`main` reste la branche par défaut. Une branche et une PR par phase :
+`docs/contracts`, `feat/foundations`, puis les phases fonctionnelles. Si la
+phase suivante commence avant fusion, sa PR cible provisoirement la branche
+précédente ; elle est reciblée vers `main` après fusion, avec contrôle du diff.
+Commits atomiques `docs:`, `feat:`, `fix:`, `test:`, `chore:` ou `ci:` ; stage par
+chemins explicites et revue du staged. Le mainteneur autorise ici la publication
+et les PR par phase. Fusion, tag et déploiement restent des actions distinctes.
 
 ## Définition de terminé
 
@@ -45,29 +46,25 @@ Les étapes documentaires utilisent revue de scénarios, liens, schémas et
 calculs indépendants. Ne pas inventer des tests applicatifs avant existence
 de l'application. Une affirmation « fonctionne » requiert la bonne surface.
 
-## Commandes cibles (à implémenter)
+## Commandes disponibles
 
-Aucun Makefile, manifest applicatif ou suite de tests n'existe encore pendant
-la phase contrats. Les noms suivants sont un contrat de bootstrap, **pas des
-commandes utilisables aujourd'hui** :
+Voir [runtime local](docs/operations/local-runtime.md) pour l'installation.
 
-| Cible | Comportement / étape de création |
+| Cible | Comportement |
 | --- | --- |
-| `make install` | pnpm install frozen-lockfile + uv sync locked ; T07–T09. |
-| `make dev` | Démarrer runtime local et healthchecks, sans clé IA requise ; T09. |
-| `make migrate` | Alembic upgrade head sur base configurée ; T07/T09. |
-| `make test-api` | pytest, unités puis intégration PostgreSQL ; T07/T10. |
-| `make test-web` | Tests composants/interactions frontend ; T08/T10. |
-| `make test-e2e` | Playwright avec runtime/current build, nettoyage isolé ; première tranche UI intégrée. |
-| `make lint` / `make typecheck` | Ruff, ESLint, contrôle Python/TypeScript ; T07–T10. |
-| `make build` | Build web et image(s) ; T08/T09. |
-| `make contracts` / `make check-contracts` | Export serveur/génération puis contrôle sans diff ; T08/T10. |
-| `make seed-demo` | Profils fictifs et modes identifiés, seed idempotent ; T32. |
+| `make install` | pnpm frozen-lockfile et uv locked. |
+| `make up` / `make down` | Runtime Compose ; arrêt sans suppression des volumes. |
+| `make migrate` | Migration explicite dans Compose. |
+| `make api-test` | Tests comportementaux pytest. |
+| `make lint` / `make typecheck` | Ruff et contrôle TypeScript. |
+| `make build` | Build web ; images construites par `make up`. |
+| `make contracts` / `make contracts-check` | Export FastAPI/client, puis contrôle sans mutation. |
+| `make check` | Tests, lint, contrats, types et build. |
 
-Chaque cible devient documentée comme disponible seulement après preuve.
-Versions patch, outils et images figés dans leurs fichiers de version/locks ;
-uv `--locked` vérifie la fraîcheur, ne pas remplacer par `--frozen` pour masquer
-une dérive. Une mise à jour de dépendance est revue et testée avant nouveau lock.
+Les tests PostgreSQL utilisent une base isolée et `apps/api/checks/check_database.py`.
+Les commandes E2E et seed-demo seront ajoutées avec leurs tranches respectives.
+uv `--locked` vérifie la fraîcheur du lock ; ne pas masquer une dérive avec
+`--frozen`. Toute mise à jour de dépendance est revue et testée avant nouveau lock.
 
 ## Conventions de contrats et UI
 
