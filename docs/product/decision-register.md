@@ -37,7 +37,8 @@ explicite. Aucun délai, budget, volume, barème ou fournisseur n'est inventé.
 | ID | Statut | Choix et motif | Documents à mettre à jour |
 | --- | --- | --- | --- |
 | DEC-01 | Objectif et organisation résolus ; échéance et ressources techniques ouvertes | MVP du challenge avec parcours complet ; mainteneur seul avec l'assistant ; périmètre conservé explicitement. | Cadrage MVP, roadmap et contribution. |
-| DEC-02 à DEC-07 | Ouvert | En attente de discussion. | Contrats métier et modèle de données. |
+| DEC-02 | Gel confirmé ; contrat T01 défini, runtime non vérifié | Mainteneur : campagne révisable avant première candidature réelle, puis formulaire et politique figés ; changements par duplication. Snapshots immuables à chaque publication, tests isolés et conflits de version décrits dans le [contrat campagne/formulaire](../campaigns/campaign-and-form-contract.md). | Contrat campagne/formulaire, puis modèle et API en T05. |
+| DEC-03 à DEC-07 | Ouvert | En attente de discussion. | Contrats métier et modèle de données. |
 | DEC-08 | Stack retenue ; détails ouverts | Proposition TypeScript/Next.js et Python/FastAPI retenue avec la base PostgreSQL suggérée. [ADR-0001](../adr/0001-application-nextjs-fastapi-postgresql.md). | Overview, architecture et API. |
 | DEC-09 à DEC-10 | Ouvert | En attente de discussion. | Soumission, exécution et sécurité. |
 | DEC-11 | Orientation retenue ; intégration non vérifiée | Mainteneur : FreeLLMAPI déjà installé et configuré. Container arrêté constaté ; démarrage seulement lorsque nécessaire ; modèles, quotas et capacités à vérifier en direct. | [Note d'intégration locale](../integrations/local-freellmapi.md). |

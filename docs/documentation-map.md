@@ -14,6 +14,7 @@ Lire dans cet ordre :
 4. [Registre des décisions](product/decision-register.md) : arbitrages à traiter.
 5. [Cadrage MVP](product/mvp-requirements-and-acceptance.md) : exigences et acceptation proposées.
 6. [Structure du dépôt proposée](architecture/repository-structure.md) : arborescence, responsabilités et choix à trancher.
+7. [Contrat campagne/formulaire](campaigns/campaign-and-form-contract.md) : snapshots, gel, questions, publication et concurrence ; comportement à implémenter.
 
 Le cadrage produit est classé sous `docs/product/` et la spécification du moteur
 sous `docs/evaluation/`. Ils restent utiles : le premier porte la vision et
@@ -40,7 +41,7 @@ docs/
     mvp-requirements-and-acceptance.md     présent : exigences et critères proposés
     roadmap.md                            tranches démontrables et dépendances
   campaigns/
-    campaign-and-form-contract.md         besoin, questions, versions et publication
+    campaign-and-form-contract.md         présent : besoin, questions, versions et publication
   applications/
     submission-contract.md                réception, fichiers et idempotence
   evaluation/
