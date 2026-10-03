@@ -1,0 +1,11 @@
+{
+  "name": "talent-engine", "private": true, "packageManager": "pnpm@10.28.0",
+  "engines": {"node": ">=24 <25"},
+  "scripts": {
+    "build": "pnpm --filter @talent-engine/web build",
+    "typecheck": "pnpm --filter @talent-engine/web typecheck",
+    "contracts:generate": "python3 scripts/contracts.py",
+    "contracts:check": "python3 scripts/contracts.py --check"
+  },
+  "devDependencies": {"openapi-typescript": "^7.0.0"}
+}
