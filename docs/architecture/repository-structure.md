@@ -1,7 +1,7 @@
 # Talent Engine — Structure du dépôt proposée
 
 **Date :** 2026-10-03  
-**Statut :** monorepo retenu ; détails arrêtés en T06, aucun squelette applicatif créé.
+**Statut :** monorepo retenu ; fondations API, web et accès responsable implémentées.
 **Dépendances :** [stack retenue](../adr/0001-application-nextjs-fastapi-postgresql.md),
 [cadrage MVP](../product/mvp-requirements-and-acceptance.md).
 
@@ -26,8 +26,9 @@ sans transformer une fonctionnalité métier en projet ou service séparé.
 
 ## 2. Arborescence cible
 
-Les fichiers ci-dessous sont une cible. Seule la documentation existe
-actuellement ; les manifestes, commandes et services ne sont pas encore créés.
+Les fichiers ci-dessous restent une cible complète. Les manifestes, migrations,
+API de santé et d’accès, client généré et runtime local existent ; les modules
+campagne, soumission et analyse arrivent dans les phases suivantes.
 
 ```text
 talent_engine/

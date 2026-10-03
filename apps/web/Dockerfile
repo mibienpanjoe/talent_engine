@@ -5,6 +5,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/web/package.json ./apps/web/package.json
 RUN pnpm install --frozen-lockfile
 COPY apps/web ./apps/web
+COPY assets/brand/app-icon-dark-accent.png ./assets/brand/app-icon-dark-accent.png
 ARG TALENT_API_ORIGIN=http://api:8000
 ENV TALENT_API_ORIGIN=$TALENT_API_ORIGIN NEXT_TELEMETRY_DISABLED=1
 RUN pnpm build

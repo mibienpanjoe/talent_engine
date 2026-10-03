@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Alert } from "../../components/ui/alert";
+import { Button } from "../../components/ui/button";
 import { api } from "../../lib/api";
 export function LogoutButton() {
   const router = useRouter();
@@ -20,5 +22,5 @@ export function LogoutButton() {
     } catch { setError("Déconnexion impossible. Réessayez dans un instant."); }
     finally { setPending(false); }
   }
-  return <div>{error && <p role="alert">{error}</p>}<button disabled={pending} onClick={() => void logout()}>{pending ? "Déconnexion…" : "Se déconnecter"}</button></div>;
+  return <div className="logout-controls">{error && <Alert>{error}</Alert>}<Button disabled={pending} onClick={() => void logout()}>{pending ? "Déconnexion…" : "Se déconnecter"}</Button></div>;
 }

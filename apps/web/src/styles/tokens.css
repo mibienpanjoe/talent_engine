@@ -1,0 +1,26 @@
+:root {
+  color-scheme: dark;
+  --background: #111214;
+  --surface: #191c20;
+  --raised: #22262c;
+  --text: #f5f5f7;
+  --muted: #aeb4be;
+  --border: #414750;
+  --input-border: #697280;
+  --accent: #8ab4ff;
+  --primary: #f5f5f7;
+  --primary-text: #111214;
+  --danger: #ffb4ab;
+  --danger-surface: #2b2024;
+  --success: #a7d6be;
+  --radius-control: .5rem;
+  --radius-surface: 1rem;
+}
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-geist-sans);
+}

@@ -1,5 +1,5 @@
 import { LoginForm } from "../../features/access/login-form";
-import Link from "next/link";
+import { SiteHeader } from "../../components/site-header";
 export default function LoginPage() {
-  return <main id="main"><Link href="/">Talent Engine</Link><h1>Votre espace responsable</h1><p>Connectez-vous pour retrouver vos campagnes et vos dossiers.</p><LoginForm /></main>;
+  return <><SiteHeader /><main id="main" className="page-width login-layout"><div><p className="eyebrow">Espace responsable</p><h1>Bienvenue.<br />Reprenons la revue.</h1><p>Retrouvez vos campagnes et les dossiers qui vous sont confiés.</p></div><div className="login-panel"><LoginForm /></div></main></>;
 }

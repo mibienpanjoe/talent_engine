@@ -1,6 +1,9 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "../../components/ui/button";
+import { Field } from "../../components/ui/field";
+import { Alert } from "../../components/ui/alert";
 import { api } from "../../lib/api";
 
 export function LoginForm() {
@@ -23,11 +26,9 @@ export function LoginForm() {
     finally { setPending(false); }
   }
   return <form onSubmit={submit} aria-busy={pending}>
-    <label htmlFor="login">Identifiant</label>
-    <input id="login" name="login" autoComplete="username" required maxLength={200} />
-    <label htmlFor="password">Mot de passe</label>
-    <input id="password" name="password" type="password" autoComplete="current-password" required maxLength={1024} />
-    {error && <p role="alert">{error}</p>}
-    <button type="submit" disabled={pending}>{pending ? "Connexion…" : "Se connecter"}</button>
+    <Field id="login" label="Identifiant" name="login" autoComplete="username" required maxLength={200} />
+    <Field id="password" label="Mot de passe" name="password" type="password" autoComplete="current-password" required maxLength={1024} />
+    {error && <Alert>{error}</Alert>}
+    <Button type="submit" disabled={pending}>{pending ? "Connexion…" : "Se connecter"}</Button>
   </form>;
 }

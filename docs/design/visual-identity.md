@@ -109,3 +109,17 @@ verre, dégradés décoratifs et graphiques sans utilité de revue.
 Vérifier le thème sur les quatre écrans, clavier et mobile ; mesurer les
 contrastes ; exercer focus, erreurs, état désactivé, menus et consultations de
 preuve. Une palette décrite dans ce document ne prouve pas ces comportements.
+
+## 6. Fondations implémentées
+
+Les tokens sont définis dans `apps/web/src/styles/tokens.css`. Les pages
+d’accueil, connexion et espace responsable utilisent Geist local, Lucide et
+les assets Signal existants. Les boutons, champs, alertes et dialogues sont
+partagés ; le dialogue de compte utilise Radix pour le focus et le clavier.
+
+Sur le runtime Compose : connexion réelle, erreur d’identifiants, déconnexion,
+piège de focus, Échap et retour de focus ont été exercés. Aucun débordement
+horizontal sur l’espace responsable à 320, 768, 1024 et 1440 px ; connexion et
+dialogue également inspectés à 320 px. La réduction des mouvements désactive
+les transitions des boutons. Ces vérifications ne couvrent pas encore les
+quatre écrans métier futurs ci-dessus.
