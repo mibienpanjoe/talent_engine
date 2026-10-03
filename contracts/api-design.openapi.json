@@ -4461,7 +4461,33 @@
           "evidence_ids",
           "rationale"
         ],
-        "additionalProperties": false
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "enum": [
+                    "met",
+                    "unmet"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "evidence_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "minItems": 1
+                }
+              }
+            }
+          }
+        ]
       },
       "CriterionAssessment": {
         "type": "object",
@@ -5113,7 +5139,7 @@
                 ]
               },
               "value": {
-                "$ref": "#/components/schemas/CriterionValue"
+                "$ref": "#/components/schemas/CriterionCorrectionValue"
               },
               "human_note": {
                 "anyOf": [
@@ -5135,7 +5161,53 @@
               "kind",
               "value"
             ],
-            "additionalProperties": false
+            "additionalProperties": false,
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "value": {
+                      "properties": {
+                        "status": {
+                          "enum": [
+                            "evaluated",
+                            "met",
+                            "unmet"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "then": {
+                  "anyOf": [
+                    {
+                      "properties": {
+                        "value": {
+                          "properties": {
+                            "evidence_ids": {
+                              "minItems": 1
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "required": [
+                        "human_note"
+                      ],
+                      "properties": {
+                        "human_note": {
+                          "type": "string",
+                          "maxLength": 10000,
+                          "minLength": 1
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
           },
           {
             "type": "object",
@@ -5160,7 +5232,7 @@
                 ]
               },
               "value": {
-                "$ref": "#/components/schemas/ConditionValue"
+                "$ref": "#/components/schemas/ConditionCorrectionValue"
               },
               "human_note": {
                 "anyOf": [
@@ -5182,7 +5254,53 @@
               "kind",
               "value"
             ],
-            "additionalProperties": false
+            "additionalProperties": false,
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "value": {
+                      "properties": {
+                        "status": {
+                          "enum": [
+                            "evaluated",
+                            "met",
+                            "unmet"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                },
+                "then": {
+                  "anyOf": [
+                    {
+                      "properties": {
+                        "value": {
+                          "properties": {
+                            "evidence_ids": {
+                              "minItems": 1
+                            }
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "required": [
+                        "human_note"
+                      ],
+                      "properties": {
+                        "human_note": {
+                          "type": "string",
+                          "maxLength": 10000,
+                          "minLength": 1
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
           },
           {
             "type": "object",
@@ -5275,10 +5393,10 @@
           "value": {
             "oneOf": [
               {
-                "$ref": "#/components/schemas/CriterionValue"
+                "$ref": "#/components/schemas/CriterionCorrectionValue"
               },
               {
-                "$ref": "#/components/schemas/ConditionValue"
+                "$ref": "#/components/schemas/ConditionCorrectionValue"
               }
             ]
           },
@@ -5301,7 +5419,53 @@
           "reason",
           "value"
         ],
-        "additionalProperties": false
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "value": {
+                  "properties": {
+                    "status": {
+                      "enum": [
+                        "evaluated",
+                        "met",
+                        "unmet"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "then": {
+              "anyOf": [
+                {
+                  "properties": {
+                    "value": {
+                      "properties": {
+                        "evidence_ids": {
+                          "minItems": 1
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "required": [
+                    "human_note"
+                  ],
+                  "properties": {
+                    "human_note": {
+                      "type": "string",
+                      "maxLength": 10000,
+                      "minLength": 1
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
       },
       "ActivationInput": {
         "type": "object",
@@ -5734,12 +5898,36 @@
           "requested_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "next_attempt_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
           "application_id",
           "state",
-          "requested_at"
+          "requested_at",
+          "next_attempt_at",
+          "error_code"
         ],
         "additionalProperties": false
       },
@@ -6012,6 +6200,117 @@
         "required": [
           "items",
           "next_cursor"
+        ],
+        "additionalProperties": false
+      },
+      "CriterionCorrectionValue": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "evaluated",
+              "insufficient_information",
+              "conflicting_information",
+              "source_unavailable"
+            ]
+          },
+          "level": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "rationale": {
+            "type": "string",
+            "maxLength": 10000,
+            "minLength": 1
+          },
+          "uncertainties": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 2000
+            }
+          }
+        },
+        "required": [
+          "status",
+          "level",
+          "evidence_ids",
+          "rationale",
+          "uncertainties"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "evaluated"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "level": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 4
+                }
+              }
+            },
+            "else": {
+              "properties": {
+                "level": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ConditionCorrectionValue": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "met",
+              "unmet",
+              "unknown"
+            ]
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "rationale": {
+            "type": "string",
+            "maxLength": 10000,
+            "minLength": 1
+          }
+        },
+        "required": [
+          "status",
+          "evidence_ids",
+          "rationale"
         ],
         "additionalProperties": false
       }

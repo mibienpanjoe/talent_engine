@@ -36,6 +36,9 @@ masquer l'échec ; elle rend l'étape de validation en échec.
 Un worker acquiert une tâche éligible dans une transaction courte avec
 `FOR UPDATE SKIP LOCKED`. Vérifier candidature non supprimée,
 `next_attempt_at <= now`, absence de lease vivant, et budget d'étape disponible.
+Choisir la prochaine étape non terminée et consommer sa tentative **dans cette
+acquisition**, avant commit ; même un crash avant le premier appel consomme
+donc le budget. Si le budget est épuisé, marquer l'échec de cette étape sans nouvel appel.
 Attribuer `lease_token` unique, incrémenter `lease_generation`, fixer
 `lease_until = now + 90 s`, puis commit. Les appels externes sont hors transaction.
 Heartbeat toutes les 30 s avec horloge PostgreSQL, uniquement si token et
@@ -52,6 +55,10 @@ checkpoint durable. Deux workers ne finalisent pas la même génération ; une
 contrainte unique empêche deux sorties finales pour une exécution. L'appel
 externe peut avoir été réalisé deux fois après crash ; la garantie porte sur
 l'effet persistant, pas une promesse d'exactly-once chez le fournisseur.
+
+À chaque passage à une nouvelle étape dans le même lease, consommer sa
+tentative et enregistrer le checkpoint d'entrée avant travail, sous fencing.
+L'acquisition après crash ne recommence jamais une étape déjà réussie.
 
 ## 3. Checkpoints et reprise bornée
 

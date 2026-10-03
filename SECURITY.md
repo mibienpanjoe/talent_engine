@@ -12,6 +12,13 @@ Secure sous HTTPS, chemin `/`, sans Domain ; session limitée à 8 h absolues
 et 1 h d'inactivité, révoquée au logout. Local HTTP autorisé uniquement en
 développement sur loopback, avec cookie de développement distinct.
 
+Le jeton CSRF est dérivé par HMAC-SHA-256 d'un secret serveur distinct et de
+`session_id || token_digest` avec domaine `csrf-v1`. Login et GET CSRF renvoient
+le même jeton pour cette session ; seule son empreinte est enregistrée pour
+contrôle. Pas de rotation à chaque GET qui invaliderait les autres onglets.
+Renouveler la session renouvelle cookie et CSRF ensemble ; une rotation du
+secret serveur doit explicitement révoquer les sessions concernées.
+
 Toutes les routes privées contrôlent session et propriétaire côté API.
 Mutations privées exigent CSRF lié à session et Origin autorisé ; login
 contrôle également Origin pour prévenir login CSRF. Le web et `/api/v1` sont
@@ -84,6 +91,14 @@ Suppression en deux temps durables :
    Réessayer les suppressions de fichiers échouées ; suivre leur état sans
    déclarer purge terminée avant contrôles SQL et stockage. Ne pas partager
    les octets privés entre dossiers via déduplication globale.
+
+Les reprises de purge ont un budget distinct des trois tentatives d'analyse :
+backoff 30 s, 120 s puis au plus une reprise par heure jusqu'à réussite.
+Après trois échecs consécutifs, publier un incident de nettoyage pour le
+responsable, sans marquer completed ni effacer la demande. Le worker vérifie
+les fichiers et lignes restant à purger à chaque reprise ; aucun appel IA.
+Les demandes minimales de cleanup restent consultables 7 jours après réussite
+puis sont collectées, avec contrôle de propriétaire via la campagne.
 
 Le tombstone garde seulement campaign ID, mode, HMAC de clé, empreinte du
 payload et expiration initiale de 90 jours ; aucun contact/réponse/note.

@@ -71,7 +71,8 @@ Une validation refusée conserve les réponses dans le navigateur.
 | `published` avec candidature réelle | Même formulaire et politique figés | Consulter, fermer ou dupliquer ; aucune modification d'évaluation. |
 | `closed` | Aucune nouvelle réception | Consulter ou dupliquer ; pas de réouverture dans le MVP. |
 
-Le gel à première candidature réelle est la proposition issue du cadrage.
+Le gel à première candidature réelle, proposé dans le cadrage, est confirmé
+par le mainteneur pour ce contrat.
 Il devient permanent même si cette candidature est supprimée plus tard :
 conserver `configuration_locked_at`, sans déduire le gel du nombre actuel de
 candidatures. Les analyses échouées et partielles comptent comme réceptions

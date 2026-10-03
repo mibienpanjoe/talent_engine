@@ -64,6 +64,14 @@ déclarés à la publication. Seule une réponse explicite est `met` ou `unmet` 
 absence ou contradiction est `unknown`. Pas d'inférence à partir d'un CV.
 Les conditions souhaitées sont informatives et ne changent pas l'admissibilité.
 
+`available_by_date` compare la date de disponibilité annoncée à la date limite
+attendue (`réponse <= date_attendue`). `available_slots` vérifie que la réponse
+de choix multiples inclut tous les option_ids attendus. Le type de question,
+les options et la référence source doivent correspondre ; sinon publication
+refusée. L'absence de réponse reste unknown, pas une liste vide interprétée
+comme indisponibilité. Une liste vide **explicitement confirmée** peut établir
+une condition non satisfaite si le formulaire permet ce choix.
+
 Une compétence qualitative `required` garde son poids ordinaire. Son seuil
 fictif est 2/4 dans les politiques v1 : niveau 0 ou 1 → alerte
 `required_skill_below_threshold`, inconnue → `required_skill_unknown`,
