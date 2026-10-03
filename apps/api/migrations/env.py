@@ -1,5 +1,5 @@
 from alembic import context
-from talent_engine.config import Settings
+from talent_engine.config import DatabaseSettings
 from talent_engine.database import build_engine
 
 # No ORM schema yet: domain tables arrive with their own migrations.
@@ -7,7 +7,7 @@ target_metadata = None
 
 
 def run_migrations():
-    settings = Settings()
+    settings = DatabaseSettings()
     if context.is_offline_mode():
         context.configure(
             url=settings.database_url.get_secret_value(),

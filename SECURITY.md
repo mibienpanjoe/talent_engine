@@ -1,7 +1,7 @@
 # Protection des données et frontières de confiance
 
-**Date :** 2026-10-03. **Statut :** règles d'implémentation du MVP ; aucune
-revue de sécurité runtime ni conformité réglementaire démontrée à ce stade.
+**Date :** 2026-10-03. **Statut :** règles d'implémentation du MVP ; contrôles d'accès des fondations exercés,
+revue globale du MVP et conformité réglementaire non démontrées.
 
 ## Accès et secrets
 
@@ -121,3 +121,9 @@ des mesures techniques, pas un avis juridique.
 Vérifications prévues : accès direct non autorisé, CSRF/login, upload étranger,
 fichier hostile, SSRF et rebinding, injection de prompt, fuite bundle/logs,
 suppression concurrente et purge interrompue. T11/T17/T22/T25/T31 les exercent.
+
+## Vérifications des fondations
+
+Les tests d’accès PostgreSQL couvrent sessions valides/expirées, Origin et CSRF hostiles, cookie Secure sous HTTPS simulé, révocation après changement de mot de passe et dix tentatives simultanées respectant la limite atomique. Le parcours navigateur local connexion → espace privé → déconnexion a été exercé avec une session réellement persistée puis révoquée.
+
+Ces preuves couvrent l’accès responsable des fondations. Fichiers, collecte externe, traitement candidat, rétention et déploiement HTTPS seront exercés avec leurs phases respectives. L’[exception d’audit ESLint](docs/operations/dependency-audit.md) est limitée à un avis non corrigé et absent du runtime.

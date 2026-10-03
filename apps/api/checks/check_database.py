@@ -1,5 +1,7 @@
 """Run after `alembic upgrade head` against an isolated PostgreSQL database."""
 
+from alembic.config import Config
+from alembic.script import ScriptDirectory
 from fastapi.testclient import TestClient
 from sqlalchemy import text
 from talent_engine.config import Settings
@@ -11,7 +13,9 @@ engine = build_engine(settings)
 with engine.connect() as connection:
     assert (
         connection.scalar(text("SELECT version_num FROM alembic_version"))
-        == "0001_baseline"
+        == ScriptDirectory.from_config(
+            Config("apps/api/alembic.ini")
+        ).get_current_head()
     )
 engine.dispose()
 with TestClient(create_app(settings)) as client:

@@ -7,7 +7,7 @@ install:
 	$(UV) sync --project apps/api --locked
 	$(PNPM) install --frozen-lockfile
 api-test:
-	$(UV) run --project apps/api --locked pytest
+	$(UV) run --project apps/api --locked pytest apps/api/tests
 lint:
 	$(UV) run --project apps/api --locked ruff check --config apps/api/pyproject.toml apps/api scripts
 	$(UV) run --project apps/api --locked ruff format --check --config apps/api/pyproject.toml apps/api scripts
@@ -27,3 +27,11 @@ migrate:
 down:
 	$(COMPOSE) down
 check: api-test lint contracts-check typecheck build
+
+.PHONY: integration-test
+integration-test:
+	$(UV) run --project apps/api --locked pytest apps/api/integration
+
+.PHONY: seed-access
+seed-access:
+	$(COMPOSE) run --rm seed-access

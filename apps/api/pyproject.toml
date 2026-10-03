@@ -2,7 +2,15 @@
 name = "talent-engine-api"
 version = "0.1.0"
 requires-python = ">=3.13,<3.14"
-dependencies = ["fastapi>=0.142,<0.143", "uvicorn>=0.40,<1", "pydantic-settings>=2,<3", "sqlalchemy>=2.0,<2.1", "psycopg[binary]>=3,<4", "alembic>=1,<2"]
+dependencies = [
+    "fastapi>=0.142,<0.143",
+    "uvicorn>=0.40,<1",
+    "pydantic-settings>=2,<3",
+    "sqlalchemy>=2.0,<2.1",
+    "psycopg[binary]>=3,<4",
+    "alembic>=1,<2",
+    "argon2-cffi>=25,<26",
+]
 
 [dependency-groups]
 dev = [

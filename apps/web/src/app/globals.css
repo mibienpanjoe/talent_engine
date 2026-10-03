@@ -9,3 +9,8 @@ button { margin-top: 1.5rem; min-height: 44px; padding: .75rem 1.25rem; backgrou
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
 .skip-link { position: absolute; top: .5rem; left: .5rem; transform: translateY(-200%); color: var(--text); }
 .skip-link:focus { transform: none; }
+
+a { color: var(--accent); text-underline-offset: .25em; }
+form { max-width: 28rem; display: grid; gap: .75rem; }
+input { min-height: 44px; padding: .75rem; background: var(--background); color: var(--text); border: 1px solid var(--muted); border-radius: .375rem; font: inherit; }
+button:disabled { opacity: .65; cursor: wait; }

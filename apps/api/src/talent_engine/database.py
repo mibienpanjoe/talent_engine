@@ -1,10 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 
-from talent_engine.config import Settings
+from talent_engine.config import DatabaseSettings
 
 
-def build_engine(settings: Settings) -> Engine:
+def build_engine(settings: DatabaseSettings) -> Engine:
     return create_engine(
         settings.database_url.get_secret_value(),
         pool_pre_ping=True,
