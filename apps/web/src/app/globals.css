@@ -73,3 +73,7 @@ form { display: grid; gap: 1.25rem; }
 .campaign-list span { color:var(--muted); }
 textarea.ui-input { resize:vertical; }
 @media(max-width:480px) { .editor-fields { padding:1rem; } .editor-card { padding:.875rem; } }
+.form-preview { width:min(42rem,100% - 2rem); }
+.form-preview form { margin-top:1.5rem; }
+.question-choices { min-width:0; border:1px solid var(--input-border); border-radius:var(--radius-control); padding:1rem; }
+.preserve-lines { white-space:pre-wrap; overflow-wrap:anywhere; }

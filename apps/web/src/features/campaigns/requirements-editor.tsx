@@ -252,6 +252,48 @@ export function RequirementsEditor({
               )}
             </>
           )}
+          {r.source_question_ids.length === 0 && (
+            <Alert>
+              <div>
+                Cette exigence n’a plus de question source. Associez une
+                question compatible, reformulez l’exigence ou ajoutez une
+                question.
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    const id = crypto.randomUUID();
+                    change({
+                      ...config,
+                      questions: [
+                        ...config.questions,
+                        {
+                          id,
+                          type:
+                            r.evaluation_mode === "qualitative"
+                              ? "long_text"
+                              : r.family === "available_by_date"
+                                ? "date"
+                                : "multiple_choice",
+                          label: r.expectation || "Question à préciser",
+                          help: null,
+                          required: false,
+                          position: config.questions.length,
+                          options: [],
+                          constraints: {},
+                        },
+                      ],
+                      requirements: config.requirements.map((x) =>
+                        x.id === r.id ? { ...x, source_question_ids: [id] } : x,
+                      ),
+                    });
+                  }}
+                  disabled={config.questions.length >= 50}
+                >
+                  Ajouter une question source
+                </Button>
+              </div>
+            </Alert>
+          )}
           <fieldset>
             <legend>Questions sources</legend>
             {config.questions.map((q, j) => (

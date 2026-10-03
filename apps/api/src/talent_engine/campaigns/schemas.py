@@ -94,6 +94,11 @@ class Question(Model):
             high = getattr(self.constraints, "max_" + prefix)
             if low is not None and high is not None and low > high:
                 raise ValueError("Reversed bounds")
+        if self.type == "short_text" and any(
+            value is not None and value > 500
+            for value in (self.constraints.min_length, self.constraints.max_length)
+        ):
+            raise ValueError("Short text cannot exceed 500 characters")
         return self
 
 

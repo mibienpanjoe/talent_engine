@@ -110,3 +110,32 @@ def test_concurrent_create_and_owner_isolation(context):
         db.execute(campaigns.update().values(owner_id=other))
     assert client.get("/api/v1/campaigns/" + rows[0].json()["id"]).status_code == 404
     assert client.get("/api/v1/campaigns").json()["items"] == []
+
+
+def test_preparation_reports_deleted_source_without_inventing_association(context):
+    client, _ = context
+    h = headers(client, **{"Idempotency-Key": uuid4().hex})
+    data = config()
+    data["requirements"] = [
+        dict(
+            id=str(uuid4()),
+            family="practical_work",
+            expectation="Projet",
+            importance="desired",
+            evaluation_mode="qualitative",
+            assessment_mode="automatic",
+            source_question_ids=[],
+        )
+    ]
+    result = client.post("/api/v1/campaigns", headers=h, json={"configuration": data})
+    assert result.status_code == 201
+    issues = client.get(
+        "/api/v1/campaigns/" + result.json()["id"] + "/preparation"
+    ).json()["issues"]
+    assert {
+        "path": "requirements.0.source_question_ids",
+        "code": "missing_source",
+    } in issues
+    assert (
+        result.json()["configuration"]["requirements"][0]["source_question_ids"] == []
+    )

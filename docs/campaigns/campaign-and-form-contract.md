@@ -193,3 +193,8 @@ gardes de session, origine et CSRF. La création et le rechargement après
 redémarrage ont été exercés depuis l’interface sur PostgreSQL. Publication,
 réception et gel seront vérifiés dans les étapes suivantes ; ce contrat reste
 leur référence, pas une preuve anticipée.
+
+T14 : aperçu avec renderer partagé de questions et leurs contraintes. Retirer
+l’unique source affiche un manque et une action de réparation ; les associations
+vides restent visibles en préparation serveur. Suppression, réparation et
+sauvegarde ont été exercées sur le runtime réel à 320 px.

@@ -65,3 +65,11 @@ def test_incomplete_draft_retains_missing_sources():
         x.code == "missing_source"
         for x in preparation_issues(DraftConfiguration.model_validate(data))
     )
+
+
+def test_limits_cannot_exceed_global_text_cap():
+    data = configuration()
+    data["questions"][0]["type"] = "short_text"
+    data["questions"][0]["constraints"] = {"max_length": 501}
+    with pytest.raises(ValidationError):
+        DraftConfiguration.model_validate(data)

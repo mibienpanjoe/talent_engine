@@ -1,4 +1,5 @@
 "use client";
+import { FormPreview } from "./form-preview";
 import { QuestionsEditor } from "./questions-editor";
 import { RequirementsEditor } from "./requirements-editor";
 import { useState } from "react";
@@ -240,6 +241,7 @@ export function DraftEditor({ initial }: { initial: Campaign | null }) {
         <Alert tone={failed ? "danger" : "success"}>{feedback}</Alert>
       )}
       <div className="save-actions">
+        <FormPreview configuration={config} />
         <Button disabled={busy || locked} onClick={save}>
           {busy ? "Enregistrement…" : "Enregistrer le brouillon"}
         </Button>
