@@ -1,7 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
 from pydantic import ValidationError
-
 from talent_engine.config import Settings
 from talent_engine.main import create_app
 

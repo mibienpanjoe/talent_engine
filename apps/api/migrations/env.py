@@ -1,5 +1,4 @@
 from alembic import context
-
 from talent_engine.config import Settings
 from talent_engine.database import build_engine
 

@@ -1,0 +1,54 @@
+name: Quality
+on:
+  pull_request:
+  push:
+    branches: [main, feat/foundations]
+permissions:
+  contents: read
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - run: npm install -g pnpm@10.28.0
+      - uses: astral-sh/setup-uv@bec219d24cd3e171d82865faccec33120bb574f4 # v10.1.0
+        with:
+          version: '0.12.15'
+          python-version: '3.13'
+          enable-cache: true
+      - run: make install
+      - run: make check
+      - name: Audit JavaScript dependencies
+        run: pnpm audit --audit-level high
+      - name: Start isolated PostgreSQL
+        shell: bash
+        run: |
+          test_db_password=$(openssl rand -hex 32)
+          echo "::add-mask::$test_db_password"
+          echo "TALENT_DATABASE_URL=postgresql+psycopg://postgres:$test_db_password@127.0.0.1:5432/talent_test" >> "$GITHUB_ENV"
+          export POSTGRES_PASSWORD="$test_db_password"
+          docker run -d --name talent-ci-db -e POSTGRES_PASSWORD -e POSTGRES_DB=talent_test -p 127.0.0.1:5432:5432 postgres:17@sha256:d74eeac9a635390a49bc21bd49fccd973de707e2a53a76ac49b552b8712ec46f
+          for attempt in $(seq 1 30); do
+            if docker exec talent-ci-db pg_isready -U postgres -d talent_test; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Migrations and real API database check
+        run: |
+          uv run --project apps/api alembic -c apps/api/alembic.ini upgrade head
+          uv run --project apps/api python apps/api/checks/check_database.py
+      - name: Stop test database
+        if: always()
+        run: docker rm -f talent-ci-db || true

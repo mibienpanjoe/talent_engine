@@ -9,8 +9,9 @@ install:
 api-test:
 	$(UV) run --project apps/api --locked pytest
 lint:
-	$(UV) run --project apps/api --locked ruff check apps/api scripts
-	$(UV) run --project apps/api --locked ruff format --check apps/api scripts
+	$(UV) run --project apps/api --locked ruff check --config apps/api/pyproject.toml apps/api scripts
+	$(UV) run --project apps/api --locked ruff format --check --config apps/api/pyproject.toml apps/api scripts
+	$(PNPM) --filter @talent-engine/web lint
 typecheck:
 	$(PNPM) typecheck
 build:

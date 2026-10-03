@@ -1,4 +1,4 @@
-"""Generate or compare FastAPI OpenAPI and the TypeScript client without mutations in check mode."""
+"""Generate FastAPI contracts; compare without mutations in check mode."""
 
 import argparse
 import os
@@ -33,7 +33,8 @@ with tempfile.TemporaryDirectory() as directory:
         if args.check:
             if not target.exists() or target.read_bytes() != generated.read_bytes():
                 raise SystemExit(
-                    f"Stale contract: {target.relative_to(root)}. Run pnpm contracts:generate"
+                    f"Stale contract: {target.relative_to(root)}. "
+                    "Run pnpm contracts:generate"
                 )
         else:
             target.write_bytes(generated.read_bytes())

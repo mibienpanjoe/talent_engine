@@ -2,7 +2,6 @@
 
 from fastapi.testclient import TestClient
 from sqlalchemy import text
-
 from talent_engine.config import Settings
 from talent_engine.database import build_engine
 from talent_engine.main import create_app

@@ -1,2 +1,8 @@
 packages:
   - apps/web
+ignoredBuiltDependencies:
+  - unrs-resolver
+# Dev-only ESLint glob parsing; see docs/operations/dependency-audit.md.
+auditConfig:
+  ignoreGhsas:
+    - GHSA-vfj7-8cjw-p6xm
