@@ -1,0 +1,113 @@
+{
+  "version": 1,
+  "generator": "built-in image_gen",
+  "reference": "docs/design/references/talent-engine-signal-identity.png",
+  "status": "generated PNG set; vector masters pending",
+  "assets": [
+    {
+      "key": "wordmark-dark",
+      "file": "logo-dark-accent.png",
+      "use": "Horizontal signature on dark brand surfaces",
+      "transparent": false,
+      "width": 2172,
+      "height": 724,
+      "mode": "RGB",
+      "alpha_range": [
+        255,
+        255
+      ],
+      "sha256": "9661fd6488d23f42e49f1d2ea7dbdbe6d3153fb71928b53fb21dec7fe2abbd7e",
+      "generation_id": "exec-ee6a4b6e-a1c7-4191-b00d-df44cc08c388"
+    },
+    {
+      "key": "wordmark-light",
+      "file": "logo-light-mono.png",
+      "use": "Horizontal monochrome signature on light surfaces",
+      "transparent": true,
+      "width": 2172,
+      "height": 724,
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "sha256": "14bd507ba658c3a1c96199be261d38639a42efdd83d0f4d5e48bb5dcf99bfb10",
+      "generation_id": "exec-61c9a87b-7747-4520-8344-c723c3b953ff"
+    },
+    {
+      "key": "logo-light-accent",
+      "file": "logo-light-accent.png",
+      "use": "Horizontal blue-accent signature on light surfaces",
+      "transparent": true,
+      "width": 2172,
+      "height": 724,
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "sha256": "5a40deff4b92415ab32e77ae075514f3e9a52daa547d87b2ab21903b7579b039",
+      "generation_id": "exec-93b87879-5e97-41df-9ae5-9bec5a704f92"
+    },
+    {
+      "key": "mark-light",
+      "file": "symbol-light-mono.png",
+      "use": "Compact monochrome symbol on light surfaces",
+      "transparent": true,
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "sha256": "558310c00a349e7f864cdc6e2bafc686f4b423699147903a626388221408b0a0",
+      "generation_id": "exec-b0794697-fae3-4be4-b882-143a6a3580e0"
+    },
+    {
+      "key": "symbol-light-accent",
+      "file": "symbol-light-accent.png",
+      "use": "Compact blue-accent symbol on light surfaces",
+      "transparent": true,
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGBA",
+      "alpha_range": [
+        0,
+        255
+      ],
+      "sha256": "762e3298d81de2578ae9cdc988b903ac7c8e8df3daf59fa28d3633e5a9b203c5",
+      "generation_id": "exec-cabff799-1dc1-4c9a-85a4-3c25350854c0"
+    },
+    {
+      "key": "mark-dark",
+      "file": "symbol-dark-mono.png",
+      "use": "Compact monochrome symbol on dark brand surfaces",
+      "transparent": false,
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "alpha_range": [
+        255,
+        255
+      ],
+      "sha256": "4768ec13e3f73a8d9ca7f88766ae8c143683863a1d40e84526a0015cb02c483c",
+      "generation_id": "exec-683a9941-ebf0-475a-ba04-15079e8a335c"
+    },
+    {
+      "key": "app-icon",
+      "file": "app-icon-dark-accent.png",
+      "use": "Square app icon and compact blue-accent symbol on dark surfaces",
+      "transparent": false,
+      "width": 1254,
+      "height": 1254,
+      "mode": "RGB",
+      "alpha_range": [
+        255,
+        255
+      ],
+      "sha256": "39a8d674a6b5ec01fd5d831c9c1dea36943e843be9ce5baec947ec98653f3a19",
+      "generation_id": "exec-b71d8dc9-99bf-473e-ad0c-925cd4a95fe5"
+    }
+  ]
+}
