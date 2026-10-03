@@ -11,6 +11,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException
 
 from talent_engine.access import build_access_router
+from talent_engine.campaigns.lifecycle import build_lifecycle_router
 from talent_engine.campaigns.router import build_campaign_router
 from talent_engine.config import Settings
 from talent_engine.database import build_engine
@@ -37,6 +38,7 @@ def create_app(
 
     app.include_router(build_access_router(engine, settings))
     app.include_router(build_campaign_router(engine, settings))
+    app.include_router(build_lifecycle_router(engine, settings))
 
     @app.exception_handler(AccessError)
     async def access_error(request: Request, error: AccessError):
@@ -45,7 +47,7 @@ def create_app(
             headers["Retry-After"] = str(error.retry_after)
         return JSONResponse(
             status_code=error.status,
-            content=error_payload(error.code, error.message),
+            content=error_payload(error.code, error.message, error.details),
             headers=headers,
         )
 

@@ -15,7 +15,6 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Integer,
-    MetaData,
     String,
     Table,
     Uuid,
@@ -28,9 +27,9 @@ from sqlalchemy import (
 from sqlalchemy.engine import Engine
 
 from talent_engine.config import Settings
+from talent_engine.database import metadata
 from talent_engine.errors import AccessError, Error
 
-metadata = MetaData()
 reviewers = Table(
     "reviewers",
     metadata,

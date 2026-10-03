@@ -1,4 +1,5 @@
 "use client";
+import { CampaignActions } from "./campaign-actions";
 import { FormPreview } from "./form-preview";
 import { QuestionsEditor } from "./questions-editor";
 import { RequirementsEditor } from "./requirements-editor";
@@ -129,6 +130,13 @@ export function DraftEditor({ initial }: { initial: Campaign | null }) {
     <div className="campaign-editor">
       <Link href="/review">← Mes campagnes</Link>
       <h1>{campaign ? "Configurer la campagne" : "Nouvelle campagne"}</h1>
+      {campaign && (
+        <CampaignActions
+          key={campaign.revision}
+          campaign={campaign}
+          dirty={dirty}
+        />
+      )}
       <p>
         Décrivez le besoin, puis les éléments que vous souhaitez examiner. Les
         barèmes sont définis par les familles d’évaluation.

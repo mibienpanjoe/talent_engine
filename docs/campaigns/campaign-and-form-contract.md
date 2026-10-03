@@ -198,3 +198,10 @@ T14 : aperçu avec renderer partagé de questions et leurs contraintes. Retirer
 l’unique source affiche un manque et une action de réparation ; les associations
 vides restent visibles en préparation serveur. Suppression, réparation et
 sauvegarde ont été exercées sur le runtime réel à 320 px.
+
+T15 : snapshots immuables réels et privés, compilation des poids rationnels
+et des barèmes versionnés, republication, fermeture et duplication. Les
+mutations sont sérialisées sur la campagne et contrôlent la révision. Le
+public lit uniquement le snapshot actif sans exigences, propriétaire ni
+politique privée. Les scénarios de concurrence avec une réception réelle
+seront exercés en T16, lorsque cette réception existe.

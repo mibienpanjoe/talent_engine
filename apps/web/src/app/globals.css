@@ -77,3 +77,6 @@ textarea.ui-input { resize:vertical; }
 .form-preview form { margin-top:1.5rem; }
 .question-choices { min-width:0; border:1px solid var(--input-border); border-radius:var(--radius-control); padding:1rem; }
 .preserve-lines { white-space:pre-wrap; overflow-wrap:anywhere; }
+.campaign-actions { border-bottom:1px solid var(--border); padding-bottom:2rem; margin-block:2rem; }
+.campaign-actions h2 { font-size:1.25rem; }
+.public-form { display:grid; gap:1.5rem; margin-top:2rem; }

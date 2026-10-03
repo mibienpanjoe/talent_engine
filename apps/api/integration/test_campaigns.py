@@ -139,3 +139,149 @@ def test_preparation_reports_deleted_source_without_inventing_association(contex
     assert (
         result.json()["configuration"]["requirements"][0]["source_question_ids"] == []
     )
+
+
+def publishable():
+    data = config()
+    q = str(uuid4())
+    data["questions"] = [
+        dict(
+            id=q,
+            type="long_text",
+            label="Projet",
+            required=False,
+            position=0,
+            constraints={},
+        )
+    ]
+    data["requirements"] = [
+        dict(
+            id=str(uuid4()),
+            family="practical_work",
+            expectation="Projet personnel",
+            importance="required",
+            evaluation_mode="qualitative",
+            assessment_mode="automatic",
+            source_question_ids=[q],
+        )
+    ]
+    return data
+
+
+def test_publish_revise_close_and_duplicate_snapshot(context):
+    client, _ = context
+    h = headers(client, **{"Idempotency-Key": uuid4().hex})
+    created = client.post(
+        "/api/v1/campaigns", headers=h, json={"configuration": publishable()}
+    ).json()
+    path = "/api/v1/campaigns/" + created["id"]
+    assert client.get("/api/v1/public/campaigns/unavailable").status_code == 404
+    publish_headers = {**h, "If-Match": '"1"', "Idempotency-Key": uuid4().hex}
+    first = client.post(path + "/publications", headers=publish_headers, json={})
+    assert first.status_code == 201
+    assert first.headers["etag"] == '"2"'
+    assert (
+        client.post(path + "/publications", headers=publish_headers, json={}).json()
+        == first.json()
+    )
+    active = client.get(path).json()
+    public_path = active["public_url"].replace(
+        "http://localhost:3003/apply/", "/api/v1/public/campaigns/"
+    )
+    public = client.get(public_path).json()
+    assert public["state"] == "open" and public["snapshot_id"] == first.json()["id"]
+    assert (
+        "requirements" not in public
+        and "owner_id" not in public
+        and "policy" not in public
+    )
+    changed = publishable()
+    changed["title"] = "Révisée"
+    edited = client.patch(
+        path, headers={**h, "If-Match": '"2"'}, json={"configuration": changed}
+    )
+    assert edited.status_code == 200 and edited.json()["has_unpublished_changes"]
+    assert client.get(public_path).json()["title"] == "Formation test"
+    second = client.post(
+        path + "/publications",
+        headers={**h, "If-Match": '"3"', "Idempotency-Key": uuid4().hex},
+        json={},
+    )
+    assert second.status_code == 201 and second.json()["id"] != first.json()["id"]
+    copy = client.post(
+        path + "/duplicates",
+        headers={**h, "If-Match": '"4"', "Idempotency-Key": uuid4().hex},
+        json={"source": "published"},
+    )
+    assert copy.status_code == 201 and copy.json()["state"] == "draft"
+    assert (
+        copy.json()["configuration"]["questions"][0]["id"]
+        != changed["questions"][0]["id"]
+    )
+    assert copy.json()["configuration"]["deadline"] is None
+    closed = client.post(path + "/closures", headers={**h, "If-Match": '"4"'}, json={})
+    assert (
+        closed.status_code == 200
+        and client.get(public_path).json()["state"] == "closed"
+    )
+    assert (
+        client.post(
+            path + "/publications",
+            headers={**h, "If-Match": '"5"', "Idempotency-Key": uuid4().hex},
+            json={},
+        ).status_code
+        == 409
+    )
+
+
+def test_publication_and_edit_compete_with_revision_check(context):
+    client, _ = context
+    h = headers(client, **{"Idempotency-Key": uuid4().hex})
+    created = client.post(
+        "/api/v1/campaigns", headers=h, json={"configuration": publishable()}
+    ).json()
+    path = "/api/v1/campaigns/" + created["id"]
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        a = pool.submit(
+            client.post,
+            path + "/publications",
+            headers={**h, "If-Match": '"1"', "Idempotency-Key": uuid4().hex},
+            json={},
+        )
+        b = pool.submit(
+            client.patch,
+            path,
+            headers={**h, "If-Match": '"1"'},
+            json={"configuration": publishable()},
+        )
+        assert sorted([a.result().status_code, b.result().status_code]) in [
+            [200, 409],
+            [201, 409],
+        ]
+
+
+def test_test_snapshot_is_private_and_never_activates_public_form(context):
+    client, engine = context
+    h = headers(client, **{"Idempotency-Key": uuid4().hex})
+    created = client.post(
+        "/api/v1/campaigns", headers=h, json={"configuration": publishable()}
+    ).json()
+    path = "/api/v1/campaigns/" + created["id"]
+    snapshot = client.post(
+        path + "/test-snapshots",
+        headers={**h, "If-Match": '"1"', "Idempotency-Key": uuid4().hex},
+        json={"source": "draft"},
+    )
+    assert snapshot.status_code == 201 and snapshot.json()["mode"] == "test"
+    assert (
+        client.get("/api/v1/test-snapshots/" + snapshot.json()["id"]).status_code == 200
+    )
+    campaign = client.get(path).json()
+    assert (
+        campaign["active_snapshot_id"] is None
+        and campaign["configuration_locked_at"] is None
+    )
+    client.cookies.clear()
+    assert (
+        client.get("/api/v1/test-snapshots/" + snapshot.json()["id"]).status_code == 401
+    )

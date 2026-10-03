@@ -12,6 +12,7 @@ from .repository import (
     idempotent,
     insert_campaign,
     owned,
+    snapshots,
 )
 from .schemas import (
     Campaign,
@@ -49,7 +50,11 @@ def build_campaign_router(engine, settings):
         cursor: UUID | None = None,
         session=Depends(require_session),
     ):
-        query = select(campaigns).where(campaigns.c.owner_id == session["reviewer_id"])
+        query = (
+            select(campaigns, snapshots.c.configuration.label("active_configuration"))
+            .outerjoin(snapshots, snapshots.c.id == campaigns.c.active_snapshot_id)
+            .where(campaigns.c.owner_id == session["reviewer_id"])
+        )
         if cursor:
             query = query.where(campaigns.c.id > cursor)
         with engine.connect() as db:
@@ -59,10 +64,14 @@ def build_campaign_router(engine, settings):
                 .all()
             )
         headers(response)
-        return CampaignPage(
-            items=[campaign_result(r) for r in rows[:limit]],
-            next_cursor=str(rows[limit - 1]["id"]) if len(rows) > limit else None,
-        )
+        with engine.connect() as db:
+            return CampaignPage(
+                items=[
+                    campaign_result(r, db=db, origin=settings.public_origin)
+                    for r in rows[:limit]
+                ],
+                next_cursor=str(rows[limit - 1]["id"]) if len(rows) > limit else None,
+            )
 
     @router.post(
         "", response_model=Campaign, status_code=201, operation_id="create_campaign"
@@ -93,7 +102,11 @@ def build_campaign_router(engine, settings):
     @router.get("/{campaign_id}", response_model=Campaign, operation_id="read_campaign")
     def read(campaign_id: UUID, response: Response, session=Depends(require_session)):
         with engine.connect() as db:
-            result = campaign_result(owned(db, campaign_id, session["reviewer_id"]))
+            result = campaign_result(
+                owned(db, campaign_id, session["reviewer_id"]),
+                db=db,
+                origin=settings.public_origin,
+            )
         headers(response, result)
         return result
 
@@ -133,7 +146,10 @@ def build_campaign_router(engine, settings):
                 .mappings()
                 .one()
             )
-            result = campaign_result(row)
+            result = campaign_result(
+                owned(db, campaign_id, session["reviewer_id"]),
+                origin=settings.public_origin,
+            )
         headers(response, result)
         return result
 
@@ -146,7 +162,11 @@ def build_campaign_router(engine, settings):
         campaign_id: UUID, response: Response, session=Depends(require_session)
     ):
         with engine.connect() as db:
-            result = campaign_result(owned(db, campaign_id, session["reviewer_id"]))
+            result = campaign_result(
+                owned(db, campaign_id, session["reviewer_id"]),
+                db=db,
+                origin=settings.public_origin,
+            )
         headers(response)
         return Preparation(issues=preparation_issues(result.configuration))
 

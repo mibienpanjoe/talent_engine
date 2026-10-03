@@ -10,15 +10,17 @@ from sqlalchemy import (
     Column,
     DateTime,
     ForeignKey,
+    ForeignKeyConstraint,
     Index,
     String,
     Table,
+    UniqueConstraint,
     Uuid,
     select,
     text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
-from talent_engine.access import metadata
+from talent_engine.database import metadata
 from talent_engine.errors import AccessError
 
 from .schemas import Campaign
@@ -52,7 +54,33 @@ mutation_receipts = Table(
 )
 
 
-def campaign_result(row):
+snapshots = Table(
+    "snapshots",
+    metadata,
+    Column("id", Uuid, primary_key=True),
+    Column("campaign_id", Uuid, ForeignKey("campaigns.id"), nullable=False),
+    Column("mode", String(10), nullable=False),
+    Column("version", BigInteger, nullable=False),
+    Column("configuration", JSONB, nullable=False),
+    Column("policy_version", String(100), nullable=False),
+    Column("policy_snapshot", JSONB, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False),
+    Column("created_by", Uuid, ForeignKey("reviewers.id"), nullable=False),
+    Column("published_at", DateTime(timezone=True)),
+    UniqueConstraint("campaign_id", "id"),
+    UniqueConstraint("campaign_id", "mode", "version"),
+)
+campaigns.append_constraint(
+    ForeignKeyConstraint(
+        ["id", "active_snapshot_id"],
+        ["snapshots.campaign_id", "snapshots.id"],
+        name="fk_campaign_active_snapshot",
+        use_alter=True,
+    )
+)
+
+
+def campaign_result(row, *, db=None, origin=None):
     return Campaign(
         id=row["id"],
         state=row["state"],
@@ -60,18 +88,25 @@ def campaign_result(row):
         configuration=row["draft_configuration"],
         active_snapshot_id=row["active_snapshot_id"],
         configuration_locked_at=row["configuration_locked_at"],
-        has_unpublished_changes=False,
+        has_unpublished_changes=bool(
+            row["active_snapshot_id"]
+            and row.get("active_configuration") != row["draft_configuration"]
+        ),
         created_at=row["created_at"],
-        public_url=None,
+        public_url=(origin + "/apply/" + row["public_token"])
+        if origin and row["active_snapshot_id"]
+        else None,
     )
 
 
 def owned(db, campaign_id, owner_id, *, lock=False):
-    query = select(campaigns).where(
-        (campaigns.c.id == campaign_id) & (campaigns.c.owner_id == owner_id)
+    query = (
+        select(campaigns, snapshots.c.configuration.label("active_configuration"))
+        .outerjoin(snapshots, snapshots.c.id == campaigns.c.active_snapshot_id)
+        .where((campaigns.c.id == campaign_id) & (campaigns.c.owner_id == owner_id))
     )
     if lock:
-        query = query.with_for_update()
+        query = query.with_for_update(of=campaigns)
     row = db.execute(query).mappings().first()
     if not row:
         raise AccessError(404, "not_found", "Campaign unavailable")
@@ -89,7 +124,9 @@ def check_revision(row, header):
         raise AccessError(409, "revision_exhausted", "Duplicate campaign")
 
 
-def idempotent(db, settings, owner_id, route, key, payload, action):
+def idempotent(
+    db, settings, owner_id, route, key, payload, action, *, result_model=Campaign
+):
     if not key or len(key) < 22 or len(key) > 200:
         raise AccessError(
             422,
@@ -122,7 +159,7 @@ def idempotent(db, settings, owner_id, route, key, payload, action):
             raise AccessError(
                 409, "idempotency_conflict", "Key already used with different data"
             )
-        return Campaign.model_validate(previous["result"])
+        return result_model.model_validate(previous["result"])
     if previous:
         db.execute(
             mutation_receipts.delete().where(mutation_receipts.c.key_digest == digest)
