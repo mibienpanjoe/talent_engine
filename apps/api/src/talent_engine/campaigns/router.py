@@ -1,0 +1,153 @@
+from uuid import UUID
+
+from fastapi import APIRouter, Depends, Header, Query, Response
+from sqlalchemy import select
+from talent_engine.access import build_access_guards
+from talent_engine.errors import Error
+
+from .repository import (
+    campaign_result,
+    campaigns,
+    check_revision,
+    idempotent,
+    insert_campaign,
+    owned,
+)
+from .schemas import (
+    Campaign,
+    CampaignInput,
+    CampaignPage,
+    Preparation,
+    preparation_issues,
+)
+
+
+def build_campaign_router(engine, settings):
+    _, require_session, require_mutation = build_access_guards(engine, settings)
+    router = APIRouter(
+        prefix="/api/v1/campaigns",
+        tags=["campaigns"],
+        responses={
+            401: {"model": Error},
+            403: {"model": Error},
+            404: {"model": Error},
+            409: {"model": Error},
+            422: {"model": Error},
+            428: {"model": Error},
+        },
+    )
+
+    def headers(response, result=None):
+        response.headers["Cache-Control"] = "no-store"
+        if result:
+            response.headers["ETag"] = f'"{result.revision}"'
+
+    @router.get("", response_model=CampaignPage, operation_id="list_campaigns")
+    def listing(
+        response: Response,
+        limit: int = Query(25, ge=1, le=100),
+        cursor: UUID | None = None,
+        session=Depends(require_session),
+    ):
+        query = select(campaigns).where(campaigns.c.owner_id == session["reviewer_id"])
+        if cursor:
+            query = query.where(campaigns.c.id > cursor)
+        with engine.connect() as db:
+            rows = (
+                db.execute(query.order_by(campaigns.c.id).limit(limit + 1))
+                .mappings()
+                .all()
+            )
+        headers(response)
+        return CampaignPage(
+            items=[campaign_result(r) for r in rows[:limit]],
+            next_cursor=str(rows[limit - 1]["id"]) if len(rows) > limit else None,
+        )
+
+    @router.post(
+        "", response_model=Campaign, status_code=201, operation_id="create_campaign"
+    )
+    def create(
+        payload: CampaignInput,
+        response: Response,
+        idempotency_key: str | None = Header(None),
+        session=Depends(require_mutation),
+    ):
+        with engine.begin() as db:
+            result = idempotent(
+                db,
+                settings,
+                session["reviewer_id"],
+                "create_campaign",
+                idempotency_key,
+                payload.model_dump(mode="json"),
+                lambda: insert_campaign(
+                    db,
+                    session["reviewer_id"],
+                    payload.configuration.model_dump(mode="json"),
+                ),
+            )
+        headers(response, result)
+        return result
+
+    @router.get("/{campaign_id}", response_model=Campaign, operation_id="read_campaign")
+    def read(campaign_id: UUID, response: Response, session=Depends(require_session)):
+        with engine.connect() as db:
+            result = campaign_result(owned(db, campaign_id, session["reviewer_id"]))
+        headers(response, result)
+        return result
+
+    @router.patch(
+        "/{campaign_id}", response_model=Campaign, operation_id="update_campaign"
+    )
+    def patch(
+        campaign_id: UUID,
+        payload: CampaignInput,
+        response: Response,
+        if_match: str | None = Header(None),
+        session=Depends(require_mutation),
+    ):
+        from talent_engine.errors import AccessError
+
+        with engine.begin() as db:
+            row = owned(db, campaign_id, session["reviewer_id"], lock=True)
+            check_revision(row, if_match)
+            if row["state"] == "closed" or row["configuration_locked_at"]:
+                raise AccessError(
+                    409,
+                    "configuration_locked",
+                    "Duplicate this campaign to change its configuration",
+                )
+            row = (
+                db.execute(
+                    campaigns.update()
+                    .where(campaigns.c.id == campaign_id)
+                    .values(
+                        draft_configuration=payload.configuration.model_dump(
+                            mode="json"
+                        ),
+                        revision=row["revision"] + 1,
+                    )
+                    .returning(campaigns)
+                )
+                .mappings()
+                .one()
+            )
+            result = campaign_result(row)
+        headers(response, result)
+        return result
+
+    @router.get(
+        "/{campaign_id}/preparation",
+        response_model=Preparation,
+        operation_id="campaign_preparation",
+    )
+    def preparation(
+        campaign_id: UUID, response: Response, session=Depends(require_session)
+    ):
+        with engine.connect() as db:
+            result = campaign_result(owned(db, campaign_id, session["reviewer_id"]))
+        headers(response)
+        return Preparation(issues=preparation_issues(result.configuration))
+
+    return router

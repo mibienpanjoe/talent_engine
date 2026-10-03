@@ -11,6 +11,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException
 
 from talent_engine.access import build_access_router
+from talent_engine.campaigns.router import build_campaign_router
 from talent_engine.config import Settings
 from talent_engine.database import build_engine
 from talent_engine.errors import AccessError, Error, error_payload
@@ -35,6 +36,7 @@ def create_app(
     app = FastAPI(title="Talent Engine", version="0.1.0", lifespan=lifespan)
 
     app.include_router(build_access_router(engine, settings))
+    app.include_router(build_campaign_router(engine, settings))
 
     @app.exception_handler(AccessError)
     async def access_error(request: Request, error: AccessError):

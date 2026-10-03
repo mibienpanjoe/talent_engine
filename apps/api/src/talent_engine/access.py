@@ -138,16 +138,10 @@ def seed_reviewer(engine: Engine, login: str, password: str) -> None:
             )
 
 
-def build_access_router(engine: Engine, settings: Settings) -> APIRouter:
-    router = APIRouter(
-        prefix="/api/v1/access",
-        tags=["access"],
-        responses={401: {"model": Error}, 403: {"model": Error}, 429: {"model": Error}},
-    )
+def build_access_guards(engine: Engine, settings: Settings):
     cookie_name = (
         "talent_session_dev" if settings.local_development else "__Host-talent_session"
     )
-    dummy_hash = hasher.hash(secrets.token_hex(32))
 
     def require_origin(request: Request) -> None:
         if request.headers.get("origin") != settings.public_origin:
@@ -195,6 +189,23 @@ def build_access_router(engine: Engine, settings: Settings) -> APIRouter:
         ) or not hmac.compare_digest(digest(token), session["csrf_digest"]):
             raise AccessError(403, "forbidden", "Invalid CSRF token")
         return session
+
+    return require_origin, require_session, require_mutation
+
+
+def build_access_router(engine: Engine, settings: Settings) -> APIRouter:
+    router = APIRouter(
+        prefix="/api/v1/access",
+        tags=["access"],
+        responses={401: {"model": Error}, 403: {"model": Error}, 429: {"model": Error}},
+    )
+    cookie_name = (
+        "talent_session_dev" if settings.local_development else "__Host-talent_session"
+    )
+    dummy_hash = hasher.hash(secrets.token_hex(32))
+    require_origin, require_session, require_mutation = build_access_guards(
+        engine, settings
+    )
 
     def reviewer_result(session) -> Reviewer:
         return Reviewer(

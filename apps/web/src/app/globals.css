@@ -59,3 +59,17 @@ form { display: grid; gap: 1.25rem; }
 @media (max-width: 768px) { .login-layout { grid-template-columns: 1fr; gap: 2rem; } main, .hero { padding-block: 3rem; } }
 @media (max-width: 480px) { .page-width { width: calc(100% - 2rem); } .brand span { font-size: 1.25rem; } .header-inner { min-height: 80px; } .account-label { display: none; } .login-panel { padding: 1.25rem; } .hero-status { margin-top: 3rem; } }
 @media (prefers-reduced-motion: reduce) { .ui-button { transition: none; } .ui-button:active:not(:disabled):not([data-static]) { transform: none; } }
+.campaign-editor { max-width: 48rem; margin-inline:auto; }
+.editor-fields { display:grid; gap:1.25rem; margin-block:2rem; padding:1.5rem; border:1px solid var(--border); border-radius:var(--radius-surface); min-width:0; }
+.editor-fields legend { padding-inline:.5rem; font-weight:600; }
+.editor-card { display:grid; gap:1rem; padding:1.25rem; background:var(--surface); border-radius:var(--radius-control); min-width:0; }
+.inline-actions, .save-actions { display:flex; gap:.75rem; flex-wrap:wrap; align-items:center; }
+.inline-actions .ui-field { flex:1; min-width:8rem; }
+.save-actions { margin-top:1.5rem; }
+.save-actions span { color:var(--muted); font-size:.875rem; }
+.source-choice { display:flex; gap:.5rem; align-items:baseline; padding-block:.5rem; overflow-wrap:anywhere; }
+.campaign-list { list-style:none; padding:0; margin-top:2rem; }
+.campaign-list li { display:flex; justify-content:space-between; gap:1rem; padding-block:1.5rem; border-bottom:1px solid var(--border); overflow-wrap:anywhere; }
+.campaign-list span { color:var(--muted); }
+textarea.ui-input { resize:vertical; }
+@media(max-width:480px) { .editor-fields { padding:1rem; } .editor-card { padding:.875rem; } }

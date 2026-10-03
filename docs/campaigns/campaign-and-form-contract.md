@@ -184,3 +184,12 @@ idempotence, fichiers et limites ; T05 traduit ces invariants en modèle et
 API ; T13–T18 implémentent et exercent les comportements avec PostgreSQL et
 navigateur. La pertinence d'une appréciation reste indépendante de la validité
 du formulaire et de la provenance de son snapshot.
+
+## 9. État d’implémentation
+
+T13 : brouillons privés persistés avec révision, création idempotente, liste
+paginée, édition guidée et erreurs de préparation. Les accès réutilisent les
+gardes de session, origine et CSRF. La création et le rechargement après
+redémarrage ont été exercés depuis l’interface sur PostgreSQL. Publication,
+réception et gel seront vérifiés dans les étapes suivantes ; ce contrat reste
+leur référence, pas une preuve anticipée.
