@@ -152,6 +152,7 @@ def test_https_uses_host_cookie_and_secure_transport(context):
     settings = Settings(
         database_url=os.environ["TALENT_TEST_DATABASE_URL"],
         public_origin="https://talent.example",
+        local_development=False,
         csrf_secret="test-only-" + "x" * 32,
     )
     with TestClient(
