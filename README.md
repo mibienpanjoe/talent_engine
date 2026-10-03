@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="docs/product/project-overview.md"><strong>Découvrir le projet</strong></a>
+  <a href="docs/operations/local-runtime.md"><strong>Démarrer en local</strong></a>
   · <a href="docs/documentation-map.md">Documentation</a>
   · <a href="docs/evaluation/evaluation-engine-spec.md">Moteur d'évaluation</a>
   · <a href="docs/product/decision-register.md">Décisions</a>
@@ -27,15 +27,34 @@ développement et un recrutement marketing junior.
 
 ## État du projet
 
-Le dépôt contient le cadrage MVP, les contrats métier et HTTP, le modèle de
-données, les décisions d'architecture et les assets de marque. La phase
-contrats T01–T06 est documentée ; l'application reste
-à implémenter : il n'y a actuellement ni commande de démarrage, ni démo
-exécutable, ni suite de tests applicatifs.
+Les contrats métier et HTTP sont documentés. Les fondations proposent une
+API FastAPI, PostgreSQL avec migrations, un frontend Next.js, un accès
+responsable par session serveur et un runtime Docker Compose. Le client
+TypeScript est généré depuis l’API réellement implémentée.
+
+Les campagnes, candidatures, sources et évaluations du parcours ci-dessous
+restent à implémenter. L’accès responsable est le parcours actuellement
+exécutable ; il ne constitue pas encore une démonstration complète du MVP.
 
 Le périmètre complet est décrit dans les
 [exigences et critères d'acceptation](docs/product/mvp-requirements-and-acceptance.md).
 Les barèmes chiffrés sont des exemples fictifs à calibrer.
+
+## Démarrer les fondations
+
+Docker Compose est requis. Copier `.env.example` vers `.env`, renseigner deux
+secrets aléatoires distincts pour la base et CSRF ainsi que les identifiants du
+responsable, puis :
+
+```sh
+make up
+make migrate
+make seed-access
+```
+
+Ouvrir <http://localhost:3003> et se connecter. `make down` conserve les données.
+Voir le [guide local](docs/operations/local-runtime.md) pour les prérequis,
+origines, limites du proxy local et tests. Les secrets restent hors Git.
 
 ## Parcours visé
 
@@ -66,18 +85,19 @@ s'interprètent dans une campagne et servent à organiser la revue.
 | Métier et API | FastAPI et Python |
 | Base de données | PostgreSQL |
 | Dépôt | Monorepo avec `apps/web/` et `apps/api/` |
-| Direction visuelle | Thème sombre proposé, identité « Signal » |
+| Direction visuelle | Thème sombre, identité « Signal » |
 
 La [structure détaillée](docs/architecture/repository-structure.md) et
 l'[architecture système](docs/architecture/system-architecture.md) fixent les
 responsabilités, pnpm/uv, les versions cibles et le worker Python avec tâches
-PostgreSQL. Leur installation et leur fonctionnement restent à vérifier.
+PostgreSQL. Les commandes des fondations sont décrites dans le guide local ;
+le worker arrivera avec les tâches d’analyse.
 
 ```text
 assets/brand/    Logos, symboles, icône d'application et manifest
 docs/           Produit, évaluation, architecture, design et décisions
-apps/web/       Frontend Next.js à créer
-apps/api/       Backend FastAPI à créer
+apps/web/       Frontend Next.js et primitives accessibles
+apps/api/       API FastAPI, accès responsable et migrations
 ```
 
 FreeLLMAPI est la piste d'intégration côté serveur pour les appels LLM.
