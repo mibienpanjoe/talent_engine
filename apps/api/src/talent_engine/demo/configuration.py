@@ -20,8 +20,8 @@ def configuration(domain, campaign_id, mode):
             else [
                 "Disponibilité au plus tard le 5 octobre 2026",
                 "Documents justificatifs",
-                "Portfolio public (facultatif)",
-                "Dépôt GitHub choisi (facultatif)",
+                "Portfolio public",
+                "Dépôt GitHub choisi",
             ][i - 3],
             required=False,
             position=i,

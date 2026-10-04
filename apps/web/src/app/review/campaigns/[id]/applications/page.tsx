@@ -95,7 +95,7 @@ export default async function ApplicationsPage({
           result.data && (
             <>
               <p>
-                {result.data.counts.all} dossier(s) réel(s) dans la campagne.
+                {result.data.counts.all} dossier(s) reçu(s) dans la campagne.
                 Les essais privés sont exclus.
               </p>
               <nav className="review-views" aria-label="Files de revue">

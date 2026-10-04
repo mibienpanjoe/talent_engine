@@ -43,7 +43,11 @@ export default async function ApplicationPage({
           ← Les dossiers
         </Link>
         <p className="eyebrow">
-          {a.mode === "test" ? "Essai privé" : "Candidature réelle"}
+          {a.mode === "test"
+            ? "Essai privé"
+            : result.data.effective_evaluation?.provenance.mode === "preloaded"
+              ? "Dossier de démonstration"
+              : "Candidature reçue"}
         </p>
         <h1>{a.contact.name}</h1>
         <p>{a.contact.email}</p>
