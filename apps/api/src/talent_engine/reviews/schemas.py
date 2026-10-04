@@ -88,3 +88,8 @@ class ReviewEvent(Model):
     previous: dict
     value: dict
     origin_event_id: UUID | None
+
+
+class DecisionInput(ReviewExpectation):
+    decision: Literal["to_review", "shortlisted", "not_selected"]
+    reason: str = Field(default="", max_length=2000)

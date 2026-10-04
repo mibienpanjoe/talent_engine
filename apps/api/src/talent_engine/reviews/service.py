@@ -305,3 +305,21 @@ def correct(
     if target_evaluation_id is None:
         bump(db, row)
     return event
+
+
+def decide(db, application_id, owner_id, payload):
+    row = locked(db, application_id, owner_id, payload)
+    if row["decision"] == payload.decision:
+        raise AccessError(422, "decision_unchanged", "Choose a different decision")
+    result = record(
+        db,
+        row,
+        owner_id,
+        kind="decision",
+        action="set",
+        reason=payload.reason,
+        previous={"decision": row["decision"]},
+        value={"decision": payload.decision},
+    )
+    bump(db, row, decision=payload.decision)
+    return result

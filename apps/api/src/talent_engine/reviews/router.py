@@ -7,8 +7,8 @@ from talent_engine.applications.service import owned_application
 from talent_engine.errors import Error
 
 from .repository import events
-from .schemas import CorrectionInput, ReviewEvent
-from .service import correct
+from .schemas import CorrectionInput, DecisionInput, ReviewEvent
+from .service import correct, decide
 
 
 def build_review_router(engine, settings):
@@ -33,6 +33,23 @@ def build_review_router(engine, settings):
     ):
         with engine.begin() as db:
             result = correct(db, application_id, session["reviewer_id"], payload)
+        response.headers["Cache-Control"] = "no-store"
+        return result
+
+    @router.post(
+        "/{application_id}/decisions",
+        response_model=ReviewEvent,
+        status_code=201,
+        operation_id="change_decision",
+    )
+    def decision(
+        application_id: UUID,
+        payload: DecisionInput,
+        response: Response,
+        session=Depends(write_guard),
+    ):
+        with engine.begin() as db:
+            result = decide(db, application_id, session["reviewer_id"], payload)
         response.headers["Cache-Control"] = "no-store"
         return result
 

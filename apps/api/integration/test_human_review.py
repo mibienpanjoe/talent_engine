@@ -163,3 +163,49 @@ def test_condition_correction_and_evidence_boundaries(context):
         evidence["nature"] == "human_verification"
         and evidence["locator"]["kind"] == "human"
     )
+
+
+def test_decisions_preserve_evaluation_alerts_and_detect_conflicts(context):
+    client, engine = context
+    data = prepared(client)
+    app_id = deposit(
+        client, engine, data, "Décision indépendante", [4, None, 3], unmet=True
+    )
+    path = "/api/v1/applications/" + app_id
+    before = client.get(path).json()
+    h = headers(client)
+    expectation = dict(
+        review_revision=before["application"]["review_revision"],
+        effective_evaluation_id=before["application"]["effective_evaluation_id"],
+    )
+    for choice in ("shortlisted", "not_selected", "to_review"):
+        response = client.post(
+            path + "/decisions", headers=h, json={**expectation, "decision": choice}
+        )
+        assert response.status_code == 201, response.text
+        after = client.get(path).json()
+        assert after["application"]["decision"] == choice
+        assert after["effective_evaluation"] == before["effective_evaluation"]
+        assert after["application"]["views"] == before["application"]["views"]
+        assert (
+            client.post(
+                path + "/decisions", headers=h, json={**expectation, "decision": choice}
+            ).status_code
+            == 409
+        )
+        expectation["review_revision"] = after["application"]["review_revision"]
+    history = client.get(path + "/review-history").json()
+    assert [x["value"]["decision"] for x in history] == [
+        "shortlisted",
+        "not_selected",
+        "to_review",
+    ]
+    client.cookies.clear()
+    assert (
+        client.post(
+            path + "/decisions",
+            headers=h,
+            json={**expectation, "decision": "shortlisted"},
+        ).status_code
+        == 401
+    )
