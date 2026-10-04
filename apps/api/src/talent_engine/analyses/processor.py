@@ -8,6 +8,8 @@ from talent_engine.applications.schemas import SubmissionInput
 from talent_engine.applications.validation import validate_answers
 from talent_engine.campaigns.data import snapshots
 from talent_engine.documents.data import uploads
+from talent_engine.evaluations.service import evaluate
+from talent_engine.integrations.llm import ProviderFailure
 from talent_engine.sources.extraction import collect_sources
 
 
@@ -19,7 +21,16 @@ class StepFailure(Exception):
         super().__init__(code)
 
 
-def process(engine, claim, *, upload_directory=None):
+def process(engine, claim, *, upload_directory=None, gateway=None):
+    if claim.step == "evaluate":
+        try:
+            return evaluate(engine, claim, gateway=gateway)
+        except ProviderFailure as error:
+            raise StepFailure(
+                error.code, retryable=error.retryable, retry_after=error.retry_after
+            ) from None
+        except ValueError:
+            raise StepFailure("assessment_invalid") from None
     with engine.connect() as db:
         app = (
             db.execute(

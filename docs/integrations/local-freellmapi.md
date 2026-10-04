@@ -66,7 +66,7 @@ désactive compression de prompt/cache. Il exige un `X-Routed-Via` exploitable
 pour le chat et conserve également le modèle de la réponse. La politique,
 les niveaux et références sont validés par le moteur, jamais par le transport.
 
-Délai réseau : 40 secondes par opération bloquante, configurable jusqu'à 45 ;
+Délai réseau : 30 secondes par opération bloquante, configurable jusqu'à 30 ;
 la réponse est bornée à 1 MiB et refusée si la durée observée dépasse ce délai.
 Le worker conserve son plafond global de 60 secondes et son fencing. Les
 redirections et proxys hérités sont désactivés. La clé est un `SecretStr` ;
@@ -78,3 +78,17 @@ non conformes échouent explicitement. Voir le comportement officiel de
 Les tests HTTP locaux couvrent clé côté serveur, requête minimisée,
 provenance, 429/Retry-After, 503 et métadonnées absentes. Ils complètent les
 sondes réelles ci-dessus et ne les remplacent pas.
+
+## Modèle retenu pour l’appréciation de démo
+
+T22 utilise par défaut `gemini-3.5-flash-lite`, vérifié sur le PDF fictif
+détaillé : fournisseur Google, niveaux observés 4/3/4 en 2,68 s. Sur les mêmes
+preuves, le routage `auto:fast` avait donné 4/4/4 avec Groq. Ce constat motive
+un modèle demandé explicite ; il ne constitue pas une calibration ni une
+reproduction de l’oracle contrôlé 3/3/4. Le fournisseur/modèle effectifs restent
+conservés à chaque appel et peuvent être comparés aux preuves en revue.
+`TALENT_LLM_MODEL` permet une configuration serveur explicite différente.
+Le parcours intégré final, avec ce même modèle demandé, a ensuite produit
+3/3/4 et 81,25 sur le PDF fictif Amina ; chaque citation a été contrôlée dans
+le texte persisté. La différence avec l'essai précédent reste documentée :
+ces appréciations ponctuelles ne sont pas une mesure absolue de la personne.

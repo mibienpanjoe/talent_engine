@@ -21,8 +21,8 @@ class LLMSettings(BaseSettings):
     )
     base_url: str | None = None
     api_key: SecretStr = SecretStr("")
-    model: str = Field(default="auto:fast", min_length=1, max_length=200)
-    timeout_seconds: float = Field(default=40, gt=0, le=45)
+    model: str = Field(default="gemini-3.5-flash-lite", min_length=1, max_length=200)
+    timeout_seconds: float = Field(default=30, gt=0, le=30)
 
     @field_validator("base_url")
     @classmethod

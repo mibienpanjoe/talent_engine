@@ -1,6 +1,30 @@
 {
   "components": {
     "schemas": {
+      "Alert": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "enum": [
+              "required_skill_unknown",
+              "required_skill_below_threshold"
+            ],
+            "title": "Code",
+            "type": "string"
+          },
+          "criterion_id": {
+            "format": "uuid",
+            "title": "Criterion Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "criterion_id",
+          "code"
+        ],
+        "title": "Alert",
+        "type": "object"
+      },
       "AnalysisProgress": {
         "additionalProperties": false,
         "properties": {
@@ -122,8 +146,14 @@
             "$ref": "#/components/schemas/ApplicationSummary"
           },
           "effective_evaluation": {
-            "title": "Effective Evaluation",
-            "type": "null"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Evaluation"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "pending_evaluation_ids": {
             "items": {
@@ -198,8 +228,14 @@
         "additionalProperties": false,
         "properties": {
           "calculation": {
-            "title": "Calculation",
-            "type": "null"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Calculation"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "campaign_id": {
             "format": "uuid",
@@ -231,8 +267,21 @@
             "title": "Effective Evaluation Id"
           },
           "eligibility": {
-            "title": "Eligibility",
-            "type": "null"
+            "anyOf": [
+              {
+                "enum": [
+                  "eligible",
+                  "condition_unmet",
+                  "needs_review",
+                  "not_applicable"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eligibility"
           },
           "id": {
             "format": "uuid",
@@ -260,8 +309,15 @@
             "type": "string"
           },
           "rank": {
-            "title": "Rank",
-            "type": "null"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rank"
           },
           "received_at": {
             "format": "date-time",
@@ -297,6 +353,156 @@
           "review_revision"
         ],
         "title": "ApplicationSummary",
+        "type": "object"
+      },
+      "Assessment": {
+        "additionalProperties": false,
+        "properties": {
+          "criterion_id": {
+            "format": "uuid",
+            "title": "Criterion Id",
+            "type": "string"
+          },
+          "evidence_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 30,
+            "title": "Evidence Ids",
+            "type": "array"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "maximum": 4.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level"
+          },
+          "policy_version": {
+            "maxLength": 100,
+            "title": "Policy Version",
+            "type": "string"
+          },
+          "rationale": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Rationale",
+            "type": "string"
+          },
+          "rubric_version": {
+            "maxLength": 100,
+            "title": "Rubric Version",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "evaluated",
+              "insufficient_information",
+              "conflicting_information",
+              "source_unavailable"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "uncertainties": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Uncertainties",
+            "type": "array"
+          },
+          "zero_evidence_quote": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Zero Evidence Quote"
+          }
+        },
+        "required": [
+          "criterion_id",
+          "status",
+          "level",
+          "evidence_ids",
+          "rationale",
+          "uncertainties",
+          "policy_version",
+          "rubric_version"
+        ],
+        "title": "Assessment",
+        "type": "object"
+      },
+      "Calculation": {
+        "additionalProperties": false,
+        "properties": {
+          "alerts": {
+            "items": {
+              "$ref": "#/components/schemas/Alert"
+            },
+            "title": "Alerts",
+            "type": "array"
+          },
+          "complete": {
+            "title": "Complete",
+            "type": "boolean"
+          },
+          "coverage": {
+            "title": "Coverage",
+            "type": "string"
+          },
+          "lower_bound": {
+            "title": "Lower Bound",
+            "type": "string"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "score_exact": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Rational"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "upper_bound": {
+            "title": "Upper Bound",
+            "type": "string"
+          }
+        },
+        "required": [
+          "score",
+          "score_exact",
+          "coverage",
+          "lower_bound",
+          "upper_bound",
+          "complete",
+          "alerts"
+        ],
+        "title": "Calculation",
         "type": "object"
       },
       "Campaign": {
@@ -491,6 +697,73 @@
           "value"
         ],
         "title": "ChoicesAnswer",
+        "type": "object"
+      },
+      "ConditionResult": {
+        "additionalProperties": false,
+        "properties": {
+          "criterion_id": {
+            "format": "uuid",
+            "title": "Criterion Id",
+            "type": "string"
+          },
+          "evidence_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Evidence Ids",
+            "type": "array"
+          },
+          "question_id": {
+            "format": "uuid",
+            "title": "Question Id",
+            "type": "string"
+          },
+          "rationale": {
+            "title": "Rationale",
+            "type": "string"
+          },
+          "required": {
+            "title": "Required",
+            "type": "boolean"
+          },
+          "status": {
+            "enum": [
+              "met",
+              "unmet",
+              "unknown"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "criterion_id",
+          "question_id",
+          "required",
+          "status",
+          "value",
+          "rationale"
+        ],
+        "title": "ConditionResult",
         "type": "object"
       },
       "Contact": {
@@ -777,6 +1050,85 @@
           "code"
         ],
         "title": "ErrorDetail",
+        "type": "object"
+      },
+      "Evaluation": {
+        "additionalProperties": false,
+        "properties": {
+          "application_id": {
+            "format": "uuid",
+            "title": "Application Id",
+            "type": "string"
+          },
+          "assessments": {
+            "items": {
+              "$ref": "#/components/schemas/Assessment"
+            },
+            "title": "Assessments",
+            "type": "array"
+          },
+          "calculation": {
+            "$ref": "#/components/schemas/Calculation"
+          },
+          "conditions": {
+            "items": {
+              "$ref": "#/components/schemas/ConditionResult"
+            },
+            "title": "Conditions",
+            "type": "array"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "eligibility": {
+            "enum": [
+              "eligible",
+              "condition_unmet",
+              "needs_review",
+              "not_applicable"
+            ],
+            "title": "Eligibility",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "policy_version": {
+            "title": "Policy Version",
+            "type": "string"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance"
+          },
+          "run_id": {
+            "format": "uuid",
+            "title": "Run Id",
+            "type": "string"
+          },
+          "snapshot_id": {
+            "format": "uuid",
+            "title": "Snapshot Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "application_id",
+          "run_id",
+          "snapshot_id",
+          "policy_version",
+          "assessments",
+          "conditions",
+          "eligibility",
+          "calculation",
+          "provenance",
+          "created_at"
+        ],
+        "title": "Evaluation",
         "type": "object"
       },
       "FileAnswer": {
@@ -1113,6 +1465,136 @@
           "issues"
         ],
         "title": "Preparation",
+        "type": "object"
+      },
+      "Provenance": {
+        "additionalProperties": false,
+        "properties": {
+          "adapter_version": {
+            "title": "Adapter Version",
+            "type": "string"
+          },
+          "blocked_evidence_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Blocked Evidence Ids",
+            "type": "array"
+          },
+          "duration_seconds": {
+            "title": "Duration Seconds",
+            "type": "number"
+          },
+          "effective_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Model"
+          },
+          "evidence_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Evidence Ids",
+            "type": "array"
+          },
+          "extractor_versions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Extractor Versions",
+            "type": "array"
+          },
+          "finished_at": {
+            "format": "date-time",
+            "title": "Finished At",
+            "type": "string"
+          },
+          "mode": {
+            "const": "live",
+            "title": "Mode",
+            "type": "string"
+          },
+          "omitted_evidence_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Omitted Evidence Ids",
+            "type": "array"
+          },
+          "prompt_hash": {
+            "title": "Prompt Hash",
+            "type": "string"
+          },
+          "prompt_version": {
+            "title": "Prompt Version",
+            "type": "string"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "requested_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Model"
+          },
+          "response_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Response Model"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "mode",
+          "requested_model",
+          "provider",
+          "effective_model",
+          "response_model",
+          "prompt_version",
+          "adapter_version",
+          "prompt_hash",
+          "evidence_ids",
+          "blocked_evidence_ids",
+          "omitted_evidence_ids",
+          "extractor_versions",
+          "duration_seconds",
+          "started_at",
+          "finished_at"
+        ],
+        "title": "Provenance",
         "type": "object"
       },
       "PublicForm": {

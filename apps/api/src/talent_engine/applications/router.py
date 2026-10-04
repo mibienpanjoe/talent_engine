@@ -6,6 +6,9 @@ from talent_engine.access import build_access_guards
 from talent_engine.campaigns.data import owned, snapshots
 from talent_engine.campaigns.lifecycle import public_campaign, snapshot_result
 from talent_engine.errors import AccessError, Error
+from talent_engine.evaluations.data import evaluations
+from talent_engine.evaluations.engine import views
+from talent_engine.evaluations.schemas import Evaluation
 
 from .cursor import decode, encode
 from .repository import analysis_runs, applications, jobs
@@ -19,7 +22,7 @@ from .schemas import (
 from .service import owned_application, receive
 
 
-def summary(row):
+def summary(row, evaluation=None):
     return ApplicationSummary(
         **{
             k: row[k]
@@ -35,7 +38,13 @@ def summary(row):
                 "review_revision",
                 "effective_evaluation_id",
             )
-        }
+        },
+        calculation=evaluation.calculation if evaluation else None,
+        eligibility=evaluation.eligibility if evaluation else None,
+        views=views(
+            evaluation.calculation.model_dump(mode="json") if evaluation else None,
+            evaluation.eligibility if evaluation else None,
+        ),
     )
 
 
@@ -213,6 +222,19 @@ def build_application_router(engine, settings):
                 )
                 for r in histories
             ]
+            effective = None
+            if row["effective_evaluation_id"]:
+                base = (
+                    db.execute(
+                        select(evaluations).where(
+                            (evaluations.c.id == row["effective_evaluation_id"])
+                            & (evaluations.c.application_id == application_id)
+                        )
+                    )
+                    .mappings()
+                    .one()
+                )
+                effective = Evaluation(**{k: base[k] for k in Evaluation.model_fields})
             documents = [
                 Upload(**{k: r[k] for k in Upload.model_fields})
                 for r in db.execute(
@@ -222,7 +244,8 @@ def build_application_router(engine, settings):
         response.headers["Cache-Control"] = "no-store"
         response.headers["ETag"] = f'"{row["review_revision"]}"'
         return ApplicationDetail(
-            application=summary(row),
+            application=summary(row, effective),
+            effective_evaluation=effective,
             answers=row["answers"],
             snapshot=snapshot_result(snapshot),
             uploads=documents,

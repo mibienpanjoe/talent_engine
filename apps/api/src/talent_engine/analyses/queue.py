@@ -10,7 +10,9 @@ from uuid import uuid4
 
 from sqlalchemy import or_, select
 from talent_engine.applications.data import analysis_runs, applications, jobs
+from talent_engine.campaigns.data import campaigns
 from talent_engine.campaigns.lifecycle import now
+from talent_engine.evaluations.data import finalize
 from talent_engine.sources.data import persist
 
 from .repository import steps
@@ -294,6 +296,17 @@ def heartbeat(engine, settings, claim):
 
 def complete(engine, settings, claim, output):
     with engine.begin() as db:
+        if claim.step == "evaluate":
+            campaign_id = db.scalar(
+                select(applications.c.campaign_id).where(
+                    applications.c.id == claim.application_id
+                )
+            )
+            db.execute(
+                select(campaigns.c.id)
+                .where(campaigns.c.id == campaign_id)
+                .with_for_update()
+            ).first()
         if not fenced(db, claim):
             return False
         step = (
@@ -329,6 +342,18 @@ def complete(engine, settings, claim, output):
             and output.get("version") == "received-sources-v2"
         ):
             output = persist(db, claim, output)
+        final = claim.step == "evaluate"
+        if final:
+            if output.get("version") != "evaluation-v1":
+                return fail_locked(
+                    db, settings, claim, step, timestamp, "assessment_invalid"
+                )
+            try:
+                output = finalize(db, claim, output)
+            except ValueError:
+                return fail_locked(
+                    db, settings, claim, step, timestamp, "assessment_invalid"
+                )
         # Checkpoint output is immutable once succeeded.
         db.execute(
             steps.update()
@@ -340,11 +365,14 @@ def complete(engine, settings, claim, output):
                 active_seconds=step["active_seconds"] + elapsed,
             )
         )
-        db.execute(
-            jobs.update()
-            .where(jobs.c.id == claim.job_id)
-            .values(state="queued", lease_token=None, lease_until=None, error_code=None)
-        )
+        if not final:
+            db.execute(
+                jobs.update()
+                .where(jobs.c.id == claim.job_id)
+                .values(
+                    state="queued", lease_token=None, lease_until=None, error_code=None
+                )
+            )
         if claim.step == "source_manifest":
             db.execute(
                 analysis_runs.update()

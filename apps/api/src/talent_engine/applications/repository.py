@@ -30,6 +30,13 @@ applications = Table(
     Column("effective_evaluation_id", Uuid),
     Column("deleted_at", DateTime(timezone=True)),
     UniqueConstraint("id", "campaign_id", "snapshot_id"),
+    UniqueConstraint("id", "snapshot_id"),
+    ForeignKeyConstraint(
+        ["id", "effective_evaluation_id"],
+        ["evaluations.application_id", "evaluations.id"],
+        use_alter=True,
+        name="fk_application_effective_evaluation",
+    ),
     ForeignKeyConstraint(
         ["campaign_id", "snapshot_id"], ["snapshots.campaign_id", "snapshots.id"]
     ),
@@ -48,6 +55,11 @@ analysis_runs = Table(
     Column("created_at", DateTime(timezone=True), nullable=False),
     Column("finished_at", DateTime(timezone=True)),
     UniqueConstraint("id", "application_id"),
+    UniqueConstraint("id", "application_id", "snapshot_id"),
+    ForeignKeyConstraint(
+        ["application_id", "snapshot_id"],
+        ["applications.id", "applications.snapshot_id"],
+    ),
 )
 jobs = Table(
     "jobs",
