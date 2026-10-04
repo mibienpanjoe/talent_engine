@@ -14,7 +14,7 @@ from .schemas import Receipt
 from .validation import canonical_payload, validate_answers
 
 
-def receive(db, settings, campaign, payload, key, mode="real", *, attach_files=None):
+def receive(db, settings, campaign, payload, key, mode="real"):
     if not key or len(key) < 22 or len(key) > 200:
         raise AccessError(
             422, "invalid_idempotency_key", "Use a random Idempotency-Key"
@@ -24,6 +24,9 @@ def receive(db, settings, campaign, payload, key, mode="real", *, attach_files=N
         ("submission-v1:" + key).encode(),
         hashlib.sha256,
     ).hexdigest()
+    from talent_engine.documents.service import attach_files as attach_documents
+    from talent_engine.documents.service import validate_uploads
+
     # The caller has acquired the campaign row before this second receipt lookup.
     previous = (
         db.execute(
@@ -39,7 +42,36 @@ def receive(db, settings, campaign, payload, key, mode="real", *, attach_files=N
     if previous and previous["expires_at"] > now(db):
         if previous["deleted_at"]:
             raise AccessError(410, "submission_deleted", "This submission was deleted")
-        fingerprint = canonical_payload(payload, previous["upload_manifest"])
+        if any(a.kind == "file" and a.value for a in payload.answers):
+            original_app = (
+                db.execute(
+                    select(applications).where(
+                        applications.c.id == previous["application_id"]
+                    )
+                )
+                .mappings()
+                .one()
+            )
+            original_snapshot = (
+                db.execute(
+                    select(snapshots).where(
+                        snapshots.c.id == original_app["snapshot_id"]
+                    )
+                )
+                .mappings()
+                .one()
+            )
+            replay_manifest, _ = validate_uploads(
+                db,
+                settings,
+                campaign,
+                original_snapshot,
+                payload,
+                replay_original=previous["upload_manifest"],
+            )
+        else:
+            replay_manifest = {}
+        fingerprint = canonical_payload(payload, replay_manifest)
         if fingerprint != previous["payload_hash"]:
             raise AccessError(
                 409,
@@ -88,19 +120,6 @@ def receive(db, settings, campaign, payload, key, mode="real", *, attach_files=N
         raise AccessError(409, "revision_exhausted", "Campaign exhausted")
     validate_answers(payload, snapshot["configuration"])
     app_id = uuid4()
-    if attach_files:
-        manifest = attach_files(db, campaign, snapshot, payload, app_id)
-    else:
-        if (
-            payload.upload_session_id
-            or payload.upload_token
-            or any(a.kind == "file" and a.value for a in payload.answers)
-        ):
-            raise AccessError(
-                422, "documents_unavailable", "Document preparation required"
-            )
-        manifest = {}
-    fingerprint = canonical_payload(payload, manifest)
     db.execute(
         applications.insert().values(
             id=app_id,
@@ -116,6 +135,8 @@ def receive(db, settings, campaign, payload, key, mode="real", *, attach_files=N
             processing_state="queued",
         )
     )
+    manifest = attach_documents(db, settings, campaign, snapshot, payload, app_id)
+    fingerprint = canonical_payload(payload, manifest)
     run = uuid4()
     db.execute(
         analysis_runs.insert().values(

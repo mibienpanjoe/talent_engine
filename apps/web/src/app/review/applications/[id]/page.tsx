@@ -19,7 +19,7 @@ export default async function ApplicationPage({
   if (result.response.status === 404 || result.response.status === 422)
     notFound();
   if (!result.data) throw new Error("Application unavailable");
-  const { application: a, answers, snapshot } = result.data;
+  const { application: a, answers, snapshot, uploads = [] } = result.data;
   const questions = snapshot.configuration.questions;
   return (
     <>
@@ -78,6 +78,20 @@ export default async function ApplicationPage({
               <section key={answer.question_id}>
                 <h3>{q?.label ?? "Question"}</h3>
                 <p className="preserve-lines">{text}</p>
+                {answer.kind === "file" && (
+                  <ul>
+                    {uploads
+                      .filter((file) => file.question_id === answer.question_id)
+                      .map((file) => (
+                        <li key={file.id}>
+                          <a href={`/api/v1/uploads/${file.id}/download`}>
+                            {file.filename}
+                          </a>{" "}
+                          · {Math.ceil(file.bytes / 1024)} Kio
+                        </li>
+                      ))}
+                  </ul>
+                )}
               </section>
             );
           })}

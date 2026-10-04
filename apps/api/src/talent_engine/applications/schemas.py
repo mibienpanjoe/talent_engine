@@ -8,6 +8,7 @@ from uuid import UUID
 from pydantic import EmailStr, Field, StrictFloat, StrictInt, StrictStr, field_validator
 from talent_engine.campaigns.lifecycle import PublishedSnapshot
 from talent_engine.campaigns.schemas import Model
+from talent_engine.documents.schemas import Upload
 
 
 class Contact(Model):
@@ -175,4 +176,4 @@ class ApplicationDetail(Model):
     answers: list[Answer]
     effective_evaluation: None = None
     pending_evaluation_ids: list[UUID] = Field(default_factory=list)
-    uploads: list[dict] = Field(default_factory=list)
+    uploads: list[Upload] = Field(default_factory=list)

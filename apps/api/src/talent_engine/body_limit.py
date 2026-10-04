@@ -5,7 +5,7 @@ from collections import deque
 
 from starlette.responses import JSONResponse
 
-from talent_engine.errors import error_payload
+from talent_engine.errors import AccessError, error_payload
 
 
 class BodyLimit:
@@ -15,6 +15,20 @@ class BodyLimit:
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http" or scope["method"] not in ("POST", "PATCH", "PUT"):
             return await self.app(scope, receive, send)
+        if scope["path"].endswith("/files"):
+            size = 0
+
+            async def streaming_receive():
+                nonlocal size
+                message = await receive()
+                size += len(message.get("body", b""))
+                if size > 10485760 + 65536:
+                    raise AccessError(
+                        413, "payload_too_large", "Document exceeds allowed size"
+                    )
+                return message
+
+            return await self.app(scope, streaming_receive, send)
         limit = (
             262144
             if scope["path"].endswith("/applications")

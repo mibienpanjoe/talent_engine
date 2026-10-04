@@ -14,6 +14,10 @@ export function QuestionRenderer({
   error?: string;
 }) {
   const id = `answer-${q.id}`;
+  const description =
+    [q.help ? `${id}-hint` : null, error ? `${id}-error` : null]
+      .filter(Boolean)
+      .join(" ") || undefined;
   const label = q.label + (q.required ? " *" : " (facultatif)");
   const text = typeof value === "string" ? value : "";
   if (q.type === "long_text")
@@ -34,10 +38,11 @@ export function QuestionRenderer({
           maxLength={q.constraints.max_length ?? 10000}
           value={text}
           onChange={(e) => onChange(e.target.value)}
-          aria-describedby={q.help ? `${id}-hint` : undefined}
+          aria-describedby={description}
+          aria-invalid={Boolean(error)}
         />
         {error && (
-          <p role="alert" className="field-error">
+          <p id={`${id}-error`} role="alert" className="field-error">
             {error}
           </p>
         )}
@@ -58,7 +63,8 @@ export function QuestionRenderer({
           required={q.required}
           value={text}
           onChange={(e) => onChange(e.target.value)}
-          aria-describedby={q.help ? `${id}-hint` : undefined}
+          aria-describedby={description}
+          aria-invalid={Boolean(error)}
         >
           <option value="">Choisir une réponse</option>
           {q.options?.map((o) => (
@@ -68,7 +74,7 @@ export function QuestionRenderer({
           ))}
         </select>
         {error && (
-          <p role="alert" className="field-error">
+          <p id={`${id}-error`} role="alert" className="field-error">
             {error}
           </p>
         )}
@@ -109,7 +115,7 @@ export function QuestionRenderer({
             : ""}
         </p>
         {error && (
-          <p role="alert" className="field-error">
+          <p id={`${id}-error`} role="alert" className="field-error">
             {error}
           </p>
         )}
@@ -139,10 +145,13 @@ export function QuestionRenderer({
             ]
           ).join(",")}
           onChange={(e) => onChange([...(e.target.files ?? [])])}
-          aria-describedby={`${id}-hint`}
+          aria-describedby={[`${id}-hint`, error ? `${id}-error` : ""]
+            .filter(Boolean)
+            .join(" ")}
+          aria-invalid={Boolean(error)}
         />
         {error && (
-          <p role="alert" className="field-error">
+          <p id={`${id}-error`} role="alert" className="field-error">
             {error}
           </p>
         )}

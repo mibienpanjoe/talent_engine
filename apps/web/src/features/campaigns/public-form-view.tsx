@@ -6,6 +6,11 @@ import { Alert } from "../../components/ui/alert";
 import { Field } from "../../components/ui/field";
 import { Button } from "../../components/ui/button";
 import { QuestionRenderer, type QuestionAnswer } from "./question-renderer";
+import {
+  prepareDocuments,
+  DocumentPreparationError,
+  type DocumentCache,
+} from "./prepare-documents";
 type Form = components["schemas"]["PublicForm"];
 type Answer = components["schemas"]["SubmissionInput"]["answers"][number];
 export function PublicFormView({
@@ -27,6 +32,7 @@ export function PublicFormView({
   const [errorCode, setErrorCode] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [receipt, setReceipt] = useState<components["schemas"]["Receipt"]>();
+  const documents = useRef<DocumentCache>({ ready: new Map() });
   const key = useRef<string | null>(null);
   async function reloadForm() {
     if (!publicToken) return;
@@ -60,8 +66,6 @@ export function PublicFormView({
         const value = answers[q.id];
         if (value === undefined || value === "") continue;
         if (q.type === "file") {
-          if (Array.isArray(value) && value.length)
-            throw new Error("documents");
           continue;
         }
         if (q.type === "multiple_choice") {
@@ -82,19 +86,35 @@ export function PublicFormView({
           value: value as string,
         } as Answer);
       }
-      const body = { snapshot_id: form.snapshot_id, contact, answers: typed };
+      const csrf = test
+        ? (await api.GET("/api/v1/access/csrf")).data?.csrf_token
+        : undefined;
+      if (test && !csrf) throw new Error("session");
+      const prepared = await prepareDocuments(
+        form,
+        answers,
+        documents.current,
+        test,
+        publicToken,
+        csrf,
+      );
+      const body = {
+        snapshot_id: form.snapshot_id,
+        contact,
+        answers: [...typed, ...prepared.answers],
+        upload_session_id: prepared.upload_session_id,
+        upload_token: prepared.upload_token,
+      };
       const result =
         test && campaignId
           ? await (async () => {
-              const csrf = await api.GET("/api/v1/access/csrf");
-              if (!csrf.data) throw new Error();
               return api.POST(
                 "/api/v1/campaigns/{campaign_id}/test-applications",
                 {
                   params: { path: { campaign_id: campaignId } },
                   headers: {
                     "Idempotency-Key": key.current!,
-                    "X-CSRF-Token": csrf.data.csrf_token,
+                    "X-CSRF-Token": csrf!,
                   },
                   body,
                 },
@@ -136,7 +156,7 @@ export function PublicFormView({
         const parts = detail.path.replace(/^body\./, "").split(".");
         let questionId: string | undefined;
         if (parts[0] === "answers")
-          questionId = typed[Number(parts[1])]?.question_id;
+          questionId = body.answers[Number(parts[1])]?.question_id;
         if (parts[0] === "questions") questionId = parts[1];
         if (questionId)
           localized[questionId] = "Vérifiez cette réponse et ses contraintes.";
@@ -145,10 +165,31 @@ export function PublicFormView({
       }
       setErrors(localized);
     } catch (error) {
+      if (error instanceof DocumentPreparationError) {
+        setErrorCode(error.code);
+        const text =
+          (
+            {
+              unsupported_file_type:
+                "Ce fichier doit être un PDF, PNG ou JPEG lisible.",
+              payload_too_large:
+                "Maximum : 10 Mio par fichier, 5 fichiers et 30 Mio au total.",
+              upload_expired:
+                "La préparation des documents a expiré. Réessayez pour les préparer à nouveau.",
+              invalid_upload:
+                "Vérifiez les documents sélectionnés et les limites de la question.",
+              snapshot_conflict:
+                "Le formulaire a changé. Actualisez-le avant de confirmer.",
+              campaign_closed: "Cette campagne n’accepte plus de candidatures.",
+            } as Record<string, string>
+          )[error.code] ??
+          "Les documents n’ont pas pu être préparés. Vos réponses sont conservées.";
+        setMessage(text);
+        if (error.questionId) setErrors({ [error.questionId]: text });
+        return;
+      }
       setMessage(
-        error instanceof Error && error.message === "documents"
-          ? "Les documents doivent être préparés avant le dépôt."
-          : "L’enregistrement n’a pas été confirmé. Réessayez le même envoi avec les mêmes réponses.",
+        "L’enregistrement n’a pas été confirmé. Réessayez le même envoi avec les mêmes réponses.",
       );
     } finally {
       setBusy(false);

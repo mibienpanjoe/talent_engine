@@ -10,7 +10,7 @@ from talent_engine.main import create_app
 
 
 @pytest.fixture
-def context():
+def context(tmp_path):
     url = os.environ["TALENT_TEST_DATABASE_URL"]
     schema = "test_" + uuid4().hex
     admin = create_engine(url)
@@ -21,6 +21,7 @@ def context():
     metadata.create_all(engine)
     settings = Settings(
         database_url=url,
+        upload_directory=tmp_path / "uploads",
         public_origin="http://localhost:3003",
         local_development=True,
         csrf_secret="test-only-csrf-" + "x" * 32,

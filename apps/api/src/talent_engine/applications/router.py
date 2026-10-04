@@ -169,12 +169,22 @@ def build_application_router(engine, settings):
                 .mappings()
                 .one()
             )
+            from talent_engine.documents.repository import uploads
+            from talent_engine.documents.schemas import Upload
+
+            documents = [
+                Upload(**{k: r[k] for k in Upload.model_fields})
+                for r in db.execute(
+                    select(uploads).where(uploads.c.application_id == application_id)
+                ).mappings()
+            ]
         response.headers["Cache-Control"] = "no-store"
         response.headers["ETag"] = f'"{row["review_revision"]}"'
         return ApplicationDetail(
             application=summary(row),
             answers=row["answers"],
             snapshot=snapshot_result(snapshot),
+            uploads=documents,
         )
 
     return router

@@ -78,7 +78,10 @@ def canonical_payload(payload, files=None):
         if answer.kind == "number":
             data["value"] = {"decimal": str(Decimal(str(answer.value)).normalize())}
         if answer.kind == "file":
-            data["value"] = (files or {}).get(str(answer.question_id), [])
+            data["value"] = [
+                {k: item[k] for k in ("filename", "media_type", "bytes", "sha256")}
+                for item in (files or {}).get(str(answer.question_id), [])
+            ]
         answers.append(data)
     data = {
         "canonical_version": "submission-v1",
