@@ -20,7 +20,9 @@ from talent_engine.config import Settings
 from talent_engine.database import build_engine
 from talent_engine.documents.router import build_document_router
 from talent_engine.errors import AccessError, Error, ErrorDetail, error_payload
+from talent_engine.evaluations.data import evaluations
 from talent_engine.reception_limits.middleware import PublicLimits
+from talent_engine.sources.data import sources
 
 
 class Health(BaseModel):
@@ -31,7 +33,7 @@ class Health(BaseModel):
 def create_app(
     settings: Settings | None = None, *, engine: Engine | None = None
 ) -> FastAPI:
-    _ = steps  # Register shared persistence schema.
+    _ = steps, sources, evaluations  # Register shared persistence schema.
     settings = settings or Settings()
     engine = engine or build_engine(settings)
 

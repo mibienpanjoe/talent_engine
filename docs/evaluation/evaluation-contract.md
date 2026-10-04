@@ -1,6 +1,6 @@
 # Talent Engine — Contrat d'évaluation
 
-**Date :** 2026-10-03. **Statut :** référence T02 ; runtime non implémenté.
+**Date :** 2026-10-03. **Statut :** contrat T02 ; calcul et appréciation sourcée implémentés en T19–T22.
 Voir [politiques/barèmes](policies-and-rubrics.md) pour la compilation.
 
 ## 1. Appréciation d'un critère
@@ -83,3 +83,33 @@ Tests à implémenter T19/T22 : inconnues/contradictions, référence absente ou
 étrangère, niveau hors bornes, zéro explicite, même projet cité trois fois,
 famille absente, famille partagée entre deux exigences, mêmes entrées donnant
 le même calcul exact. Aucun oracle ne remplace une intégration en direct.
+
+## 5. Implémentation T19–T22
+
+Le moteur backend utilise des `Fraction` et sérialise à six décimales sans
+arrondi intermédiaire. Le worker enregistre une base immuable par exécution
+avec manifeste, prompt, fournisseur/modèle effectifs et version d'extraction.
+L'activation initiale et la finalisation du job ont lieu dans le même commit
+sous fencing ; les résultats intermédiaires ne donnent aucun score effectif.
+
+Les sorties modèle sont validées strictement : critères complets et uniques,
+versions publiées, niveaux entiers, extraits de la candidature et des questions
+sources autorisées. Les clés JSON dupliquées et nombres non finis sont rejetés.
+`manual` est créé côté serveur comme inconnu, pas apprécié par le modèle.
+Les extraits contenant les formes d'instruction hostiles détectées sont exclus
+et listés dans la provenance ; ces règles ne promettent pas une détection
+exhaustive. Le prompt traite tout extrait comme une donnée non fiable.
+
+Pour `level: 0`, `zero_evidence_quote` est obligatoire : déclaration négative
+explicite reconnue, présente mot pour mot dans un extrait cité. Sans cette
+preuve, la sortie est `assessment_invalid`, jamais transformée en zéro ou en
+inconnue pour masquer une erreur. Le champ reste `null` pour les autres états.
+La reconnaissance est volontairement conservatrice ; une formulation non
+reconnue nécessite une revue. Ce contrôle complète la provenance sans prouver
+la pertinence de tous les niveaux proposés.
+
+La première recette réelle a révélé un modèle donnant zéro pour des détails
+absents. Le garde-fou ci-dessus a été ajouté avant livraison. Un nouveau PDF
+fictif détaillé a ensuite traversé réception, extraction, appel FreeLLMAPI,
+validation et calcul persisté. Les oracles de calcul contrôlés restent distincts
+de la qualité d'interprétation d'un modèle réel. La revue humaine est conservée.

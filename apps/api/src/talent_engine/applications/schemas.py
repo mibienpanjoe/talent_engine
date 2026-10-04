@@ -9,6 +9,8 @@ from pydantic import EmailStr, Field, StrictFloat, StrictInt, StrictStr, field_v
 from talent_engine.analyses.schemas import AnalysisProgress
 from talent_engine.campaigns.schemas import Model, PublishedSnapshot
 from talent_engine.documents.schemas import Upload
+from talent_engine.evaluations.schemas import Calculation, Eligibility, Evaluation
+from talent_engine.sources.schemas import Evidence, SourceVersion
 
 
 class Contact(Model):
@@ -157,9 +159,10 @@ class ApplicationSummary(Model):
     decision: Literal["to_review", "shortlisted", "not_selected"]
     review_revision: int
     effective_evaluation_id: UUID | None = None
-    calculation: None = None
-    eligibility: None = None
-    rank: None = None
+    calculation: Calculation | None = None
+    eligibility: Eligibility | None = None
+    rank: int | None = None
+    evaluation_mode: Literal["live", "preloaded"] | None = None
     views: list[str] = Field(default_factory=lambda: ["all", "needs_review"])
 
 
@@ -175,6 +178,8 @@ class ApplicationDetail(Model):
     snapshot: PublishedSnapshot
     application: ApplicationSummary
     answers: list[Answer]
-    effective_evaluation: None = None
+    effective_evaluation: Evaluation | None = None
     pending_evaluation_ids: list[UUID] = Field(default_factory=list)
     uploads: list[Upload] = Field(default_factory=list)
+    sources: list[SourceVersion] = Field(default_factory=list)
+    evidence: list[Evidence] = Field(default_factory=list)

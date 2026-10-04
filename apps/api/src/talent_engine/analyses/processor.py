@@ -1,11 +1,16 @@
 """Receive-stage checkpoints. Evaluation adapters arrive in the next phase."""
 
+from pathlib import Path
+
 from sqlalchemy import select
 from talent_engine.applications.data import applications
 from talent_engine.applications.schemas import SubmissionInput
 from talent_engine.applications.validation import validate_answers
 from talent_engine.campaigns.data import snapshots
 from talent_engine.documents.data import uploads
+from talent_engine.evaluations.service import evaluate
+from talent_engine.integrations.llm import ProviderFailure
+from talent_engine.sources.extraction import collect_sources
 
 
 class StepFailure(Exception):
@@ -16,7 +21,16 @@ class StepFailure(Exception):
         super().__init__(code)
 
 
-def process(engine, claim):
+def process(engine, claim, *, upload_directory=None, gateway=None):
+    if claim.step == "evaluate":
+        try:
+            return evaluate(engine, claim, gateway=gateway)
+        except ProviderFailure as error:
+            raise StepFailure(
+                error.code, retryable=error.retryable, retry_after=error.retry_after
+            ) from None
+        except ValueError:
+            raise StepFailure("assessment_invalid") from None
     with engine.connect() as db:
         app = (
             db.execute(
@@ -56,21 +70,18 @@ def process(engine, claim):
                 .mappings()
                 .all()
             )
-            return {
-                "version": "received-sources-v1",
-                "snapshot_id": str(app["snapshot_id"]),
-                "documents": [
-                    {
-                        k: str(row[k]) if k in {"id", "question_id"} else row[k]
-                        for k in ("id", "question_id", "sha256", "bytes", "media_type")
-                    }
-                    for row in documents
-                ],
-                "links": [
-                    {"question_id": a["question_id"], "url": a["value"]}
-                    for a in app["answers"]
-                    if a["kind"] == "url"
-                ],
-            }
-    # This phase never fabricates an evaluation or a successful analysis.
-    raise StepFailure("evaluation_unavailable")
+            app_id, answers = app["id"], app["answers"]
+            snapshot_id = str(app["snapshot_id"])
+        else:
+            raise StepFailure("evaluation_unavailable")
+    # Extraction happens after releasing the database connection.
+    return dict(
+        version="received-sources-v2",
+        snapshot_id=snapshot_id,
+        sources=collect_sources(
+            app_id,
+            answers,
+            documents,
+            upload_directory or Path("/tmp/talent-engine-uploads"),
+        ),
+    )

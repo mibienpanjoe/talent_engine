@@ -90,11 +90,11 @@ def test_worker_checkpoints_real_answers_and_reports_missing_evaluation(context)
             rows[0]["output"]["answers"][0]["value"]
             == "Projet fictif et contribution personnelle."
         )
-        assert db.scalar(select(jobs.c.error_code)) == "evaluation_unavailable"
+        assert db.scalar(select(jobs.c.error_code)) == "llm_not_configured"
         assert db.scalar(select(applications.c.effective_evaluation_id)) is None
     detail = client.get("/api/v1/applications/" + application_id).json()
     assert detail["application"]["processing_state"] == "failed"
-    assert detail["analyses"][0]["error_code"] == "evaluation_unavailable"
+    assert detail["analyses"][0]["error_code"] == "llm_not_configured"
     assert len(detail["analyses"][0]["steps"]) == 3
     assert all("output" not in step for step in detail["analyses"][0]["steps"])
 
@@ -242,7 +242,7 @@ engine.dispose()
         assert [r["attempts"] for r in rows] == [1, 2, 1]
         assert [r["state"] for r in rows] == ["succeeded", "succeeded", "failed"]
         assert rows[0]["output"]["version"] == "answers-v1"
-        assert db.scalar(select(jobs.c.error_code)) == "evaluation_unavailable"
+        assert db.scalar(select(jobs.c.error_code)) == "llm_not_configured"
 
 
 def test_heartbeat_keeps_long_step_owned_and_timeout_discards_late_output(context):

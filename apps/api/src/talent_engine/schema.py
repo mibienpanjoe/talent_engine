@@ -10,6 +10,8 @@ def register_models():
         "applications.data",
         "documents.data",
         "analyses.data",
+        "sources.data",
+        "evaluations.data",
         "reception_limits.data",
     ):
         import_module("talent_engine." + module)

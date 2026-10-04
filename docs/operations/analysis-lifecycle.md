@@ -1,7 +1,8 @@
 # Talent Engine — Exécution persistante des analyses
 
 **Date :** 2026-10-04. **Statut :** contrat T04 ; orchestration de réception
-implémentée en T18, adaptateurs de collecte et d’évaluation encore à raccorder. Voir [réception](../applications/submission-contract.md) et
+implémentée en T18, PDF textuels et évaluation raccordés en T20–T22 ;
+collecte externe et OCR à suivre. Voir [réception](../applications/submission-contract.md) et
 [revue](../review/review-and-corrections.md).
 
 ## 1. Exécution, étapes et états

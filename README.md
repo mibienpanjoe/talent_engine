@@ -37,9 +37,11 @@ sont exécutables. Le premier dépôt réel fige le formulaire et sa politique.
 Les documents PDF/PNG/JPEG restent privés ; les dossiers affichent les réponses
 et la progression du worker PostgreSQL, reprenable après interruption.
 
-L’extraction du contenu des sources, les appréciations et les scores restent
-à implémenter. Le worker conserve réponses et manifeste reçu puis signale
-l’indisponibilité de l’évaluation, sans produire de résultat artificiel.
+Le worker extrait les réponses et PDF textuels avec leurs pages, extraits et
+empreintes. Les appréciations sourcées sont validées côté serveur ; le backend
+calcule score, couverture, conditions et rangs exacts. Quatre files de revue
+et une fiche privée permettent de consulter les preuves et documents originaux.
+Les informations insuffisantes restent inconnues, sans score global artificiel.
 
 Le périmètre complet est décrit dans les
 [exigences et critères d'acceptation](docs/product/mvp-requirements-and-acceptance.md).
@@ -62,6 +64,8 @@ Son lien public permet un dépôt ; le dossier est consultable dans l’espace p
 `make down` conserve la base et le volume des documents.
 Voir le [guide local](docs/operations/local-runtime.md) pour les prérequis,
 origines, limites du proxy local et tests. Les secrets restent hors Git.
+L’appréciation automatique requiert une passerelle FreeLLMAPI configurée côté
+worker, selon la [procédure serveur](docs/integrations/local-freellmapi.md).
 
 ## Parcours visé
 
@@ -75,9 +79,10 @@ Créer une campagne et préciser les exigences
   → corriger une appréciation et prendre une décision humaine
 ```
 
-La création guidée, les formulaires publics et la consultation des candidatures
-reçues sont livrés. L’extraction documentaire avec OCR conditionnel, la lecture
-ciblée de liens et la revue des appréciations suivent dans les prochaines phases.
+La création guidée, les formulaires publics, les PDF textuels, l’appréciation
+sourcée et la consultation des résultats sont livrés. L’OCR conditionnel,
+la lecture ciblée de liens et les corrections humaines des appréciations
+suivent dans les prochaines phases.
 
 L'IA aide à extraire et apprécier les informations. Le backend possède les
 politiques et calcule les scores. Une information absente n'est pas une note
@@ -107,9 +112,10 @@ apps/web/       Frontend Next.js et primitives accessibles
 apps/api/       API FastAPI, campagnes, réception, documents, worker et migrations
 ```
 
-FreeLLMAPI est la piste d'intégration côté serveur pour les appels LLM.
-L'intégration et les modèles restent à vérifier ; la passerelle sera démarrée
-lorsque nécessaire. Voir la [note d'intégration](docs/integrations/local-freellmapi.md).
+FreeLLMAPI est intégré côté serveur pour l’appréciation automatique. Un parcours
+PDF complet a été exercé avec `gemini-3.5-flash-lite` ; chaque exécution conserve
+sa provenance. Les appréciations varient selon le modèle et restent à calibrer.
+Voir la [note d’intégration](docs/integrations/local-freellmapi.md).
 
 ## Documentation
 

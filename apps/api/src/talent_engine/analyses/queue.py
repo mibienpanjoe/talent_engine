@@ -10,7 +10,10 @@ from uuid import uuid4
 
 from sqlalchemy import or_, select
 from talent_engine.applications.data import analysis_runs, applications, jobs
+from talent_engine.campaigns.data import campaigns
 from talent_engine.campaigns.lifecycle import now
+from talent_engine.evaluations.data import finalize
+from talent_engine.sources.data import persist
 
 from .repository import steps
 
@@ -64,7 +67,10 @@ def terminal(db, job, timestamp, code):
     db.execute(
         applications.update()
         .where(applications.c.id == job["application_id"])
-        .values(processing_state="failed")
+        .values(
+            processing_state="failed",
+            processing_revision=applications.c.processing_revision + 1,
+        )
     )
 
 
@@ -240,7 +246,10 @@ def acquire(engine, settings, worker_id):
         db.execute(
             applications.update()
             .where(applications.c.id == app["id"])
-            .values(processing_state=state)
+            .values(
+                processing_state=state,
+                processing_revision=applications.c.processing_revision + 1,
+            )
         )
     event("job_acquired", claim)
     return claim
@@ -293,6 +302,17 @@ def heartbeat(engine, settings, claim):
 
 def complete(engine, settings, claim, output):
     with engine.begin() as db:
+        if claim.step == "evaluate":
+            campaign_id = db.scalar(
+                select(applications.c.campaign_id).where(
+                    applications.c.id == claim.application_id
+                )
+            )
+            db.execute(
+                select(campaigns.c.id)
+                .where(campaigns.c.id == campaign_id)
+                .with_for_update()
+            ).first()
         if not fenced(db, claim):
             return False
         step = (
@@ -323,7 +343,24 @@ def complete(engine, settings, claim, output):
             return fail_locked(
                 db, settings, claim, step, timestamp, "step_timeout", retryable=True
             )
-        # Checkpoint output is immutable once succeeded. No evaluation is invented.
+        if (
+            claim.step == "source_manifest"
+            and output.get("version") == "received-sources-v2"
+        ):
+            output = persist(db, claim, output)
+        final = claim.step == "evaluate"
+        if final:
+            if output.get("version") != "evaluation-v1":
+                return fail_locked(
+                    db, settings, claim, step, timestamp, "assessment_invalid"
+                )
+            try:
+                output = finalize(db, claim, output)
+            except ValueError:
+                return fail_locked(
+                    db, settings, claim, step, timestamp, "assessment_invalid"
+                )
+        # Checkpoint output is immutable once succeeded.
         db.execute(
             steps.update()
             .where((steps.c.run_id == claim.run_id) & (steps.c.name == claim.step))
@@ -334,11 +371,14 @@ def complete(engine, settings, claim, output):
                 active_seconds=step["active_seconds"] + elapsed,
             )
         )
-        db.execute(
-            jobs.update()
-            .where(jobs.c.id == claim.job_id)
-            .values(state="queued", lease_token=None, lease_until=None, error_code=None)
-        )
+        if not final:
+            db.execute(
+                jobs.update()
+                .where(jobs.c.id == claim.job_id)
+                .values(
+                    state="queued", lease_token=None, lease_until=None, error_code=None
+                )
+            )
         if claim.step == "source_manifest":
             db.execute(
                 analysis_runs.update()

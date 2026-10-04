@@ -3,6 +3,7 @@ import logging
 import signal
 import threading
 import time
+from functools import partial
 from queue import Empty, Queue
 from uuid import uuid4
 
@@ -104,7 +105,14 @@ def main():
                     if removed:
                         event("temporary_files_collected", count=removed)
                     cleanup_at = time.monotonic() + 3600
-                worked = work_once(engine, worker_settings, worker_id)
+                worked = work_once(
+                    engine,
+                    worker_settings,
+                    worker_id,
+                    processor=partial(
+                        process, upload_directory=settings.upload_directory
+                    ),
+                )
                 if args.once or (args.drain and not worked):
                     break
             except SQLAlchemyError:

@@ -1,0 +1,152 @@
+%PDF-1.3
+%‚„œ”
+1 0 obj
+<<
+/Producer (pypdf)
+>>
+endobj
+2 0 obj
+<<
+/Type /Pages
+/Count 3
+/Kids [ 4 0 R 7 0 R 10 0 R ]
+>>
+endobj
+3 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+4 0 obj
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 5 0 R
+>>
+>>
+/MediaBox [ 0.0 0.0 600 800 ]
+/Parent 2 0 R
+/Contents 6 0 R
+>>
+endobj
+5 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+endobj
+6 0 obj
+<<
+/Length 554
+>>
+stream
+BT /F1 12 Tf 45 735 Td 18 TL
+(Document fictif : Amina. Pour expliquer une boucle, j'ai pris une liste de trois) Tj T*
+(montants : 10, 20 et 30. J'initialise le total a zero, puis j'ajoute chaque montant) Tj T*
+(dans une boucle. Je distingue la variable total de la valeur courante. J'ai detaille) Tj T*
+(les trois etapes : total 10, puis 30, puis 60. J'ai execute cet exemple et compare) Tj T*
+(avec une addition manuelle. Je sais expliquer pourquoi initialiser le total avant la) Tj T*
+(boucle et comment les iterations modifient cette valeur.) Tj T*
+ET
+endstream
+endobj
+7 0 obj
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 8 0 R
+>>
+>>
+/MediaBox [ 0.0 0.0 600 800 ]
+/Parent 2 0 R
+/Contents 9 0 R
+>>
+endobj
+8 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+endobj
+9 0 obj
+<<
+/Length 628
+>>
+stream
+BT /F1 12 Tf 45 735 Td 18 TL
+(Mon projet personnel est un petit gestionnaire de depenses. J'ai ecrit seule le) Tj T*
+(formulaire, la validation des montants et le calcul du total. J'ai choisi une liste) Tj T*
+(locale pour conserver les entrees plutot qu'un service distant : le projet doit) Tj T*
+(fonctionner hors connexion. J'ai compare deux mises en page et retenu une liste avec) Tj T*
+(le montant de chaque depense. Le resultat est une application dans laquelle je peux) Tj T*
+(ajouter et consulter mes depenses. Je peux distinguer mon propre code d'un exemple de) Tj T*
+(formulaire utilise comme point de depart.) Tj T*
+ET
+endstream
+endobj
+10 0 obj
+<<
+/Type /Page
+/Resources <<
+/Font <<
+/F1 11 0 R
+>>
+>>
+/MediaBox [ 0.0 0.0 600 800 ]
+/Parent 2 0 R
+/Contents 12 0 R
+>>
+endobj
+11 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+endobj
+12 0 obj
+<<
+/Length 703
+>>
+stream
+BT /F1 12 Tf 45 735 Td 18 TL
+(Pour apprendre les tests, mon premier essai verifiait seulement le total final. Un) Tj T*
+(retour de ma camarade m'a montre qu'une entree vide causait une erreur. J'ai consulte) Tj T*
+(la documentation du langage et une explication sur la validation des nombres. J'ai) Tj T*
+(ajuste mon code pour traiter la valeur vide avant le calcul, puis ajoute un test de) Tj T*
+(cette situation. J'ai ensuite reutilise cette methode dans un exercice de moyenne :) Tj T*
+(ecrire un petit exemple, verifier le resultat, demander un retour, ajuster et tester) Tj T*
+(de nouveau. Cette demarche m'aide a comprendre mes erreurs plutot qu'a simplement) Tj T*
+(copier une solution.) Tj T*
+ET
+endstream
+endobj
+xref
+0 13
+0000000000 65535 f 
+0000000015 00000 n 
+0000000054 00000 n 
+0000000126 00000 n 
+0000000175 00000 n 
+0000000307 00000 n 
+0000000377 00000 n 
+0000000982 00000 n 
+0000001114 00000 n 
+0000001184 00000 n 
+0000001863 00000 n 
+0000001998 00000 n 
+0000002069 00000 n 
+trailer
+<<
+/Size 13
+/Root 3 0 R
+/Info 1 0 R
+>>
+startxref
+2824
+%%EOF

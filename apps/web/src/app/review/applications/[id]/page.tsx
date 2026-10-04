@@ -4,6 +4,8 @@ import { reviewerApi } from "../../../../lib/server-api";
 import { SiteHeader } from "../../../../components/site-header";
 import { AccountDialog } from "../../../../features/access/account-dialog";
 import { PolicyDetails } from "../../../../features/campaigns/policy-details";
+import { EvaluationDetails } from "../../../../features/reviews/evaluation-details";
+import { decisionLabels } from "../../../../features/reviews/labels";
 import { RefreshButton } from "../../../../features/campaigns/refresh-button";
 export default async function ApplicationPage({
   params,
@@ -57,6 +59,8 @@ export default async function ApplicationPage({
             }[a.processing_state]
           }
         </p>
+        <p>Décision humaine : {decisionLabels[a.decision]}.</p>
+        <EvaluationDetails dossier={result.data} />
         <section aria-label="Progression du traitement" className="empty-state">
           <h2>Traitement du dossier</h2>
           {analyses.length === 0 ? (
@@ -66,7 +70,9 @@ export default async function ApplicationPage({
               <section key={run.id}>
                 {run.error_code && (
                   <p role="alert">
-                    {run.error_code === "evaluation_unavailable"
+                    {["evaluation_unavailable", "llm_not_configured"].includes(
+                      run.error_code,
+                    )
                       ? "Le service d’évaluation n’est pas configuré. Vos données restent enregistrées."
                       : run.error_code === "attempts_exhausted"
                         ? "Les trois tentatives de traitement ont été épuisées. Le dossier reste enregistré."
@@ -114,6 +120,55 @@ export default async function ApplicationPage({
         </section>
         <RefreshButton />
         <PolicyDetails snapshotId={a.snapshot_id} />
+        {(result.data.pending_evaluation_ids?.length ?? 0) > 0 && (
+          <p>
+            Une nouvelle analyse est disponible, en attente d’activation. Le
+            résultat effectif reste celui affiché ci-dessus.
+          </p>
+        )}
+        {(result.data.sources?.length ?? 0) > 0 && (
+          <section className="review-section">
+            <h2>Sources de cette analyse</h2>
+            <ul className="source-status-list">
+              {result.data.sources?.map((source) => {
+                const file = uploads.find((f) => f.id === source.upload_id);
+                const question = questions.find(
+                  (q) => q.id === source.question_ids[0],
+                );
+                return (
+                  <li key={source.id}>
+                    <strong>
+                      {file?.filename ?? question?.label ?? "Source du dossier"}
+                    </strong>
+                    <p>
+                      {source.state === "available"
+                        ? "Texte recueilli"
+                        : source.state === "unreadable"
+                          ? "Document illisible"
+                          : source.error_code === "external_retrieval_pending"
+                            ? "Lien reçu, récupération à effectuer"
+                            : "Source indisponible"}
+                      {source.ocr_pages.length > 0 &&
+                        ` · OCR nécessaire pour ${source.ocr_pages.length} page(s) sans texte.`}
+                    </p>
+                    {file && (
+                      <a href={`/api/v1/uploads/${file.id}/download`}>
+                        Document original
+                      </a>
+                    )}
+                    <details className="provenance-details">
+                      <summary>Version de la source</summary>
+                      <p>{source.extractor_version}</p>
+                      <p className="hash-text">
+                        Empreinte originale : {source.content_hash}
+                      </p>
+                    </details>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
         <section className="empty-state">
           <h2>Réponses enregistrées</h2>
           {answers.map((answer) => {

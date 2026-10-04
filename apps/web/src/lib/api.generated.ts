@@ -229,6 +229,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/evidence/{evidence_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Evidence */
+        get: operations["read_evidence"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health/live": {
         parameters: {
             query?: never;
@@ -420,6 +437,19 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** Alert */
+        Alert: {
+            /**
+             * Code
+             * @enum {string}
+             */
+            code: "required_skill_unknown" | "required_skill_below_threshold";
+            /**
+             * Criterion Id
+             * Format: uuid
+             */
+            criterion_id: string;
+        };
         /** AnalysisProgress */
         AnalysisProgress: {
             /** Error Code */
@@ -438,6 +468,23 @@ export interface components {
             /** Steps */
             steps: components["schemas"]["StepProgress"][];
         };
+        /** AnswerLocator */
+        AnswerLocator: {
+            /** End */
+            end: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "answer";
+            /**
+             * Question Id
+             * Format: uuid
+             */
+            question_id: string;
+            /** Start */
+            start: number;
+        };
         /** ApplicationDetail */
         ApplicationDetail: {
             /** Analyses */
@@ -445,11 +492,14 @@ export interface components {
             /** Answers */
             answers: (components["schemas"]["ShortAnswer"] | components["schemas"]["LongAnswer"] | components["schemas"]["EmailAnswer"] | components["schemas"]["NumberAnswer"] | components["schemas"]["DateAnswer"] | components["schemas"]["ChoiceAnswer"] | components["schemas"]["ChoicesAnswer"] | components["schemas"]["UrlAnswer"] | components["schemas"]["FileAnswer"])[];
             application: components["schemas"]["ApplicationSummary"];
-            /** Effective Evaluation */
-            effective_evaluation?: null;
+            effective_evaluation?: components["schemas"]["Evaluation"] | null;
+            /** Evidence */
+            evidence?: components["schemas"]["Evidence"][];
             /** Pending Evaluation Ids */
             pending_evaluation_ids?: string[];
             snapshot: components["schemas"]["PublishedSnapshot"];
+            /** Sources */
+            sources?: components["schemas"]["SourceVersion"][];
             /** Uploads */
             uploads?: components["schemas"]["Upload"][];
         };
@@ -468,8 +518,7 @@ export interface components {
         };
         /** ApplicationSummary */
         ApplicationSummary: {
-            /** Calculation */
-            calculation?: null;
+            calculation?: components["schemas"]["Calculation"] | null;
             /**
              * Campaign Id
              * Format: uuid
@@ -484,7 +533,9 @@ export interface components {
             /** Effective Evaluation Id */
             effective_evaluation_id?: string | null;
             /** Eligibility */
-            eligibility?: null;
+            eligibility?: ("eligible" | "condition_unmet" | "needs_review" | "not_applicable") | null;
+            /** Evaluation Mode */
+            evaluation_mode?: ("live" | "preloaded") | null;
             /**
              * Id
              * Format: uuid
@@ -501,7 +552,7 @@ export interface components {
              */
             processing_state: "queued" | "collecting" | "evaluating" | "completed" | "completed_partial" | "failed";
             /** Rank */
-            rank?: null;
+            rank?: number | null;
             /**
              * Received At
              * Format: date-time
@@ -516,6 +567,49 @@ export interface components {
             snapshot_id: string;
             /** Views */
             views?: string[];
+        };
+        /** Assessment */
+        Assessment: {
+            /**
+             * Criterion Id
+             * Format: uuid
+             */
+            criterion_id: string;
+            /** Evidence Ids */
+            evidence_ids: string[];
+            /** Level */
+            level: number | null;
+            /** Policy Version */
+            policy_version: string;
+            /** Rationale */
+            rationale: string;
+            /** Rubric Version */
+            rubric_version: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "evaluated" | "insufficient_information" | "conflicting_information" | "source_unavailable";
+            /** Uncertainties */
+            uncertainties: string[];
+            /** Zero Evidence Quote */
+            zero_evidence_quote?: string | null;
+        };
+        /** Calculation */
+        Calculation: {
+            /** Alerts */
+            alerts: components["schemas"]["Alert"][];
+            /** Complete */
+            complete: boolean;
+            /** Coverage */
+            coverage: string;
+            /** Lower Bound */
+            lower_bound: string;
+            /** Score */
+            score: string | null;
+            score_exact: components["schemas"]["Rational"] | null;
+            /** Upper Bound */
+            upper_bound: string;
         };
         /** Campaign */
         Campaign: {
@@ -591,6 +685,32 @@ export interface components {
             question_id: string;
             /** Value */
             value: string[];
+        };
+        /** ConditionResult */
+        ConditionResult: {
+            /**
+             * Criterion Id
+             * Format: uuid
+             */
+            criterion_id: string;
+            /** Evidence Ids */
+            evidence_ids?: string[];
+            /**
+             * Question Id
+             * Format: uuid
+             */
+            question_id: string;
+            /** Rationale */
+            rationale: string;
+            /** Required */
+            required: boolean;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "met" | "unmet" | "unknown";
+            /** Value */
+            value: string | string[] | null;
         };
         /** Contact */
         Contact: {
@@ -712,6 +832,71 @@ export interface components {
             /** Path */
             path: string;
         };
+        /** Evaluation */
+        Evaluation: {
+            /**
+             * Application Id
+             * Format: uuid
+             */
+            application_id: string;
+            /** Assessments */
+            assessments: components["schemas"]["Assessment"][];
+            calculation: components["schemas"]["Calculation"];
+            /** Conditions */
+            conditions: components["schemas"]["ConditionResult"][];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Eligibility
+             * @enum {string}
+             */
+            eligibility: "eligible" | "condition_unmet" | "needs_review" | "not_applicable";
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Policy Version */
+            policy_version: string;
+            provenance: components["schemas"]["Provenance"];
+            /**
+             * Run Id
+             * Format: uuid
+             */
+            run_id: string;
+            /**
+             * Snapshot Id
+             * Format: uuid
+             */
+            snapshot_id: string;
+        };
+        /** Evidence */
+        Evidence: {
+            /** Excerpt Hash */
+            excerpt_hash: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Locator */
+            locator: components["schemas"]["AnswerLocator"] | components["schemas"]["PDFLocator"];
+            /**
+             * Nature
+             * @enum {string}
+             */
+            nature: "declaration" | "contextual_explanation" | "consultable_artifact" | "human_verification";
+            /**
+             * Source Version Id
+             * Format: uuid
+             */
+            source_version_id: string;
+            /** Text */
+            text: string;
+        };
         /** FileAnswer */
         FileAnswer: {
             /**
@@ -821,6 +1006,20 @@ export interface components {
             /** Label */
             label: string;
         };
+        /** PDFLocator */
+        PDFLocator: {
+            /** End */
+            end: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "pdf";
+            /** Page */
+            page: number;
+            /** Start */
+            start: number;
+        };
         /** PolicyCriterion */
         PolicyCriterion: {
             /**
@@ -856,6 +1055,50 @@ export interface components {
         Preparation: {
             /** Issues */
             issues: components["schemas"]["ErrorDetail"][];
+        };
+        /** Provenance */
+        Provenance: {
+            /** Adapter Version */
+            adapter_version: string;
+            /** Blocked Evidence Ids */
+            blocked_evidence_ids: string[];
+            /** Duration Seconds */
+            duration_seconds: number;
+            /** Effective Model */
+            effective_model: string | null;
+            /** Evidence Ids */
+            evidence_ids: string[];
+            /** Extractor Versions */
+            extractor_versions: string[];
+            /**
+             * Finished At
+             * Format: date-time
+             */
+            finished_at: string;
+            /** Fixture Version */
+            fixture_version?: string | null;
+            /**
+             * Mode
+             * @enum {string}
+             */
+            mode: "live" | "preloaded";
+            /** Omitted Evidence Ids */
+            omitted_evidence_ids: string[];
+            /** Prompt Hash */
+            prompt_hash: string;
+            /** Prompt Version */
+            prompt_version: string;
+            /** Provider */
+            provider: string | null;
+            /** Requested Model */
+            requested_model: string | null;
+            /** Response Model */
+            response_model: string | null;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
         };
         /** PublicForm */
         PublicForm: {
@@ -1055,6 +1298,38 @@ export interface components {
              * Format: uuid
              */
             question_id: string;
+        };
+        /** SourceVersion */
+        SourceVersion: {
+            /** Content Hash */
+            content_hash: string;
+            /** Error Code */
+            error_code: string | null;
+            /** Extractor Version */
+            extractor_version: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "answer" | "document" | "portfolio" | "github" | "human_note";
+            /** Ocr Pages */
+            ocr_pages: number[];
+            /** Question Ids */
+            question_ids: string[];
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "available" | "unavailable" | "unreadable" | "blocked";
+            /** Text Hash */
+            text_hash: string;
+            /** Upload Id */
+            upload_id: string | null;
         };
         /** StepProgress */
         StepProgress: {
@@ -1868,6 +2143,9 @@ export interface operations {
             query?: {
                 limit?: number;
                 cursor?: string | null;
+                view?: "all" | "ready" | "needs_review" | "condition_unmet";
+                decision?: ("to_review" | "shortlisted" | "not_selected") | null;
+                processing_state?: ("queued" | "collecting" | "evaluating" | "completed" | "completed_partial" | "failed") | null;
             };
             header?: never;
             path: {
@@ -2561,6 +2839,109 @@ export interface operations {
             };
             /** @description Precondition Required */
             428: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    read_evidence: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                evidence_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Evidence"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

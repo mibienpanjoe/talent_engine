@@ -1,69 +1,94 @@
-# Talent Engine — Intégration au FreeLLMAPI local
+# Intégration au FreeLLMAPI local
 
-**Date :** 2026-10-03  
-**Statut :** installation identifiée ; container arrêté ; appels non vérifiés.
+**Vérification : 2026-10-04, étape T21.** La passerelle existante a été
+démarrée pour l'intégration. Aucun fournisseur ni clé fournisseur n'a été
+ajouté ou modifié. Son accès hôte reste limité à `127.0.0.1:3001`.
 
-## 1. Intention du mainteneur
+## Installation effectivement utilisée
 
-Le mainteneur indique que FreeLLMAPI est déjà installé et configuré avec
-plusieurs fournisseurs. Cette passerelle est la piste prioritaire pour les
-appels LLM de Talent Engine. Les modèles et fournisseurs réellement utilisables
-restent à vérifier sur le service en fonctionnement.
+- Container : `freellmapi-freellmapi-1`.
+- Image installée : `sha256:68f100da8670d0f9f00c3a037cb6d17dbde31d29f7b9992586892f5d5c2aaef2`.
+- Commit déclaré par l'image : `f2d0070ddd81d8b6233d9227550bea3195513db2`.
+- Configuration retrouvée : `/app/server/data/freeapi.db`, volume
+  `freellmapi_freellmapi-data`. Lecture des métadonnées en mode lecture seule.
+- Fournisseurs configurés avec clés activées : Cerebras, Google, Groq,
+  NVIDIA et OpenRouter. Leurs états enregistrés ne prouvent pas qu'un appel
+  actuel réussit chez chacun.
 
-Un accès sur localhost désigne la passerelle. Les inférences peuvent être
-effectuées par des fournisseurs distants ; la minimisation des données reste
-pertinente.
+La documentation du checkout local peut être plus récente que l'image.
+Les constats suivants viennent des appels réellement exécutés dans le worker,
+pas d'une liste de capacités annoncées.
 
-## 2. Constats locaux
+## Appels réels depuis le worker Docker
 
-Contrôles effectués : inventaire Docker et inspection du container, puis lecture
-du Compose et de la documentation installée sous `/home/mj/projects/freellmapi`.
-
-| Élément | Constat |
+| Test | Résultat observé |
 | --- | --- |
-| Container | `freellmapi-freellmapi-1`. |
-| Image enregistrée | `ghcr.io/tashfeenahmed/freellmapi:latest` ; version exacte non déterminée. |
-| État Docker | Arrêté, `Running=false`, code de sortie 137. |
-| Arrêt enregistré | 2026-08-23 à 11:54:14 UTC. |
-| OOM signalé | `OOMKilled=false` ; la cause du code 137 n'est pas établie. |
-| Port configuré | `127.0.0.1:3001` vers `3001/tcp`. |
-| Volume configuré | `freellmapi_freellmapi-data` vers `/app/server/data`. |
+| `GET /v1/models` | 200, 245 entrées de catalogue ; ce nombre ne prouve pas 245 modèles utilisables. |
+| Chat minimal `auto:fast` | 200 en 2,80 s ; `openrouter/dots-studio/dots-3-note-preview:free`, JSON demandé reçu. |
+| Embeddings `auto` | 200 en 0,88 s ; modèle `gemini-embedding-001`, dimension 3 072. Aucun `X-Routed-Via` reçu : fournisseur effectif non établi par ce test. |
+| Premier essai vision/OCR | 200 en 11,81 s ; sortie commentée et tronquée, transcription non conforme. |
+| Chat via l'adaptateur livré | JSON validé, 5,61 s ; `google/gemma-4-26b-a4b-it`. |
+| Second essai vision/OCR via l'adaptateur | Texte fictif `TALENT TEST 42` exactement transcrit en 0,98 s ; `google/gemini-3.5-flash-lite`. |
 
-L'inspection du volume monté en lecture seule n'a trouvé aucun fichier.
-Ce résultat ne confirme pas où la configuration antérieure a été conservée
-et ne contredit pas le témoignage du mainteneur. Le container n'a pas été
-redémarré. Conformément au choix du mainteneur, il sera démarré seulement
-lorsque les travaux nécessiteront des appels à FreeLLMAPI. L'inventaire des fournisseurs actifs n'a pas été établi.
+Ces délais sont des observations ponctuelles, pas une mesure de performance.
+Aucun quota 429 n'a été rencontré pendant ces sondes. La variabilité du
+routage est visible : conserver le fournisseur et le modèle effectifs à
+chaque appréciation. Le petit test OCR ne prouve pas la qualité sur des CV
+scannés ; le pipeline OCR et sa recette appartiennent à T24. L'intégration
+vectorielle et la traçabilité de sa famille appartiennent à T27.
 
-## 3. Contrat d'intégration proposé
+## Configuration serveur
 
-La documentation locale décrit un point d'accès compatible OpenAI à
-`http://localhost:3001/v1`, un endpoint de chat, des embeddings et un en-tête
-`X-Routed-Via` pour identifier le fournisseur et modèle effectifs. Il s'agit
-des capacités décrites dans le checkout local, pas de tests du container arrêté.
+L'adaptateur est `talent_engine.integrations.llm.Gateway`. Il lit uniquement
+les variables serveur `TALENT_LLM_BASE_URL`, `TALENT_LLM_API_KEY`,
+`TALENT_LLM_MODEL` et `TALENT_LLM_TIMEOUT_SECONDS`. Sans URL ou clé,
+`llm_not_configured` est un échec explicite. Aucun secret n'est transmis au
+web, inclus dans un prompt, conservé dans le dépôt ou journalisé.
 
-L'adaptateur Python de Talent Engine devrait conserver :
+`compose.llm.yaml` est un complément facultatif au Compose de base :
 
-- une URL de base configurable côté serveur ;
-- une clé de passerelle hors dépôt et hors journaux ;
-- modèle demandé, fournisseur et modèle effectifs, prompt et politique versionnés ;
-- validation stricte des appréciations et des références justificatives ;
-- délais, erreurs et reprises bornés, sans convertir une panne en niveau zéro.
+```sh
+# Fournir TALENT_LLM_API_KEY dans l'environnement serveur par le gestionnaire
+# de secrets existant ; ne pas inscrire sa valeur dans cette commande.
+docker compose -f compose.yaml -f compose.llm.yaml up -d worker
+```
 
-Dans Docker, `localhost` désigne le container appelant. Le routage de l'API
-Talent Engine vers la passerelle existante devra donc être établi et testé
-avant de fixer la configuration Compose. Ne pas exposer la passerelle
-publiquement pour résoudre ce point.
+Il raccorde seulement le worker au réseau externe existant
+`freellmapi_default` et utilise `http://freellmapi:3001/v1`.
+`TALENT_LLM_NETWORK` permet de configurer le nom du réseau. Dans Docker,
+localhost désigne le container appelant. Aucune exposition publique de la
+passerelle n'est nécessaire. Pour les sondes locales, la clé de passerelle
+existante a été transmise en mémoire puis dans l'environnement du worker,
+sans fichier de copie ni extraction des clés fournisseur.
 
-## 4. Vérifications avant sélection des modèles
+L'adaptateur demande `stream: false`, température zéro, limite de sortie et
+désactive compression de prompt/cache. Il exige un `X-Routed-Via` exploitable
+pour le chat et conserve également le modèle de la réponse. La politique,
+les niveaux et références sont validés par le moteur, jamais par le transport.
 
-1. Localiser la configuration existante et vérifier l'image effectivement utilisée.
-2. Lorsque l’intégration en a besoin, démarrer le container, vérifier son état et inventorier les modèles exposés et fournisseurs actifs.
-3. Tester les réponses françaises, le schéma et les citations sur les mêmes fixtures.
-4. Vérifier le fournisseur effectif et le comportement des changements de modèle.
-5. Vérifier séparément embeddings et OCR ; un endpoint de chat ne prouve pas ces capacités.
-6. Mesurer temps, quotas et limites constatées, puis retenir une configuration de démo.
+Délai réseau : 30 secondes par opération bloquante, configurable jusqu'à 30 ;
+la réponse est bornée à 1 MiB et refusée si la durée observée dépasse ce délai.
+Le worker conserve son plafond global de 60 secondes et son fencing. Les
+redirections et proxys hérités sont désactivés. La clé est un `SecretStr` ;
+les corps d'erreur fournisseur ne sont ni affichés ni persistés. 429 et 5xx
+sont reprenables par le worker avec ses budgets existants ; 401/403 et sorties
+non conformes échouent explicitement. Voir le comportement officiel de
+[urllib.request](https://docs.python.org/3.13/library/urllib.request.html).
 
-La récupération sémantique ne doit jamais mélanger des espaces de vecteurs
-issus de modèles différents. Les réglages de routage et de fallback doivent
-préserver la traçabilité de chaque évaluation.
+Les tests HTTP locaux couvrent clé côté serveur, requête minimisée,
+provenance, 429/Retry-After, 503 et métadonnées absentes. Ils complètent les
+sondes réelles ci-dessus et ne les remplacent pas.
+
+## Modèle retenu pour l’appréciation de démo
+
+T22 utilise par défaut `gemini-3.5-flash-lite`, vérifié sur le PDF fictif
+détaillé : fournisseur Google, niveaux observés 4/3/4 en 2,68 s. Sur les mêmes
+preuves, le routage `auto:fast` avait donné 4/4/4 avec Groq. Ce constat motive
+un modèle demandé explicite ; il ne constitue pas une calibration ni une
+reproduction de l’oracle contrôlé 3/3/4. Le fournisseur/modèle effectifs restent
+conservés à chaque appel et peuvent être comparés aux preuves en revue.
+`TALENT_LLM_MODEL` permet une configuration serveur explicite différente.
+Le parcours intégré final, avec ce même modèle demandé, a ensuite produit
+3/3/4 et 81,25 sur le PDF fictif Amina ; chaque citation a été contrôlée dans
+le texte persisté. La différence avec l'essai précédent reste documentée :
+ces appréciations ponctuelles ne sont pas une mesure absolue de la personne.
