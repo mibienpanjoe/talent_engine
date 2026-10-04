@@ -160,3 +160,14 @@ textarea.ui-input { resize:vertical; }
 .configuration-item h3, .configuration-item h4 { font-weight:500; }
 .configuration-item p, .configuration-item ul { margin-block:.75rem; line-height:1.65; }
 .configuration-item ul { padding-left:1.25rem; }
+
+.source-group { margin-top:1rem; padding:1rem 1.25rem; border:1px solid var(--border); border-radius:var(--radius-control); }
+.source-group > summary { cursor:pointer; font-weight:500; min-height:44px; padding-block:.75rem; }
+.source-group .source-status-list { margin:0; }
+.source-group .source-status-list > li:last-child { border-bottom:0; }
+.source-title { font-size:1rem; font-weight:500; margin:0; }
+.source-reading-status { margin-block:.75rem; font-size:.875rem; }
+.source-reading-status--unavailable, .source-reading-status--unreadable, .source-reading-status--blocked, .source-warning { color:var(--danger); }
+.source-links { margin-block:1rem; }
+.source-links a { display:inline-flex; align-items:center; min-height:44px; }
+.source-group .provenance-details { margin-bottom:0; }
