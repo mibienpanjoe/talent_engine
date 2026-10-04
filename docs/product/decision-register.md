@@ -25,7 +25,7 @@ les sources n'est pas remise en discussion sans conflit précis.
 | DEC-10 | Accès, fichiers et collecte | Compte de démo et session proposés ; fixer limites d'envoi, pages, délais, accès public et suppression. | Contrats d'accès et d'extraction. |
 | DEC-11 | Fournisseurs et limites IA | Utiliser le FreeLLMAPI installé comme piste prioritaire ; vérifier son fonctionnement et comparer ses modèles sur les fixtures. | Intégrations réelles. |
 | DEC-12 | Design et preuve de démonstration | Définir les écrans essentiels, l'affichage des preuves et les états ; identifier les résultats préchargés. | Identité visuelle et recette du parcours. |
-| DEC-13 | Organisation de contribution | Préciser équipe, conventions locales, branches et contrôles ; adapter aux besoins de Talent Engine. | CONTRIBUTING et guidance agents. |
+| DEC-13 | Organisation de contribution | Préciser équipe, conventions locales, branches et contrôles ; adapter aux besoins de Talent Engine. | Guides d’exécution et recette. |
 | DEC-14 | Structure du dépôt et outils | Monorepo proposé, API et worker dans un package Python, frontend par fonctionnalités ; pnpm et uv proposés. | [Structure proposée](../architecture/repository-structure.md) et bootstrap. |
 
 Cet ordre suit les dépendances métier. La phase contrats T01–T06 a été demandée explicitement par le mainteneur.
@@ -50,7 +50,7 @@ et limites de démo sont des choix documentés, pas des valeurs métier mesurée
 | DEC-10 | Référence T04 définie | Session responsable et CSRF ; uploads privés bornés, collecte publique limitée, rétention démo et purge durable avec contrôle des tâches en vol. | [Protection](../../SECURITY.md), réception et exécution. |
 | DEC-11 | Orientation retenue ; intégration non vérifiée | Mainteneur : FreeLLMAPI déjà installé et configuré. Container arrêté constaté ; démarrage seulement lorsque nécessaire ; modèles, quotas et capacités à vérifier en direct. | [Note d'intégration locale](../integrations/local-freellmapi.md). |
 | DEC-12 | Référence fournie ; jeu raster généré, design produit proposé | Préférence sombre conservée. Référence « Signal » déclinée en sept PNG inspectés : signatures, symboles et app icon. Masters vectoriels et validation sur écrans produit restent ouverts. | [Direction visuelle](../design/visual-identity.md) et [assets](../design/brand-assets.md). |
-| DEC-13 | Organisation acceptée ; conventions T06 définies | Étapes séquentielles avec vérification/revue/commit ; main conservée, plans locaux ignorés ; push distinct sur demande, définition de terminé et commandes cibles. | [Contribution](../../CONTRIBUTING.md). |
+| DEC-13 | Organisation acceptée ; conventions T06 définies | Étapes séquentielles avec vérification/revue/commit ; main conservée, plans locaux ignorés ; push distinct sur demande, définition de terminé et commandes cibles. | [Runtime local](../operations/local-runtime.md) et [recette](../testing/acceptance-and-reference-cases.md). |
 | DEC-14 | Monorepo accepté ; détails T06 retenus, bootstrap à faire | pnpm/uv, backend modulaire et worker partageant package/image ; client local au web généré depuis OpenAPI ; tâches PostgreSQL, pas de broker supplémentaire. | [ADR-0003](../adr/0003-tooling-and-contract-generation.md), [ADR-0004](../adr/0004-postgresql-analysis-worker.md). |
 
 Décomposer les lignes groupées au fil des résolutions.

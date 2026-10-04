@@ -128,13 +128,6 @@ et la [procédure serveur](docs/integrations/local-freellmapi.md).
 - [Identité visuelle](docs/design/visual-identity.md) et [assets de marque](docs/design/brand-assets.md).
 - [Carte documentaire](docs/documentation-map.md) : navigation et documents à produire.
 
-## Contribution
-
-Le projet est développé par un mainteneur avec l'assistance d'outils de
-développement. Les contrats et décisions servent de base au travail ; les
-comportements implémentés sont reliés aux vérifications de la recette.
-Les données de démonstration sont fictives et les secrets restent hors du dépôt.
-
 ## Licence
 
 Aucune licence de réutilisation n'est définie à ce stade.

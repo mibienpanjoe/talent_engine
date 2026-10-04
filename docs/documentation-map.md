@@ -48,11 +48,10 @@ Les schémas HTTP actuels sont exportés depuis le serveur dans
 conserve le contrat manuel de conception. Les résultats numériques fictifs de
 référence se trouvent dans `fixtures/expected-results/`.
 
-## Identité, contribution et sécurité
+## Identité et sécurité
 
 - [Identité visuelle](design/visual-identity.md) : thème sombre et direction « Signal ».
 - [Assets de marque](design/brand-assets.md) : logos, icônes et usages.
-- [Contribution](../CONTRIBUTING.md) : commandes et critères de livraison.
 - [Sécurité](../SECURITY.md) : accès, collecte et suppression des données.
 
 ## Décisions d’architecture
