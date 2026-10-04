@@ -1,6 +1,6 @@
 # Recette du MVP
 
-Recette du 4 octobre 2026, après les démonstrations T 32 et les corrections T 33.
+Recette du 4 octobre 2026, après T32–T34.
 Les [exigences](../product/mvp-requirements-and-acceptance.md) restent le périmètre
 retenu. Le tableau distingue les tests isolés, PostgreSQL réel et le runtime
 Compose avec fournisseur externe. Il ne constitue pas une validation de
@@ -32,7 +32,7 @@ Les chemins de tests ci-dessous sont relatifs à `apps/api/`.
 | REQ-JOB-01 | `integration/test_worker.py` : processus réellement tué, deux remplaçants, checkpoint réutilisé, fencing, tentatives bornées. `integration/test_review_reanalysis.py` : relance sans écraser la version effective. | Fournisseur absent dans le test de crash ; les appels externes sont prouvés séparément. |
 | REQ-UX-01 | Runtime Next.js construit : formulaire public, liste, fiche et correction à 320px ; fiche à 768/1024/1440px. Dialogue : Tab/Shift+Tab piégés, Escape restitue le focus. 404 française et lien « Aller au contenu » ; API arrêtée temporairement : écran d’indisponibilité puis reprise de la liste après redémarrage. | Vérification ciblée, pas audit exhaustif de conformité WCAG ni lecteur d’écran. |
 | REQ-DEMO-01 | `integration/test_demo_seeding.py`, deux seeds Compose identiques sans clé, puis deux nouvelles analyses développement/marketing avec fournisseur effectif identifié. | Fixtures pédagogiques distinctes des analyses réelles. |
-| REQ-REL-01 | Recette depuis checkout propre prévue en T 34 ; instructions dans le [guide local](../operations/local-runtime.md). | Ne pas confondre build courant et installation propre ; preuve ajoutée après exécution. |
+| REQ-REL-01 | Archive propre du commit 8d5d9b6, nouvelles dépendances/env/volumes : install, images, migrations, accès et deux seeds identiques. Parcours sans clé puis deux nouveaux dossiers avec Groq, citations et revue navigateur. | Recette locale Compose, pas un déploiement Internet ; cache Docker et réseau fournisseur disponibles. |
 
 ## Contrôles de la version courante
 
@@ -70,3 +70,31 @@ Les appréciations peuvent varier entre appels et fournisseurs. Les corrections
 humaines et inconnues restent nécessaires ; le modèle ne décide ni les poids,
 ni le calcul, ni la sélection. Les limites réseau, OCR, tokens, sources omises
 et modèles effectifs restent consultables dans le dossier.
+
+## Installation propre
+
+Une archive Git du commit `8d5d9b6`, sans `.env`, plans ni dépendances du
+workspace, a été installée dans un répertoire séparé. `make install`,
+`docker compose build`, `make migrate`, `make seed-access`, `make up` puis
+deux `make seed-demo` ont réussi. Les migrations aboutissent à
+`0018_action_lookup` ; les 26 tables et types/nullabilités de colonnes
+correspondent au modèle. `make check` passe depuis cette installation.
+Les identifiants, ports et volumes étaient propres à la recette.
+
+Sans clé, les sept résultats préchargés sont consultables avec leur provenance
+explicite. Deux dossiers neufs en mode live sans passerelle échouent avec
+`llm_not_configured`, sans évaluation ni perte des pièces privées. Le navigateur
+montre l’incident et propose la relance.
+
+Après raccordement du worker à la passerelle existante, deux autres dossiers
+neufs terminent avec Groq / openai/gpt-oss-120b : développement 91,25 et
+marketing 58,75. Développement contient PDF textuel, scan OCR, portfolio et
+GitHub ; marketing PDF et réponses. Les citations originales sont vérifiées
+par page/chemin, offsets et empreintes. La revue navigateur corrige Amina au
+niveau 2 (82,50) et la présélectionne ; Fatou passe à couverture 75 %, score
+absent, puis Non retenu. Les événements persistent dans l’historique.
+
+L’installation propre utilise une source applicative identique au dernier
+code livré ; les changements T34 ultérieurs portent sur documentation et
+commentaire de module. Les services de recette et leurs seuls volumes fictifs
+sont retirés après validation ; le runtime de travail demeure distinct.

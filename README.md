@@ -62,20 +62,26 @@ secrets aléatoires distincts pour la base et CSRF ainsi que les identifiants du
 responsable, puis :
 
 ```sh
-make up
+docker compose build
 make migrate
 make seed-access
+make up
+make seed-demo
 ```
 
 Ouvrir <http://localhost:3003>, se connecter, créer puis publier une campagne.
 Son lien public permet un dépôt ; le dossier est consultable dans l’espace privé.
+Le seed crée aussi deux campagnes fictives et sept résultats préchargés,
+explicitement identifiés, sans appel modèle ni clé. Répéter le seed ne crée
+pas de doublons. Pour une analyse réelle neuve, suivre le
+[guide de démonstration](docs/testing/demonstrations.md).
 `make down` conserve la base et le volume des documents.
 Voir le [guide local](docs/operations/local-runtime.md) pour les prérequis,
 origines, limites du proxy local et tests. Les secrets restent hors Git.
 L’appréciation automatique requiert une passerelle FreeLLMAPI configurée côté
 worker, selon la [procédure serveur](docs/integrations/local-freellmapi.md).
 
-## Parcours visé
+## Parcours disponible
 
 ```text
 Créer une campagne et préciser les exigences
@@ -130,6 +136,7 @@ et la [procédure serveur](docs/integrations/local-freellmapi.md).
 
 ## Documentation
 
+- [Démonstrations](docs/testing/demonstrations.md) et [recette du MVP](docs/testing/acceptance-and-reference-cases.md) : modes, sources et preuves exécutées.
 - [Cadrage produit](docs/product/project-overview.md) : objectifs, parcours et périmètre.
 - [Analyse initiale](docs/product/project-analysis.md) : points solides et contrats à préciser.
 - [Spécification du moteur](docs/evaluation/evaluation-engine-spec.md) : états, calcul et cas de référence.
@@ -141,7 +148,7 @@ et la [procédure serveur](docs/integrations/local-freellmapi.md).
 
 Le projet est développé par un mainteneur avec l'assistance d'outils de
 développement. Les contrats et décisions servent de base au travail ; les
-comportements implémentés devront être prouvés par des vérifications exécutées.
+comportements implémentés sont reliés aux vérifications de la recette.
 Les données de démonstration sont fictives et les secrets restent hors du dépôt.
 
 ## Licence
