@@ -5,7 +5,7 @@ from .repository import excerpts, run_evidence, run_sources, sources
 
 
 def persist(db, claim, output):
-    """Only called after the worker's live lease and application fence checks."""
+    """Called after worker fencing, or inside a new private fixture transaction."""
     source_ids, excerpt_ids = [], []
     for record in output["sources"]:
         fields = {k: v for k, v in record.items() if k != "excerpts"}

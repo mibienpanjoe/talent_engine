@@ -1,0 +1,143 @@
+{
+  "version": "demonstrations-v1",
+  "domains": [
+    {
+      "key": "development",
+      "type": "training",
+      "title": "Formation développement · démonstration fictive",
+      "domain": "Développement",
+      "families": [
+        "programming_foundations",
+        "practical_work",
+        "learning_approach"
+      ],
+      "questions": [
+        "Expliquez un cas de programmation et sa vérification.",
+        "Décrivez votre contribution à une réalisation.",
+        "Présentez une difficulté et votre démarche d’apprentissage."
+      ],
+      "expectations": [
+        "Expliquer un raisonnement et vérifier un cas simple.",
+        "Décrire une réalisation personnelle, ses choix et son résultat.",
+        "Décrire une difficulté, une ressource et un ajustement."
+      ],
+      "candidates": [
+        {
+          "name": "Amina",
+          "levels": [
+            3,
+            3,
+            4
+          ],
+          "answers": [
+            "J’ai séparé la validation des entrées du calcul, puis testé un panier vide et un panier de deux articles.",
+            "J’ai réalisé une API de suivi de dépenses. J’ai choisi SQLite pour ce prototype et créé les routes de création et de consultation. Le résultat permet de retrouver les dépenses du mois.",
+            "Une requête échouait après ajout d’un champ. J’ai relu l’erreur, reproduit le cas dans un test, corrigé la validation puis réutilisé cette méthode dans un autre exercice."
+          ]
+        },
+        {
+          "name": "Boris",
+          "levels": [
+            2,
+            3,
+            3
+          ],
+          "answers": [
+            "Une fonction reçoit un nombre et renvoie son double. Je distingue la variable d’entrée du résultat, mais je dois encore vérifier les valeurs invalides.",
+            "J’ai créé un agenda personnel. J’ai choisi un fichier JSON, écrit moi-même les fonctions d’ajout et de recherche, puis vérifié que les rendez-vous étaient retrouvés.",
+            "Je ne comprenais pas les dictionnaires. J’ai suivi un tutoriel puis appliqué les exemples à mon agenda."
+          ]
+        },
+        {
+          "name": "Chloé",
+          "levels": [
+            4,
+            null,
+            3
+          ],
+          "answers": [
+            "J’ai écrit une fonction de recherche. J’ai vérifié une liste vide, un élément présent et un élément absent, puis expliqué pourquoi la boucle s’arrête.",
+            "",
+            "Une erreur de conversion bloquait mon exercice. J’ai consulté la documentation, isolé la ligne et appliqué une vérification d’entrée."
+          ]
+        },
+        {
+          "name": "David",
+          "levels": [
+            4,
+            4,
+            3
+          ],
+          "available": "2026-10-06",
+          "answers": [
+            "J’ai isolé une fonction de validation, expliqué ses branches et testé les cas vide, valide et invalide.",
+            "J’ai réalisé un suivi de stock. J’ai corrigé une quantité négative en séparant validation et sauvegarde, puis ajouté un test pour éviter son retour.",
+            "Une jointure SQL ne retournait pas les lignes attendues. J’ai relu la documentation et essayé la requête sur un petit jeu de données."
+          ]
+        }
+      ]
+    },
+    {
+      "key": "marketing",
+      "type": "recruitment",
+      "title": "Marketing junior · démonstration fictive",
+      "domain": "Marketing",
+      "families": [
+        "audience_understanding",
+        "results_analysis",
+        "content_production"
+      ],
+      "questions": [
+        "Décrivez une audience et son besoin.",
+        "Analysez les résultats d’une action marketing.",
+        "Présentez un contenu que vous avez produit."
+      ],
+      "expectations": [
+        "Identifier une audience, son besoin et un message adapté.",
+        "Interpréter des indicateurs et proposer une action vérifiable.",
+        "Décrire un contenu, sa contribution et son adaptation au canal."
+      ],
+      "candidates": [
+        {
+          "name": "Fatou",
+          "levels": [
+            3,
+            4,
+            2
+          ],
+          "answers": [
+            "Pour une librairie fictive, j’ai ciblé les étudiants cherchant des livres abordables et proposé un message sur le prix et le retrait rapide.",
+            "Sur une campagne fictive, 200 visites ont donné 20 demandes, soit 10 %. Après changement de l’appel à l’action, 180 visites ont donné 27 demandes, soit 15 %. Je propose de refaire l’essai sur deux semaines avec le même budget et de suivre les demandes confirmées.",
+            "J’ai rédigé une courte annonce de rentrée avec une photo de livres et un appel à découvrir la sélection."
+          ]
+        },
+        {
+          "name": "Karim",
+          "levels": [
+            4,
+            2,
+            3
+          ],
+          "answers": [
+            "J’ai distingué les étudiants de première année des lecteurs réguliers, décrit leurs contraintes de budget et de temps, puis testé deux messages lors d’un atelier fictif. Les retours ont conduit à simplifier l’offre.",
+            "Le tableau présente 120 clics et 12 demandes. Le taux de demande est de 10 %, mais je ne sais pas encore si les demandes ont abouti à une vente.",
+            "J’ai écrit une série de trois publications, adapté leur longueur à Instagram et choisi un appel à l’action cohérent. Mon rôle a été la rédaction et la sélection des visuels."
+          ]
+        },
+        {
+          "name": "Lina",
+          "levels": [
+            3,
+            null,
+            4
+          ],
+          "answers": [
+            "J’ai décrit une audience de jeunes actifs souhaitant gagner du temps et proposé un message centré sur la simplicité du service.",
+            "",
+            "J’ai produit une série d’annonces, comparé deux formulations lors d’un atelier fictif et ajusté le texte après les retours. J’ai ensuite décliné la version retenue en publication et en email."
+          ]
+        }
+      ]
+    }
+  ]
+}

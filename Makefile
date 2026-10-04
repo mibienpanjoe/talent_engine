@@ -35,3 +35,7 @@ integration-test:
 .PHONY: seed-access
 seed-access:
 	$(COMPOSE) run --rm seed-access
+
+.PHONY: seed-demo
+seed-demo:
+	$(COMPOSE) run --rm seed-demo

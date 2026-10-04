@@ -79,6 +79,22 @@ services:
     depends_on:
       db:
         condition: service_healthy
+  seed-demo:
+    image: ${COMPOSE_PROJECT_NAME:-talent-engine}-api
+    environment:
+      TALENT_DATABASE_URL: postgresql+psycopg://talent:${TALENT_DB_PASSWORD}@db:5432/talent
+      TALENT_PUBLIC_ORIGIN: ${TALENT_PUBLIC_ORIGIN:-http://localhost:3003}
+      TALENT_LOCAL_DEVELOPMENT: 'true'
+      TALENT_CSRF_SECRET: ${TALENT_CSRF_SECRET:?Set TALENT_CSRF_SECRET in .env}
+      TALENT_REVIEWER_LOGIN: ${TALENT_REVIEWER_LOGIN:-}
+      TALENT_UPLOAD_DIRECTORY: /app/private-uploads
+    volumes:
+      - private_uploads:/app/private-uploads
+    command: ["python", "-m", "talent_engine.demo", "--mode", "preloaded"]
+    profiles: ["tools"]
+    depends_on:
+      db:
+        condition: service_healthy
   web:
     environment:
       TALENT_API_ORIGIN: http://api:8000

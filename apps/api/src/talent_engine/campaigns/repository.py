@@ -180,14 +180,14 @@ def idempotent(
     return result
 
 
-def insert_campaign(db, owner_id, configuration):
+def insert_campaign(db, owner_id, configuration, *, campaign_id=None):
     import secrets
 
     row = (
         db.execute(
             campaigns.insert()
             .values(
-                id=uuid4(),
+                id=campaign_id or uuid4(),
                 owner_id=owner_id,
                 state="draft",
                 revision=1,
