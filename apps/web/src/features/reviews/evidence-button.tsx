@@ -16,10 +16,12 @@ export function EvidenceButton({
   id,
   label,
   uploadId,
+  className,
 }: {
   id: string;
   label: string;
   uploadId?: string | null;
+  className?: string;
 }) {
   const [evidence, setEvidence] = useState<components["schemas"]["Evidence"]>();
   const [loading, setLoading] = useState(false);
@@ -53,7 +55,7 @@ export function EvidenceButton({
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="secondary">{label}</Button>
+        <Button variant="secondary" className={className}>{label}</Button>
       </DialogTrigger>
       <DialogContent className="form-preview">
         <DialogTitle className="dialog-title">Preuve citée</DialogTitle>

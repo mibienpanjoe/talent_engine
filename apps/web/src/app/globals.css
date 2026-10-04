@@ -171,3 +171,13 @@ textarea.ui-input { resize:vertical; }
 .source-links { margin-block:1rem; }
 .source-links a { display:inline-flex; align-items:center; min-height:44px; }
 .source-group .provenance-details { margin-bottom:0; }
+
+.criterion-result .criterion-level { display:inline-flex; padding:.375rem .75rem; border-radius:var(--radius-control); font-size:.875rem; font-weight:500; margin-block:.75rem; }
+.criterion-result .criterion-level--supported { background:#1d302a; color:var(--success); }
+.criterion-level--limited { background:var(--raised); color:var(--text); }
+.criterion-result .criterion-level--unknown { background:var(--danger-surface); color:var(--danger); }
+.criterion-actions { display:grid; gap:1rem; margin-top:1.25rem; }
+.criterion-evidence h4 { color:var(--muted); font-size:.8125rem; font-weight:500; margin:0 0 .75rem; }
+.criterion-proof { background:#182334; color:var(--accent); border-color:#354c6b; text-align:left; overflow-wrap:anywhere; max-width:100%; }
+.criterion-correction { padding-top:.75rem; border-top:1px solid var(--border); }
+.criterion-correction-button { color:var(--muted); }

@@ -106,7 +106,7 @@ export function CorrectionEditor({
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="secondary">Corriger</Button>
+        <Button variant="ghost" className="criterion-correction-button">{kind === "condition" ? "Corriger la condition" : "Corriger l’appréciation"}</Button>
       </DialogTrigger>
       <DialogContent className="form-preview">
         <DialogTitle>Correction humaine</DialogTitle>
