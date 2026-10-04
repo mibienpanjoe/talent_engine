@@ -52,8 +52,9 @@ le viewport, avec défilement interne pour les formulaires longs.
 
 Les corrections de recette portent sur la valeur initiale des corrections
 humaines, leur réinitialisation après changement de révision, la lisibilité
-des titres de dialogue, la ponctuation, les libellés des dossiers préchargés
-et la page introuvable. Le formulaire rend lui-même le statut facultatif ;
+des titres de dialogue, la ponctuation, les libellés des dossiers préchargés,
+la page introuvable et le bouton Réessayer après une panne serveur. Ce dernier
+refait une navigation complète au lieu de rejouer le rendu client en erreur. Le formulaire rend lui-même le statut facultatif ;
 les libellés des nouvelles démonstrations ne le répètent plus.
 
 ## Pertinence et provenance
