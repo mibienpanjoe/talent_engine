@@ -7,6 +7,7 @@ présents ; leurs preuves et limites figurent dans la recette.
 
 ## 1. Point d’entrée actuel
 
+- [Aperçu de l’interface](interface-gallery.md) : fonctionnalités et captures de démonstration.
 - [Installation locale](operations/local-runtime.md) : commandes, configuration et accès.
 - [Démonstrations](testing/demonstrations.md) : développement/marketing, préchargé ou réel.
 - [Recette du MVP](testing/acceptance-and-reference-cases.md) : couverture des exigences et limites des preuves.
