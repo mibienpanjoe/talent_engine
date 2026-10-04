@@ -59,7 +59,7 @@ def test_campaign_request_quota_is_atomic_across_different_ips(context):
     client, engine = context
     _, _, token, _ = prepare(client)
     settings = Settings(
-        database_url=str(engine.url),
+        database_url=engine.url.render_as_string(hide_password=False),
         public_origin="http://localhost:3003",
         local_development=True,
         csrf_secret="test-only-csrf-" + "x" * 32,

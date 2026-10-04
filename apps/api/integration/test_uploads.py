@@ -233,7 +233,7 @@ def test_collector_skips_locked_then_collects_expired(context, tmp_path):
         db.execute(select(uploads).with_for_update()).all()
         # No filesystem walk needed: skip lock is independently verified.
         settings = Settings(
-            database_url=str(engine.url),
+            database_url=engine.url.render_as_string(hide_password=False),
             upload_directory=tmp_path / "uploads",
             public_origin="http://localhost:3003",
             local_development=True,

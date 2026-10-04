@@ -197,7 +197,7 @@ engine.dispose()
 """)
     environment = {
         **os.environ,
-        "PROBE_DATABASE_URL": str(engine.url),
+        "PROBE_DATABASE_URL": engine.url.render_as_string(hide_password=False),
         "PROBE_SCHEMA": schema,
     }
     victim = subprocess.Popen(
