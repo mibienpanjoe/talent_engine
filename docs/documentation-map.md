@@ -1,170 +1,93 @@
-# Talent Engine — Carte documentaire et organisation proposée
+# Talent Engine — Carte documentaire
 
 **Date :** 2026-10-04
-**Statut :** index actuel du MVP, suivi de la structure historique proposée.
-Le runtime local, les contrats, les adaptateurs et les démonstrations sont
-présents ; leurs preuves et limites figurent dans la recette.
 
-## 1. Point d’entrée actuel
+**Statut :** index de la documentation du MVP implémenté.
+
+Cette carte rassemble les guides, contrats et décisions du dépôt. Les résultats
+vérifiés et leurs limites sont détaillés dans la recette ; les documents de
+cadrage initial conservent leur contexte historique.
+
+## Découvrir et essayer
 
 - [Aperçu de l’interface](interface-gallery.md) : fonctionnalités et captures de démonstration.
 - [Installation locale](operations/local-runtime.md) : commandes, configuration et accès.
-- [Démonstrations](testing/demonstrations.md) : développement/marketing, préchargé ou réel.
-- [Recette du MVP](testing/acceptance-and-reference-cases.md) : couverture des exigences et limites des preuves.
-- [Adaptateurs IA](integrations/ai-adapters.md) et [passerelle serveur](integrations/local-freellmapi.md) : provenance, budgets et choix vérifiés.
+- [Démonstrations](testing/demonstrations.md) : formation et marketing, résultats préchargés ou analyses réelles.
+- [Recette du MVP](testing/acceptance-and-reference-cases.md) : couverture des exigences et limites des vérifications.
 
-### Sources initiales et contrats
+## Produit et règles métier
 
-Lire dans cet ordre :
+- [Cadrage produit](product/project-overview.md) : vision et parcours initial.
+- [Exigences et acceptation](product/mvp-requirements-and-acceptance.md) : périmètre du MVP et critères observables.
+- [Registre des décisions](product/decision-register.md) : choix retenus et arbitrages.
+- [Campagnes et formulaires](campaigns/campaign-and-form-contract.md) : configuration, publication, gel et duplication.
+- [Réception des candidatures](applications/submission-contract.md) : réponses, documents et idempotence.
+- [Revue et corrections](review/review-and-corrections.md) : files de dossiers, corrections humaines, décisions et versions.
 
-1. [Project overview](product/project-overview.md) : vision, parcours et périmètre source.
-2. [Evaluation engine specification](evaluation/evaluation-engine-spec.md) : complément proposé pour le moteur.
-3. [Analyse initiale](product/project-analysis.md) : objectifs, points solides et contrats manquants.
-4. [Registre des décisions](product/decision-register.md) : arbitrages à traiter.
-5. [Cadrage MVP](product/mvp-requirements-and-acceptance.md) : exigences et acceptation proposées.
-6. [Structure du dépôt proposée](architecture/repository-structure.md) : arborescence, responsabilités et choix à trancher.
-7. [Contrat campagne/formulaire](campaigns/campaign-and-form-contract.md) : snapshots, gel, questions, publication et concurrence ; comportement à implémenter.
+## Évaluation et collecte des sources
 
-Le cadrage produit est classé sous `docs/product/` et la spécification du moteur
-sous `docs/evaluation/`. Ils restent utiles : le premier porte la vision et
-le parcours global ; le second détaille le moteur et ses exemples. Le cadrage est mis à jour pour
-refléter les décisions explicites ; les propositions du moteur restent ouvertes.
-Les nouveaux documents restent en français pour suivre la langue des sources ;
-cette convention est révisable.
+- [Contrat d’évaluation](evaluation/evaluation-contract.md) : états, disponibilité, couverture et score.
+- [Politiques et barèmes](evaluation/policies-and-rubrics.md) : compilation des critères, poids et niveaux.
+- [Extraction des sources](operations/source-extraction.md) : réponses, documents, OCR, portfolios et GitHub.
+- [Adaptateurs IA](integrations/ai-adapters.md) : appréciation, vecteurs, OCR et provenance.
+- [Passerelle FreeLLMAPI](integrations/local-freellmapi.md) : configuration serveur et limites vérifiées.
+- [Cycle de l’analyse](operations/analysis-lifecycle.md) : tâches persistantes, tentatives, reprise et relances.
 
-## 2. Structure documentaire cible historique
+## Architecture et données
 
-Cette arborescence décrit la cible ; elle ne représente pas les fichiers
-présents sur disque.
+- [Architecture système](architecture/system-architecture.md) : modules, outils et runtime.
+- [Organisation du dépôt](architecture/repository-structure.md) : découpage du monorepo et contexte des choix initiaux.
+- [Contrat HTTP](architecture/api-contract.md) : routes et conception de l’API.
+- [Modèle canonique](data/canonical-model.md) : entités, relations et invariants.
+- [Dictionnaire de données](data/data-dictionary.md) : types, nullabilité et versions.
+- [Audit des dépendances](operations/dependency-audit.md) : versions et vérifications.
+
+Les schémas HTTP actuels sont exportés depuis le serveur dans
+[contracts/openapi.json](../contracts/openapi.json). Le fichier
+[contracts/api-design.openapi.json](../contracts/api-design.openapi.json)
+conserve le contrat manuel de conception. Les résultats numériques fictifs de
+référence se trouvent dans `fixtures/expected-results/`.
+
+## Identité et sécurité
+
+- [Identité visuelle](design/visual-identity.md) : thème sombre et direction « Signal ».
+- [Assets de marque](design/brand-assets.md) : logos, icônes et usages.
+- [Sécurité](../SECURITY.md) : accès, collecte et suppression des données.
+
+## Décisions d’architecture
+
+- [ADR-0001](adr/0001-application-nextjs-fastapi-postgresql.md) : Next.js, FastAPI et PostgreSQL.
+- [ADR-0002](adr/0002-monorepo-web-et-api.md) : monorepo web et API.
+- [ADR-0003](adr/0003-tooling-and-contract-generation.md) : outils et génération des contrats.
+- [ADR-0004](adr/0004-postgresql-analysis-worker.md) : worker PostgreSQL durable.
+
+## Documents de cadrage initial
+
+L’[analyse initiale](product/project-analysis.md) et la
+[spécification initiale du moteur](evaluation/evaluation-engine-spec.md)
+expliquent l’origine du produit et des propositions. Pour les règles détaillées,
+consulter les contrats métier ci-dessus ; pour leur vérification, consulter la recette.
+
+## Organisation du dépôt
 
 ```text
-README.md                                 présentation et démarrage vérifié
-CONTRIBUTING.md                            présent : contribution et définition de terminé
-SECURITY.md                                présent : accès, collecte et purge
-docs/
-  documentation-map.md                    présent : navigation et structure proposée
-  product/
-    project-overview.md                   présent : vision et cadrage source
-    project-analysis.md                   présent : analyse des sources
-    decision-register.md                  présent : décisions ouvertes
-    mvp-requirements-and-acceptance.md     présent : exigences et critères proposés
-    roadmap.md                            tranches démontrables et dépendances
-  campaigns/
-    campaign-and-form-contract.md         présent : besoin, questions, versions et publication
-  applications/
-    submission-contract.md                présent : réception, fichiers et idempotence
-  evaluation/
-    evaluation-engine-spec.md             présent : spécification source du moteur
-    evaluation-contract.md                présent : états, admissibilité et score
-    policies-and-rubrics.md                présent : compilation, poids et barèmes
-    evidence-and-provenance.md             extraits, références et sources répétées
-  review/
-    review-and-corrections.md              présent : files, corrections et versions
-  data/
-    canonical-model.md                    présent : entités, relations et invariants
-    data-dictionary.md                    présent : types, nullabilité et versions
-  architecture/
-    repository-structure.md               présent : proposition d'organisation du code
-    system-architecture.md                présent : modules, outils et runtime cible
-    api-contract.md                       présent : routes et OpenAPI de conception
-  integrations/
-    document-and-web-extraction.md        PDF, OCR, portfolios et GitHub bornés
-    ai-adapters.md                        génération, embeddings et OCR
-    local-freellmapi.md                    présent : installation et limites vérifiées
-  operations/
-    analysis-lifecycle.md                 présent : tâches, tentatives et reprise
-    local-runtime.md                      présent : démarrage vérifié et modes de démonstration
-  design/
-    visual-identity.md                    présent : direction sombre proposée
-    brand-assets.md                       présent : assets, usages et vérifications
-    references/
-      talent-engine-signal-identity.png   présent : référence fournie par le mainteneur
-  testing/
-    acceptance-and-reference-cases.md     fixtures, oracles, parcours et essais modèles
-  adr/
-    0001-application-nextjs-fastapi-postgresql.md  présent : stack retenue
-    0002-monorepo-web-et-api.md            présent : monorepo retenu
-    0003-tooling-and-contract-generation.md      présent : outils et génération
-    0004-postgresql-analysis-worker.md            présent : worker durable
-    NNNN-title.md                         décisions suivantes
+apps/web/       Interface Next.js et client TypeScript généré
+apps/api/       API FastAPI, métier, worker et migrations
+contracts/      Export HTTP actuel et contrat de conception
+fixtures/       Données fictives et résultats de référence
+docs/           Guides, contrats, décisions et captures de l’interface
+assets/brand/   Logos et icônes partagés
 ```
 
-Créer chaque document lorsqu'il possède un contenu utile, des dépendances
-identifiées et un propriétaire de contrat. Éviter les fichiers vides et les
-copies de l'overview.
+Les plans et notes du dossier `tasks/` restent locaux et non committés. La
+documentation destinée aux lecteurs du dépôt est conservée sous `docs/`.
 
-Les schémas HTTP typés se trouvent dans
-[contracts/api-design.openapi.json](../contracts/api-design.openapi.json),
-contrat manuel de conception distinct de l’export serveur actuel
-`contracts/openapi.json`. Les oracles
-numériques fictifs sont sous `fixtures/expected-results/`.
+## Conventions de documentation
 
-## 3. Ordre de rédaction et provenance
-
-| Ordre | Documents | Sources initiales | Décisions nécessaires |
-| --- | --- | --- | --- |
-| 1 | Exigences MVP et acceptation | Overview §§1–9, 14 et 16 ; moteur §§1–2 et 9. | DEC-01. |
-| 2 | Campagne, soumission, évaluation et revue | Overview §§5–9 ; moteur §§3–10. | DEC-02 à DEC-07 ; détails de DEC-09. |
-| 3 | Modèle canonique et dictionnaire | Overview §13 et contrats de l'étape 2. | Identifiants, relations, versions et nullabilité. |
-| 4 | Architecture, API, exécution et sécurité | Overview §§11–15 ; moteur §10 ; contrats précédents. | DEC-08 à DEC-10. |
-| 5 | Extraction et adaptateurs IA | Overview §§7 et 12 ; moteur §§4 et 11. | DEC-10 et DEC-11 après essais. |
-| 6 | Design, fixtures et acceptation du parcours | Overview §§10 et 16 ; moteur §§7–9 et 11. | DEC-05, DEC-06 et DEC-12. |
-| 7 | Roadmap, contribution et documentation de démarrage | Ensemble des contrats ; commandes réellement disponibles. | DEC-01, DEC-13 et preuves d'exécution. |
-
-Les cas attendus et les parcours d'écran peuvent se préciser dès l'étape 1.
-La documentation des commandes attend une application exécutable : aucun
-script de build, test ou démarrage ne doit être présenté comme existant avant
-sa création et sa vérification.
-
-## 4. Conventions de documentation
-
-- Distinguer position source, proposition, décision acceptée et comportement vérifié.
-- Définir les exigences avec un identifiant stable, leur source et une acceptation observable.
-- Donner à chaque contrat une responsabilité principale ; les autres documents y renvoient.
-- Conserver inconnues, échecs techniques et décisions humaines comme états distincts.
+- Distinguer cadrage initial, décision retenue et comportement vérifié.
+- Définir chaque exigence avec un identifiant stable et une acceptation observable.
+- Donner à chaque contrat une responsabilité principale et y renvoyer depuis les autres documents.
+- Conserver les informations inconnues, échecs techniques et décisions humaines comme états distincts.
 - Documenter les versions de configuration, politique, modèle, prompt et sources.
-- Résoudre explicitement un conflit entre sources ; ne pas appliquer une priorité implicite.
-- Consigner les choix techniques coûteux dans des ADR proposées puis acceptées.
-- Mettre à jour le document propriétaire lorsque son contrat change.
-- Signaler les fixtures préchargées et les essais réellement exécutés.
-
-## 5. Structure applicative indicative
-
-L'overview propose `apps/web/`, `apps/api/`, `fixtures/`, `.env.example` et
-`compose.yaml`. Cette base est cohérente avec la stack Next.js/FastAPI retenue.
-La [proposition de structure](architecture/repository-structure.md) précise les
-emplacements, les responsabilités et les choix à trancher. Aucun squelette
-applicatif n'est créé pendant cette discussion.
-
-Le découpage métier de l'analyse organise les responsabilités à l'intérieur
-de l'application. Il n'impose pas un service distinct par domaine. Une table
-de tâches persistante reste à concevoir selon les garanties du parcours.
-
-Le dossier `tasks/`, s'il est utilisé ultérieurement pour le travail local,
-reste distinct de la documentation durable sous `docs/`.
-
-Les assets partagés de marque sont conservés dans `assets/brand/` et décrits
-dans [le guide des assets](design/brand-assets.md). Leurs intégrations dans le
-frontend seront ajoutées au bootstrap.
-
-## 6. Lecture de la phase contrats terminée
-
-Après le contrat de campagne, lire :
-
-- [Politiques et barèmes](evaluation/policies-and-rubrics.md),
-  [évaluation](evaluation/evaluation-contract.md),
-  [revue/corrections](review/review-and-corrections.md).
-- [Réception](applications/submission-contract.md),
-  [exécution](operations/analysis-lifecycle.md), [sécurité](../SECURITY.md).
-- [Modèle](data/canonical-model.md), [dictionnaire](data/data-dictionary.md),
-  [API](architecture/api-contract.md).
-- [Architecture](architecture/system-architecture.md),
-  [contribution](../CONTRIBUTING.md), ADR-0003/0004.
-
-Les textes initialement proposés conservent leur contexte historique ; les
-contrats propriétaires détaillés fixent maintenant les règles de réalisation.
-Les preuves d’intégration et de runtime sont reliées à la recette actuelle ;
-les tableaux de conception ci-dessus conservent leur contexte historique.
-
-Les adaptateurs implémentés, la récupération et leur comparaison réelle sont
-décrits dans [Adaptateurs IA et récupération versionnée](integrations/ai-adapters.md).
+- Consigner les choix d’architecture dans les ADR et actualiser le contrat concerné lorsqu’il change.
+- Identifier les données fictives, résultats préchargés et analyses réellement exécutées.

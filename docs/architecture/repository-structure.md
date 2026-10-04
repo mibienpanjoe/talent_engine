@@ -103,7 +103,6 @@ talent_engine/
   pnpm-workspace.yaml
   pnpm-lock.yaml
   README.md
-  CONTRIBUTING.md
   SECURITY.md
 ```
 
