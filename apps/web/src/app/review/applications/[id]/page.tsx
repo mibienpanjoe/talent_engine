@@ -1,3 +1,4 @@
+import { DeleteApplication } from "../../../../features/reviews/delete-application";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { reviewerApi } from "../../../../lib/server-api";
@@ -5,7 +6,10 @@ import { SiteHeader } from "../../../../components/site-header";
 import { AccountDialog } from "../../../../features/access/account-dialog";
 import { PolicyDetails } from "../../../../features/campaigns/policy-details";
 import { EvaluationDetails } from "../../../../features/reviews/evaluation-details";
-import { decisionLabels } from "../../../../features/reviews/labels";
+import { AnalysisActions } from "../../../../features/reviews/analysis-actions";
+import { VersionHistory } from "../../../../features/reviews/version-history";
+import { DecisionEditor } from "../../../../features/reviews/decision-editor";
+import { ReviewHistory } from "../../../../features/reviews/review-history";
 import { RefreshButton } from "../../../../features/campaigns/refresh-button";
 export default async function ApplicationPage({
   params,
@@ -59,8 +63,12 @@ export default async function ApplicationPage({
             }[a.processing_state]
           }
         </p>
-        <p>Décision humaine : {decisionLabels[a.decision]}.</p>
+        <DecisionEditor key={`decision:${a.review_revision}`} application={a} />
         <EvaluationDetails dossier={result.data} />
+        <ReviewHistory
+          key={`history:${a.review_revision}`}
+          dossier={result.data}
+        />
         <section aria-label="Progression du traitement" className="empty-state">
           <h2>Traitement du dossier</h2>
           {analyses.length === 0 ? (
@@ -120,14 +128,20 @@ export default async function ApplicationPage({
             ))
           )}
         </section>
+        <AnalysisActions
+          key={`analysis:${a.review_revision}`}
+          dossier={result.data}
+        />
+        <VersionHistory
+          key={`versions:${a.review_revision}`}
+          dossier={result.data}
+        />
         <RefreshButton />
+        <DeleteApplication
+          key={`delete:${a.review_revision}`}
+          application={a}
+        />
         <PolicyDetails snapshotId={a.snapshot_id} />
-        {(result.data.pending_evaluation_ids?.length ?? 0) > 0 && (
-          <p>
-            Une nouvelle analyse est disponible, en attente d’activation. Le
-            résultat effectif reste celui affiché ci-dessus.
-          </p>
-        )}
         {(result.data.sources?.length ?? 0) > 0 && (
           <section className="review-section">
             <h2>Sources de cette analyse</h2>

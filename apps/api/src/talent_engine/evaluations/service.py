@@ -239,16 +239,11 @@ def finalize(db, claim, output):
         )
     )
     state = "completed" if calculation["complete"] else "completed_partial"
-    run = (
-        db.execute(select(analysis_runs).where(analysis_runs.c.id == claim.run_id))
-        .mappings()
-        .one()
-    )
     updates = dict(
         processing_state=state,
         processing_revision=applications.c.processing_revision + 1,
     )
-    if run["reason"] == "initial" and app["effective_evaluation_id"] is None:
+    if app["effective_evaluation_id"] is None:
         updates.update(
             effective_evaluation_id=result.id,
             review_revision=applications.c.review_revision + 1,

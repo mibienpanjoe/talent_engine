@@ -45,6 +45,12 @@ calcule score, couverture, conditions et rangs exacts. Quatre files de revue
 et une fiche privée permettent de consulter les preuves et documents originaux.
 Les informations insuffisantes restent inconnues, sans score global artificiel.
 
+Le responsable peut corriger une appréciation avec justification et historique,
+puis enregistrer une décision indépendante. Les relances proposent une nouvelle
+version à activer explicitement, avec réapplication sélective des corrections.
+La suppression retire immédiatement le dossier de la revue ; un nettoyage
+persistant efface ensuite les données et documents avec un suivi des reprises.
+
 Le périmètre complet est décrit dans les
 [exigences et critères d'acceptation](docs/product/mvp-requirements-and-acceptance.md).
 Les barèmes chiffrés sont des exemples fictifs à calibrer.
@@ -83,7 +89,8 @@ Créer une campagne et préciser les exigences
 
 La création guidée, les formulaires publics, la collecte des sources,
 l’appréciation sourcée et la consultation des résultats sont livrés.
-Les corrections humaines des appréciations suivent dans la prochaine phase.
+Les corrections historisées, décisions indépendantes, relances versionnées et
+la suppression durable sont également disponibles.
 Les pages exigeant JavaScript ne sont pas rendues ; la lecture ciblée des
 dépôts ne suffit pas à établir une contribution personnelle.
 

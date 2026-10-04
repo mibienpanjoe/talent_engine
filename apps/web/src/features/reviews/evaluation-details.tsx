@@ -1,6 +1,7 @@
 import type { components } from "../../lib/api.generated";
 import { assessmentLabels, displayDecimal, eligibilityLabels } from "./labels";
 import { EvidenceButton } from "./evidence-button";
+import { CorrectionEditor } from "./correction-editor";
 type Detail = components["schemas"]["ApplicationDetail"];
 
 export function EvaluationDetails({ dossier }: { dossier: Detail }) {
@@ -170,6 +171,11 @@ export function EvaluationDetails({ dossier }: { dossier: Detail }) {
             )}
             <div className="inline-actions">
               {assessment.evidence_ids.map(proof)}
+              <CorrectionEditor
+                dossier={dossier}
+                criterionId={assessment.criterion_id}
+                kind="assessment"
+              />
             </div>
           </article>
         ))}
@@ -212,6 +218,11 @@ export function EvaluationDetails({ dossier }: { dossier: Detail }) {
                 <p>{condition.rationale}</p>
                 <div className="inline-actions">
                   {condition.evidence_ids?.map(proof)}
+                  <CorrectionEditor
+                    dossier={dossier}
+                    criterionId={condition.criterion_id}
+                    kind="condition"
+                  />
                 </div>
               </article>
             );

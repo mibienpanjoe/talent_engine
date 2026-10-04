@@ -13,5 +13,7 @@ def register_models():
         "sources.data",
         "evaluations.data",
         "reception_limits.data",
+        "reviews.data",
+        "deletions.data",
     ):
         import_module("talent_engine." + module)

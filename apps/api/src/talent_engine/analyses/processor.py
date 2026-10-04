@@ -81,6 +81,12 @@ def process(
                 .mappings()
                 .all()
             )
+            from talent_engine.reviews.analysis import request_for_run, reused_sources
+
+            request = request_for_run(db, claim.run_id)
+            reused, only_keys = (
+                reused_sources(db, app["id"], request) if request else ([], None)
+            )
             app_id, answers = app["id"], app["answers"]
             snapshot_id = str(app["snapshot_id"])
         else:
@@ -96,9 +102,12 @@ def process(
             retry_errors=claim.attempt < 3,
             portfolio_web=portfolio_web,
             github_web=github_web,
+            only_keys=only_keys,
         )
     except (ProviderFailure, WebFailure) as error:
         raise StepFailure(
             error.code, retryable=error.retryable, retry_after=error.retry_after
         ) from None
-    return dict(version="received-sources-v3", snapshot_id=snapshot_id, sources=sources)
+    return dict(
+        version="received-sources-v3", snapshot_id=snapshot_id, sources=reused + sources
+    )

@@ -8,7 +8,7 @@ from talent_engine.config import Settings
 from talent_engine.database import build_engine
 from talent_engine.reception_limits.data import public_limits, transfers
 
-from .repository import uploads
+from .repository import upload_sessions, uploads
 from .service import storage_path
 
 
@@ -16,7 +16,23 @@ def collect(engine, settings):
     removed = 0
     with engine.begin() as db:
         db.execute(public_limits.delete().where(public_limits.c.expires_at <= now(db)))
-        db.execute(transfers.delete().where(transfers.c.expires_at <= now(db)))
+        stale = (
+            db.execute(
+                select(transfers)
+                .where(transfers.c.expires_at <= now(db))
+                .with_for_update(skip_locked=True)
+                .limit(100)
+            )
+            .mappings()
+            .all()
+        )
+        for transfer in stale:
+            key = transfer["storage_key"]
+            if key and not db.scalar(
+                select(uploads.c.id).where(uploads.c.storage_key == key)
+            ):
+                storage_path(settings, key).unlink(missing_ok=True)
+            db.execute(transfers.delete().where(transfers.c.id == transfer["id"]))
         rows = (
             db.execute(
                 select(uploads)
@@ -30,12 +46,17 @@ def collect(engine, settings):
             .mappings()
             .all()
         )
-        paths = [storage_path(settings, row["storage_key"]) for row in rows]
         for row in rows:
+            storage_path(settings, row["storage_key"]).unlink(missing_ok=True)
             db.execute(uploads.delete().where(uploads.c.id == row["id"]))
-    for path in paths:
-        path.unlink(missing_ok=True)
-        removed += 1
+            removed += 1
+        db.execute(
+            upload_sessions.delete().where(
+                upload_sessions.c.expires_at <= now(db),
+                ~upload_sessions.c.id.in_(select(uploads.c.session_id)),
+                ~upload_sessions.c.id.in_(select(transfers.c.session_id)),
+            )
+        )
     with engine.connect() as db:
         threshold = (now(db) - timedelta(hours=24)).timestamp()
         references = set(db.scalars(select(uploads.c.storage_key)))

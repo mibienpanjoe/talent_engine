@@ -90,13 +90,26 @@ def build_document_router(engine, settings):
         return result
 
     async def save(request, session_id, token, mode, owner_id=None):
+        key = mode + "/" + str(uuid4())
         with engine.begin() as db:
             authorized_session(db, settings, session_id, token, mode, owner_id)
-            transfer_id = reserve_transfer(db, session_id)
-        key = mode + "/" + str(uuid4())
+            transfer_id = reserve_transfer(db, session_id, key)
         path = storage_path(settings, key)
         path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
         persistence_attempted = False
+
+        def open_authorized_file():
+            with engine.begin() as db:
+                authorized_session(db, settings, session_id, token, mode, owner_id)
+                transfer = (
+                    db.execute(select(transfers).where(transfers.c.id == transfer_id))
+                    .mappings()
+                    .first()
+                )
+                if not transfer or transfer["expires_at"] <= now(db):
+                    raise AccessError(410, "upload_expired", "Transfer expired")
+                return open(path, "xb")
+
         try:
             async with asyncio.timeout(120):
                 async with request.form(
@@ -120,7 +133,7 @@ def build_document_router(engine, settings):
                         ) from None
                     size = 0
                     digest = hashlib.sha256()
-                    with open(path, "xb") as stream:
+                    with open_authorized_file() as stream:
                         os.chmod(path, 0o600)
                         while chunk := await document.read(65536):
                             size += len(chunk)
@@ -164,6 +177,15 @@ def build_document_router(engine, settings):
                     session = authorized_session(
                         db, settings, session_id, token, mode, owner_id
                     )
+                    transfer = (
+                        db.execute(
+                            select(transfers).where(transfers.c.id == transfer_id)
+                        )
+                        .mappings()
+                        .first()
+                    )
+                    if not transfer or transfer["expires_at"] <= now(db):
+                        raise AccessError(410, "upload_expired", "Transfer expired")
                     snapshot = snapshot_for_upload(
                         db, campaign, session["snapshot_id"], mode
                     )
@@ -230,6 +252,9 @@ def build_document_router(engine, settings):
 
             persistence_attempted = True
             return await run_in_threadpool(persist)
+        except AccessError:
+            path.unlink(missing_ok=True)
+            raise
         except BaseException:
             if not persistence_attempted:
                 path.unlink(missing_ok=True)

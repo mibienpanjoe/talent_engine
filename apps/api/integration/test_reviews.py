@@ -12,7 +12,7 @@ from talent_engine.integrations.llm import ChatResult
 from test_campaigns import headers
 
 
-def prepared(client):
+def prepared(client, *, question_types=None):
     h = headers(client)
     qids = [str(uuid4()) for _ in range(4)]
     families = ["programming_foundations", "practical_work", "learning_approach"]
@@ -51,7 +51,11 @@ def prepared(client):
         questions=[
             dict(
                 id=qid,
-                type="long_text" if i < 3 else "date",
+                type=question_types[i]
+                if question_types
+                else "long_text"
+                if i < 3
+                else "date",
                 label=f"Question {i}",
                 position=i,
                 required=False,
@@ -108,13 +112,25 @@ class OracleGateway:
         )
 
 
-def deposit(client, engine, prepared_data, name, levels, *, unmet=False):
+def deposit(
+    client,
+    engine,
+    prepared_data,
+    name,
+    levels,
+    *,
+    unmet=False,
+    portfolio_web=None,
+    source_values=None,
+):
     _, snapshot, token, qids = prepared_data
     answers = [
         dict(
             question_id=qid,
-            kind="long_text" if i < 3 else "date",
-            value="Preuve fictive pour " + name
+            kind=snapshot["configuration"]["questions"][i]["type"],
+            value=source_values[i]
+            if source_values
+            else "Preuve fictive pour " + name
             if i < 3
             else "2026-10-06"
             if unmet
@@ -140,7 +156,10 @@ def deposit(client, engine, prepared_data, name, levels, *, unmet=False):
             WorkerSettings(),
             "review-oracle",
             processor=partial(
-                process, gateway=OracleGateway(levels), embedder=ControlledEmbeddings()
+                process,
+                gateway=OracleGateway(levels),
+                embedder=ControlledEmbeddings(),
+                portfolio_web=portfolio_web,
             ),
         )
     with engine.connect() as db:

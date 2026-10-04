@@ -27,6 +27,7 @@ class DatabaseSettings(BaseSettings):
 
 
 class Settings(DatabaseSettings):
+    log_directory: Path | None = None
     upload_directory: Path = Path("/tmp/talent-engine-uploads")
     public_origin: str
     local_development: bool = False

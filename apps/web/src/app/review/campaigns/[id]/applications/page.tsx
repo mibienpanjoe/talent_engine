@@ -1,3 +1,4 @@
+import { CleanupStatus } from "../../../../../features/reviews/cleanup-status";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { reviewerApi } from "../../../../../lib/server-api";
@@ -47,9 +48,8 @@ export default async function ApplicationsPage({
     return `/review/campaigns/${id}/applications?${query}`;
   }
   const { client, reviewer } = await reviewerApi();
-  const result = await client.GET(
-    "/api/v1/campaigns/{campaign_id}/applications",
-    {
+  const [result, cleanups] = await Promise.all([
+    client.GET("/api/v1/campaigns/{campaign_id}/applications", {
       params: {
         path: { campaign_id: id },
         query: {
@@ -61,8 +61,15 @@ export default async function ApplicationsPage({
         },
       },
       signal: AbortSignal.timeout(5000),
-    },
-  );
+    }),
+    client
+      .GET("/api/v1/campaigns/{campaign_id}/cleanup-requests", {
+        params: { path: { campaign_id: id } },
+        signal: AbortSignal.timeout(5000),
+      })
+      .catch(() => ({ data: undefined })),
+  ]);
+
   if (result.response.status === 404 || result.response.status === 422)
     notFound();
   const changed =
@@ -77,6 +84,7 @@ export default async function ApplicationsPage({
       <main id="main" className="page-width">
         <Link href={`/review/campaigns/${id}`}>← La campagne</Link>
         <h1>Candidatures reçues</h1>
+        {cleanups.data && <CleanupStatus requests={cleanups.data} />}
         {changed ? (
           <section className="empty-state">
             <h2>La liste a changé.</h2>

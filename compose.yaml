@@ -38,15 +38,19 @@ services:
       retries: 6
     restart: unless-stopped
   worker:
+    logging:
+      driver: "none"
     image: ${COMPOSE_PROJECT_NAME:-talent-engine}-api
     environment:
       TALENT_DATABASE_URL: postgresql+psycopg://talent:${TALENT_DB_PASSWORD}@db:5432/talent
       TALENT_PUBLIC_ORIGIN: ${TALENT_PUBLIC_ORIGIN:-http://localhost:3003}
       TALENT_LOCAL_DEVELOPMENT: 'true'
       TALENT_CSRF_SECRET: ${TALENT_CSRF_SECRET:?Set TALENT_CSRF_SECRET in .env}
+      TALENT_LOG_DIRECTORY: /app/private-logs
       TALENT_UPLOAD_DIRECTORY: /app/private-uploads
     volumes:
       - private_uploads:/app/private-uploads
+      - technical_logs:/app/private-logs
     command: ["python", "-m", "talent_engine.analyses.worker"]
     depends_on:
       api:
@@ -90,3 +94,4 @@ services:
 volumes:
   postgres_data:
   private_uploads:
+  technical_logs:

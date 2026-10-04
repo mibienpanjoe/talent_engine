@@ -7,7 +7,7 @@ RUN uv sync --locked --no-dev --no-install-project
 COPY apps/api/src ./src
 COPY apps/api/migrations ./migrations
 COPY apps/api/alembic.ini ./
-RUN uv sync --locked --no-dev && mkdir -p /app/private-uploads && chown -R talent:talent /app
+RUN uv sync --locked --no-dev && mkdir -p /app/private-uploads /app/private-logs && chown -R talent:talent /app
 USER talent
 ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1
 CMD ["uvicorn", "talent_engine.main:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000", "--no-access-log"]

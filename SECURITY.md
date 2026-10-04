@@ -143,3 +143,21 @@ Les tests incluent capacités étrangères/expirées, test-vers-réel refusé,
 PDF chiffré, type déguisé, taille/pixels, téléchargement anonyme, rollback et
 rejeu ; le worker refuse les écritures d’une génération périmée ou supprimée.
 Le runtime livré ici reste local ; aucun déploiement Internet n’est revendiqué.
+
+
+### Suppression et rétention T31
+
+Les demandes de purge sont durables et réservées au propriétaire de la campagne.
+Les données deviennent immédiatement inaccessibles. La purge efface sources,
+preuves, embeddings, évaluations, corrections, décisions, tâches et fichiers ;
+les résultats tardifs et transferts révoqués ne peuvent recréer le dossier.
+Le reçu d’idempotence conserve uniquement ses identifiants techniques,
+empreintes et expiration d’origine, afin de refuser la réintroduction par rejeu.
+Les noms de fichiers et détails de réception sont retirés dès la demande.
+
+Les durées appliquées sont 90 jours pour un dossier, 24 heures pour un temporaire,
+sept jours pour le suivi terminé et les journaux techniques. Le worker reprend
+les purges bloquées sans limite de tentatives et signale l’incident après trois
+échecs. Les tests exercent ces cas, y compris une panne SQL après effacement
+physique et un upload déjà en cours. Les recettes locales ne suppriment que
+des données fictives créées pour ces vérifications.
