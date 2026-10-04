@@ -47,9 +47,16 @@ def activate(db, row, owner_id, payload):
         .all()
     )
     latest = {(event["kind"], event["criterion_id"]): event for event in old_events}
+    kept = (
+        {
+            (item.correction.target_kind, item.correction.criterion_id)
+            for item in payload.corrections
+        }
+        if payload.mode == "reapply_selected"
+        else set()
+    )
     if (
-        payload.mode == "use_new_base"
-        and any(e["action"] == "set" for e in latest.values())
+        any(e["action"] == "set" and key not in kept for key, e in latest.items())
         and not payload.confirm_discard_corrections
     ):
         raise AccessError(

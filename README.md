@@ -89,7 +89,8 @@ Créer une campagne et préciser les exigences
 
 La création guidée, les formulaires publics, la collecte des sources,
 l’appréciation sourcée et la consultation des résultats sont livrés.
-Les corrections humaines des appréciations suivent dans la prochaine phase.
+Les corrections historisées, décisions indépendantes, relances versionnées et
+la suppression durable sont également disponibles.
 Les pages exigeant JavaScript ne sont pas rendues ; la lecture ciblée des
 dépôts ne suffit pas à établir une contribution personnelle.
 

@@ -503,3 +503,116 @@ def test_review_action_replay_and_scoped_history_pagination(context):
         ).status_code
         == 409
     )
+
+
+def test_partial_reapplication_requires_discard_confirmation(context):
+    client, engine = context
+    app_id = deposit(client, engine, prepared(client), "Report partiel", [4, None, 3])
+    path = "/api/v1/applications/" + app_id
+    h = headers(client)
+    first = correction(client, path, h)
+    detail = client.get(path).json()
+    second_body = {
+        **expectation(client, path),
+        "target_kind": "assessment",
+        "criterion_id": detail["effective_evaluation"]["assessments"][0][
+            "criterion_id"
+        ],
+        "action": "set",
+        "status": "evaluated",
+        "level": 3,
+        "reason": "Deuxième correction vérifiée.",
+        "evidence_ids": detail["effective_evaluation"]["assessments"][0][
+            "evidence_ids"
+        ],
+    }
+    response = client.post(
+        path + "/corrections", headers=review_headers(h, second_body), json=second_body
+    )
+    assert response.status_code == 201, response.text
+    detail = client.get(path).json()
+    body = {
+        **expectation(client, path),
+        "reason": "reanalyze",
+        "base_run_id": detail["effective_evaluation"]["run_id"],
+        "source_ids": [],
+    }
+    assert (
+        client.post(
+            path + "/analyses", headers=review_headers(h, body), json=body
+        ).status_code
+        == 202
+    )
+    processor = partial(
+        process, gateway=OracleGateway([4, 2, 3]), embedder=ControlledEmbeddings()
+    )
+    for _ in range(3):
+        assert work_once(
+            engine, WorkerSettings(), "partial-report", processor=processor
+        )
+    before = client.get(path).json()
+    activation = {
+        **expectation(client, path),
+        "evaluation_id": before["pending_evaluation_ids"][0],
+        "mode": "reapply_selected",
+        "reason": "Reporter seulement la première correction.",
+        "corrections": [
+            dict(
+                origin_event_id=first["id"],
+                correction={
+                    **event_to_payload(before, first),
+                    **expectation(client, path),
+                },
+            )
+        ],
+    }
+    response = client.post(
+        path + "/activations", headers=review_headers(h, activation), json=activation
+    )
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "correction_confirmation_required"
+    assert client.get(path).json()["application"] == before["application"]
+    activation["confirm_discard_corrections"] = True
+    response = client.post(
+        path + "/activations", headers=review_headers(h, activation), json=activation
+    )
+    assert response.status_code == 200, response.text
+
+
+def test_expired_action_receipts_collected_without_removing_analysis_requests(context):
+    from datetime import timedelta
+
+    from sqlalchemy import select
+    from talent_engine.campaigns.lifecycle import now
+    from talent_engine.deletions.data import collect_retention
+    from talent_engine.reviews.data import application_actions
+
+    client, engine = context
+    app_id = deposit(
+        client, engine, prepared(client), "Rétention des actions", [4, None, 3]
+    )
+    path = "/api/v1/applications/" + app_id
+    h = headers(client)
+    correction(client, path, h)
+    body = {
+        **expectation(client, path),
+        "reason": "reanalyze",
+        "base_run_id": client.get(path).json()["effective_evaluation"]["run_id"],
+        "source_ids": [],
+    }
+    assert (
+        client.post(
+            path + "/analyses", headers=review_headers(h, body), json=body
+        ).status_code
+        == 202
+    )
+    with engine.begin() as db:
+        db.execute(
+            application_actions.update()
+            .where(application_actions.c.route == "corrections")
+            .values(expires_at=now(db) - timedelta(days=1))
+        )
+    collect_retention(engine)
+    with engine.connect() as db:
+        routes = list(db.scalars(select(application_actions.c.route)))
+    assert routes == ["analyses"]

@@ -4,6 +4,7 @@ from sqlalchemy import select
 from talent_engine.applications.data import applications, receipts
 from talent_engine.campaigns.data import campaigns
 from talent_engine.campaigns.lifecycle import now
+from talent_engine.reviews.data import application_actions
 
 from .repository import cleanup_requests
 from .service import mark
@@ -52,6 +53,11 @@ def collect_retention(engine):
                 mark(db, row)
                 count += 1
     with engine.begin() as db:
+        db.execute(
+            application_actions.delete().where(
+                application_actions.c.expires_at <= now(db)
+            )
+        )
         db.execute(receipts.delete().where(receipts.c.expires_at <= now(db)))
         db.execute(
             cleanup_requests.delete().where(

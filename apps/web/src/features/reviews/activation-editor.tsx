@@ -53,6 +53,9 @@ export function ActivationEditor({
       ]),
     ),
   );
+  const discardsCorrections = candidates.some(
+    (item) => mode === "use_new_base" || !choices[item.id].selected,
+  );
   async function activate() {
     setBusy(true);
     setError("");
@@ -157,7 +160,10 @@ export function ActivationEditor({
               className="ui-input"
               value={mode}
               disabled={busy}
-              onChange={(e) => setMode(e.target.value as typeof mode)}
+              onChange={(e) => {
+                setMode(e.target.value as typeof mode);
+                setConfirmed(false);
+              }}
             >
               <option value="use_new_base">Utiliser la nouvelle base</option>
               {candidates.length > 0 && (
@@ -167,7 +173,7 @@ export function ActivationEditor({
               )}
             </select>
           </label>
-          {mode === "use_new_base" && candidates.length > 0 && (
+          {discardsCorrections && (
             <label className="source-choice">
               <input
                 type="checkbox"
@@ -176,8 +182,8 @@ export function ActivationEditor({
                 checked={confirmed}
                 onChange={(e) => setConfirmed(e.target.checked)}
               />
-              Je confirme que les corrections précédentes ne feront plus partie
-              du résultat effectif. Leur historique restera consultable.
+              Je confirme que les corrections non reportées ne feront plus
+              partie du résultat effectif. Leur historique restera consultable.
             </label>
           )}
           {mode === "reapply_selected" && (
@@ -191,9 +197,13 @@ export function ActivationEditor({
                   key={item.id}
                   event={item}
                   choice={choices[item.id]}
-                  change={(choice) =>
-                    setChoices((current) => ({ ...current, [item.id]: choice }))
-                  }
+                  change={(choice) => {
+                    setChoices((current) => ({
+                      ...current,
+                      [item.id]: choice,
+                    }));
+                    setConfirmed(false);
+                  }}
                   dossier={dossier}
                   base={version.base}
                   disabled={busy}
@@ -219,9 +229,7 @@ export function ActivationEditor({
             disabled={
               busy ||
               !reason.trim() ||
-              (mode === "use_new_base" &&
-                candidates.length > 0 &&
-                !confirmed) ||
+              (discardsCorrections && !confirmed) ||
               (mode === "reapply_selected" &&
                 !Object.values(choices).some((c) => c.selected))
             }

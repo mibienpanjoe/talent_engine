@@ -64,3 +64,9 @@ application_actions = Table(
 )
 
 Index("ix_review_history", events.c.application_id, events.c.created_at, events.c.id)
+
+Index(
+    "ix_application_actions_result",
+    application_actions.c.result_id,
+    application_actions.c.route,
+)
