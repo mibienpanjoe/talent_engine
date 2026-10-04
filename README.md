@@ -11,6 +11,7 @@
 
 <p align="center">
   <a href="docs/operations/local-runtime.md"><strong>Démarrer en local</strong></a>
+  · <a href="docs/interface-gallery.md">Aperçu de l’interface</a>
   · <a href="docs/documentation-map.md">Documentation</a>
   · <a href="docs/evaluation/evaluation-engine-spec.md">Moteur d'évaluation</a>
   · <a href="docs/product/decision-register.md">Décisions</a>
@@ -25,35 +26,17 @@ Le projet est préparé pour le mini-challenge développeurs SKULLVI du Human
 Capital Program de GevConsulting. La démonstration cible une formation en
 développement et un recrutement marketing junior.
 
-## État du projet
+## Aperçu de l’interface
 
-Les contrats métier et HTTP sont documentés. Les fondations proposent une
-API FastAPI, PostgreSQL avec migrations, un frontend Next.js, un accès
-responsable par session serveur et un runtime Docker Compose. Le client
-TypeScript est généré depuis l’API réellement implémentée.
+![File de revue des candidatures fictives dans Talent Engine](docs/screenshots/review-queue.png)
 
-Les campagnes guidées, l’aperçu partagé, la publication et la réception durable
-sont exécutables. Le premier dépôt réel fige le formulaire et sa politique.
-Les documents PDF/PNG/JPEG restent privés ; les dossiers affichent les réponses
-et la progression du worker PostgreSQL, reprenable après interruption.
+[Parcourir les fonctionnalités en images](docs/interface-gallery.md) : campagnes,
+formulaire public, revue des dossiers, preuves, corrections et historique.
 
-Le worker extrait réponses, PDF textuels et scans par OCR conditionnel, puis
-collecte les portfolios publics et dépôts GitHub fournis, avec limites réseau
-et commit identifié. Les passages sont retrouvés avec un cache vectoriel
-versionné. Les appréciations sourcées sont validées côté serveur ; le backend
-calcule score, couverture, conditions et rangs exacts. Quatre files de revue
-et une fiche privée permettent de consulter les preuves et documents originaux.
-Les informations insuffisantes restent inconnues, sans score global artificiel.
-
-Le responsable peut corriger une appréciation avec justification et historique,
-puis enregistrer une décision indépendante. Les relances proposent une nouvelle
-version à activer explicitement, avec réapplication sélective des corrections.
-La suppression retire immédiatement le dossier de la revue ; un nettoyage
-persistant efface ensuite les données et documents avec un suivi des reprises.
-
-Le périmètre complet est décrit dans les
-[exigences et critères d'acceptation](docs/product/mvp-requirements-and-acceptance.md).
-Les barèmes chiffrés sont des exemples fictifs à calibrer.
+Le MVP est exécutable en local. Les captures utilisent des dossiers fictifs ;
+les barèmes sont des exemples à calibrer. L’analyse automatique nécessite une
+passerelle IA configurée. Le [guide de démonstration](docs/testing/demonstrations.md)
+distingue les résultats préchargés des analyses réellement exécutées.
 
 ## Démarrer en local
 
@@ -136,8 +119,9 @@ et la [procédure serveur](docs/integrations/local-freellmapi.md).
 
 ## Documentation
 
+- [Aperçu de l’interface](docs/interface-gallery.md) : captures des principales fonctionnalités.
 - [Démonstrations](docs/testing/demonstrations.md) et [recette du MVP](docs/testing/acceptance-and-reference-cases.md) : modes, sources et preuves exécutées.
-- [Cadrage produit](docs/product/project-overview.md) : objectifs, parcours et périmètre.
+- [Cadrage produit](docs/product/project-overview.md) et [exigences du MVP](docs/product/mvp-requirements-and-acceptance.md) : objectifs, parcours et périmètre.
 - [Analyse initiale](docs/product/project-analysis.md) : points solides et contrats à préciser.
 - [Spécification du moteur](docs/evaluation/evaluation-engine-spec.md) : états, calcul et cas de référence.
 - [Registre des décisions](docs/product/decision-register.md) : choix retenus et arbitrages ouverts.

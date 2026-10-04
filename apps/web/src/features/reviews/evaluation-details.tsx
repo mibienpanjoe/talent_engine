@@ -15,7 +15,7 @@ export function EvaluationDetails({ dossier }: { dossier: Detail }) {
     );
   const { calculation, provenance } = evaluation;
   const requirements = dossier.snapshot.configuration.requirements;
-  function proof(id: string, index: number) {
+  function proof(id: string) {
     const excerpt = dossier.evidence?.find((e) => e.id === id);
     const source = dossier.sources?.find(
       (s) => s.id === excerpt?.source_version_id,
@@ -26,14 +26,14 @@ export function EvaluationDetails({ dossier }: { dossier: Detail }) {
         id={id}
         label={
           excerpt?.locator.kind === "pdf"
-            ? `Extrait ${index + 1} · ${dossier.uploads?.find(file => file.id === source?.upload_id)?.filename ?? "Document"} · p. ${excerpt.locator.page}`
+            ? `Preuve · ${dossier.uploads?.find(file => file.id === source?.upload_id)?.filename ?? "Document"} · p. ${excerpt.locator.page}`
             : excerpt?.locator.kind === "human"
-              ? `Observation humaine ${index + 1}`
+              ? "Preuve · observation humaine"
               : excerpt?.locator.kind === "github"
-                ? `GitHub · extrait ${index + 1}`
+                ? "Preuve · dépôt GitHub"
                 : excerpt?.locator.kind === "web"
-                  ? `Portfolio · extrait ${index + 1}`
-                  : `Réponse du candidat · extrait ${index + 1}`
+                  ? "Preuve · portfolio"
+                  : "Preuve · réponse du candidat"
         }
         className="criterion-proof"
         uploadId={source?.upload_id}
@@ -178,10 +178,10 @@ export function EvaluationDetails({ dossier }: { dossier: Detail }) {
             )}
             <div className="criterion-actions">
               <div className="criterion-evidence">
-                <h4>Éléments justificatifs · {assessment.evidence_ids.length}</h4>
+                <h4>Preuves · {assessment.evidence_ids.length}</h4>
                 {assessment.evidence_ids.length ? (
                   <div className="inline-actions">{assessment.evidence_ids.map(proof)}</div>
-                ) : <p>Aucun extrait cité pour cette appréciation.</p>}
+                ) : <p>Aucune preuve citée pour cette appréciation.</p>}
               </div>
               <div className="criterion-correction">
                 <CorrectionEditor
@@ -238,7 +238,7 @@ export function EvaluationDetails({ dossier }: { dossier: Detail }) {
                 <p>{condition.rationale}</p>
                 <div className="criterion-actions">
                   <div className="criterion-evidence">
-                    <h4>Éléments justificatifs · {condition.evidence_ids?.length ?? 0}</h4>
+                    <h4>Preuves · {condition.evidence_ids?.length ?? 0}</h4>
                     {condition.evidence_ids?.length ? (
                       <div className="inline-actions">{condition.evidence_ids.map(proof)}</div>
                     ) : <p>Vérification à partir de la réponse structurée du candidat.</p>}
