@@ -1,6 +1,7 @@
 from sqlalchemy import (
     Column,
     DateTime,
+    ForeignKey,
     ForeignKeyConstraint,
     Numeric,
     String,
@@ -36,4 +37,18 @@ evaluations = Table(
             "analysis_runs.snapshot_id",
         ],
     ),
+)
+
+embedding_cache = Table(
+    "embedding_cache",
+    metadata,
+    Column(
+        "application_id",
+        Uuid,
+        ForeignKey("applications.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    Column("identity", String(64), primary_key=True),
+    Column("input_hash", String(64), primary_key=True),
+    Column("vector", JSONB, nullable=False),
 )

@@ -79,3 +79,27 @@ def test_ocr_error_keeps_source_without_fabricated_text(tmp_path, code):
     )[0]
     assert source["state"] == "unavailable" and source["error_code"] == code
     assert source["ocr_pages"] == [1] and source["excerpts"] == []
+
+
+def test_ocr_model_is_independent_from_text_generation(tmp_path, monkeypatch):
+    from talent_engine.integrations.llm import Gateway, LLMSettings
+
+    path = tmp_path / "scan.png"
+    Image.new("RGB", (300, 400), "white").save(path)
+    observed = []
+
+    def reply(adapter, messages, **kwargs):
+        observed.append(adapter.settings.model)
+        return Vision().chat(messages, **kwargs)
+
+    monkeypatch.setattr(Gateway, "chat", reply)
+    source = collect_sources(
+        uuid4(),
+        [],
+        [document(path, "image/png")],
+        tmp_path,
+        ocr_gateway=Gateway(
+            LLMSettings(model="text-only-model", ocr_model="vision-model")
+        ),
+    )[0]
+    assert observed == ["vision-model"] and source["state"] == "available"

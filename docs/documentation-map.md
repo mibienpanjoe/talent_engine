@@ -154,3 +154,6 @@ Après le contrat de campagne, lire :
 Les textes initialement proposés conservent leur contexte historique ; les
 contrats propriétaires détaillés fixent maintenant les règles de réalisation.
 Les capacités d’intégration et de runtime attendent leurs preuves dédiées.
+
+Les adaptateurs implémentés, la récupération et leur comparaison réelle sont
+décrits dans [Adaptateurs IA et récupération versionnée](integrations/ai-adapters.md).

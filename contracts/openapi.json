@@ -2101,6 +2101,16 @@
             ],
             "title": "Response Model"
           },
+          "retrieval": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Retrieval"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "started_at": {
             "format": "date-time",
             "title": "Started At",
@@ -2591,6 +2601,152 @@
           "source_question_ids"
         ],
         "title": "Requirement",
+        "type": "object"
+      },
+      "Retrieval": {
+        "additionalProperties": false,
+        "properties": {
+          "blocked_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Blocked Ids",
+            "type": "array"
+          },
+          "cache_hits": {
+            "maximum": 84.0,
+            "minimum": 0.0,
+            "title": "Cache Hits",
+            "type": "integer"
+          },
+          "cache_misses": {
+            "maximum": 84.0,
+            "minimum": 0.0,
+            "title": "Cache Misses",
+            "type": "integer"
+          },
+          "dimensions": {
+            "maximum": 3072.0,
+            "minimum": 1.0,
+            "title": "Dimensions",
+            "type": "integer"
+          },
+          "duration_seconds": {
+            "minimum": 0.0,
+            "title": "Duration Seconds",
+            "type": "number"
+          },
+          "identity": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Identity",
+            "type": "string"
+          },
+          "input_tokens": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Tokens"
+          },
+          "model": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Model",
+            "type": "string"
+          },
+          "omitted_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Omitted Ids",
+            "type": "array"
+          },
+          "providers": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Providers",
+            "type": "array"
+          },
+          "query_hashes": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Query Hashes",
+            "type": "object"
+          },
+          "rankings": {
+            "additionalProperties": {
+              "items": {
+                "$ref": "#/components/schemas/RetrievalRank"
+              },
+              "type": "array"
+            },
+            "title": "Rankings",
+            "type": "object"
+          },
+          "selected_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 64,
+            "title": "Selected Ids",
+            "type": "array"
+          },
+          "version": {
+            "const": "evidence-retrieval-v1",
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "version",
+          "model",
+          "dimensions",
+          "identity",
+          "providers",
+          "input_tokens",
+          "duration_seconds",
+          "cache_hits",
+          "cache_misses",
+          "selected_ids",
+          "rankings",
+          "blocked_ids",
+          "omitted_ids",
+          "query_hashes"
+        ],
+        "title": "Retrieval",
+        "type": "object"
+      },
+      "RetrievalRank": {
+        "additionalProperties": false,
+        "properties": {
+          "evidence_id": {
+            "format": "uuid",
+            "title": "Evidence Id",
+            "type": "string"
+          },
+          "similarity": {
+            "maximum": 1.0,
+            "minimum": -1.0,
+            "title": "Similarity",
+            "type": "number"
+          }
+        },
+        "required": [
+          "evidence_id",
+          "similarity"
+        ],
+        "title": "RetrievalRank",
         "type": "object"
       },
       "Reviewer": {

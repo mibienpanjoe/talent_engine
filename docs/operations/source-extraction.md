@@ -56,7 +56,8 @@ les pages hors budget restent explicitement indisponibles.
 
 La passerelle FreeLLMAPI configurée reçoit uniquement cette image et une
 consigne de transcription, sans métadonnées de contact ajoutées ni politique. Le modèle
-demandé est celui configuré côté worker, actuellement `gemini-3.5-flash-lite`.
+demandé est celui configuré par `TALENT_LLM_OCR_MODEL` côté worker,
+actuellement `gemini-3.5-flash-lite`, distinct de l’appréciation textuelle.
 La transcription reste une sortie non fiable : aucune interprétation de ses
 instructions, extraction d’extraits puis validation des appréciations séparées.
 Les textes OCR et le fichier original restent distincts et consultables.

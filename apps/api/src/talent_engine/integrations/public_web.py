@@ -50,6 +50,8 @@ def normalize_url(value):
                 "",
             )
         )
+        if len(url) > 2048:
+            raise ValueError()
         return url, hostname, port
     except (ValueError, UnicodeError):
         raise WebFailure("url_blocked") from None
@@ -195,7 +197,9 @@ class PublicWeb:
         for hop in range(4):
             remaining(deadline)
             url, host, port = normalize_url(value)
-            if self.allowed_hosts is not None and host not in self.allowed_hosts:
+            if self.allowed_hosts is not None and (
+                host not in self.allowed_hosts or urlsplit(url).scheme != "https"
+            ):
                 raise WebFailure("url_blocked")
             addresses = public_addresses(host, port, resolver=self.resolver)
             remaining(deadline)

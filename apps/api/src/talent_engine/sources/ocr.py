@@ -56,7 +56,12 @@ def transcribe_pages(
                 if remaining <= 0:
                     raise ProviderFailure("source_budget_exceeded")
                 adapter = Gateway(
-                    adapter.settings.model_copy(update={"timeout_seconds": remaining})
+                    adapter.settings.model_copy(
+                        update={
+                            "timeout_seconds": remaining,
+                            "model": adapter.settings.ocr_model,
+                        }
+                    )
                 )
             reply = adapter.chat(
                 [

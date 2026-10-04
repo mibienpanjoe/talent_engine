@@ -186,3 +186,21 @@ def test_real_http_close_response_body_and_size_limit():
         server.shutdown()
         server.server_close()
         thread.join()
+
+
+def test_encoded_url_and_api_tls_downgrade_are_blocked():
+    with pytest.raises(WebFailure):
+        normalize_url("https://example.com/" + "é" * 1000)
+    web = PublicWeb(
+        allowed_hosts={"api.github.com"},
+        resolver=lambda *a: [("8.8.8.8", 2)],
+        exchange=lambda *a: (
+            302,
+            {"location": "http://api.github.com/repos/demo/project"},
+            b"",
+        ),
+    )
+    with pytest.raises(WebFailure, match="url_blocked"):
+        web.get(
+            "https://api.github.com/repos/demo/project", deadline=time.monotonic() + 5
+        )

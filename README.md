@@ -37,8 +37,10 @@ sont exécutables. Le premier dépôt réel fige le formulaire et sa politique.
 Les documents PDF/PNG/JPEG restent privés ; les dossiers affichent les réponses
 et la progression du worker PostgreSQL, reprenable après interruption.
 
-Le worker extrait les réponses et PDF textuels avec leurs pages, extraits et
-empreintes. Les appréciations sourcées sont validées côté serveur ; le backend
+Le worker extrait réponses, PDF textuels et scans par OCR conditionnel, puis
+collecte les portfolios publics et dépôts GitHub fournis, avec limites réseau
+et commit identifié. Les passages sont retrouvés avec un cache vectoriel
+versionné. Les appréciations sourcées sont validées côté serveur ; le backend
 calcule score, couverture, conditions et rangs exacts. Quatre files de revue
 et une fiche privée permettent de consulter les preuves et documents originaux.
 Les informations insuffisantes restent inconnues, sans score global artificiel.
@@ -79,10 +81,11 @@ Créer une campagne et préciser les exigences
   → corriger une appréciation et prendre une décision humaine
 ```
 
-La création guidée, les formulaires publics, les PDF textuels, l’appréciation
-sourcée et la consultation des résultats sont livrés. L’OCR conditionnel,
-la lecture ciblée de liens et les corrections humaines des appréciations
-suivent dans les prochaines phases.
+La création guidée, les formulaires publics, la collecte des sources,
+l’appréciation sourcée et la consultation des résultats sont livrés.
+Les corrections humaines des appréciations suivent dans la prochaine phase.
+Les pages exigeant JavaScript ne sont pas rendues ; la lecture ciblée des
+dépôts ne suffit pas à établir une contribution personnelle.
 
 L'IA aide à extraire et apprécier les informations. Le backend possède les
 politiques et calcule les scores. Une information absente n'est pas une note
@@ -112,10 +115,11 @@ apps/web/       Frontend Next.js et primitives accessibles
 apps/api/       API FastAPI, campagnes, réception, documents, worker et migrations
 ```
 
-FreeLLMAPI est intégré côté serveur pour l’appréciation automatique. Un parcours
-PDF complet a été exercé avec `gemini-3.5-flash-lite` ; chaque exécution conserve
-sa provenance. Les appréciations varient selon le modèle et restent à calibrer.
-Voir la [note d’intégration](docs/integrations/local-freellmapi.md).
+FreeLLMAPI est intégré côté serveur pour l’appréciation, l’OCR et les vecteurs,
+avec trois réglages séparés. Les parcours réels conservent citations et
+provenance. Les appréciations varient et restent à calibrer ; aucun coût nul
+n’est promis. Voir le [choix des adaptateurs](docs/integrations/ai-adapters.md)
+et la [procédure serveur](docs/integrations/local-freellmapi.md).
 
 ## Documentation
 

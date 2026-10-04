@@ -2,6 +2,7 @@ import json
 from functools import partial
 from uuid import uuid4
 
+from embedding_fixture import ControlledEmbeddings
 from sqlalchemy import select
 from talent_engine.analyses.processor import process
 from talent_engine.analyses.settings import WorkerSettings
@@ -138,7 +139,9 @@ def deposit(client, engine, prepared_data, name, levels, *, unmet=False):
             engine,
             WorkerSettings(),
             "review-oracle",
-            processor=partial(process, gateway=OracleGateway(levels)),
+            processor=partial(
+                process, gateway=OracleGateway(levels), embedder=ControlledEmbeddings()
+            ),
         )
     with engine.connect() as db:
         return str(

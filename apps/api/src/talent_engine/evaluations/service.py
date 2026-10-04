@@ -18,7 +18,8 @@ from .assessment import (
 )
 from .engine import calculate, conditions
 from .repository import evaluations
-from .schemas import Evaluation, Provenance
+from .retrieval import persist, persist_and_verify, retrieve
+from .schemas import Evaluation, Provenance, Retrieval
 
 
 def evidence_for_run(db, claim):
@@ -56,7 +57,7 @@ def evidence_for_run(db, claim):
     }
 
 
-def context(db, claim):
+def context(db, claim, *, selected_ids=None):
     app = (
         db.execute(
             select(applications).where(applications.c.id == claim.application_id)
@@ -71,7 +72,10 @@ def context(db, claim):
     )
     evidence = evidence_for_run(db, claim)
     messages, allowed, limits = build_messages(
-        snapshot["policy_snapshot"], snapshot["configuration"], evidence
+        snapshot["policy_snapshot"],
+        snapshot["configuration"],
+        evidence,
+        selected_ids=selected_ids,
     )
     prompt_hash = hashlib.sha256(
         json.dumps(messages, ensure_ascii=False, sort_keys=True).encode()
@@ -79,7 +83,7 @@ def context(db, claim):
     return app, snapshot, messages, allowed, limits, evidence, prompt_hash
 
 
-def evaluate(engine, claim, *, gateway=None):
+def evaluate(engine, claim, *, gateway=None, embedder=None):
     with engine.connect() as db:
         app, snapshot, messages, allowed, limits, evidence, prompt_hash = context(
             db, claim
@@ -91,8 +95,22 @@ def evaluate(engine, claim, *, gateway=None):
         if c["weight"] is not None and c["assessment_mode"] == "automatic"
     ]
     started = datetime.now(UTC)
+    retrieval = None
+    pending = []
     reply = None
     if automatic and allowed:
+        retrieval, pending = retrieve(
+            engine,
+            claim.application_id,
+            policy,
+            snapshot["configuration"],
+            evidence,
+            embedder=embedder,
+        )
+        with engine.connect() as db:
+            _, _, messages, allowed, limits, _, prompt_hash = context(
+                db, claim, selected_ids=retrieval["selected_ids"]
+            )
         reply = (gateway or Gateway()).chat(
             messages, response_format={"type": "json_object"}
         )
@@ -131,17 +149,36 @@ def evaluate(engine, claim, *, gateway=None):
         duration_seconds=reply.duration_seconds if reply else 0,
         started_at=started,
         finished_at=datetime.now(UTC),
+        retrieval=retrieval,
     )
     return dict(
-        version="evaluation-v1",
+        version="evaluation-v2",
         assessments=rows,
         provenance=provenance.model_dump(mode="json"),
+        pending_embeddings=pending,
     )
 
 
 def finalize(db, claim, output):
     """Caller has campaign -> application -> job locks and has checked fencing."""
     app, snapshot, _, allowed, limits, evidence, prompt_hash = context(db, claim)
+    metadata = output["provenance"].get("retrieval")
+    if output.get("version") == "evaluation-v2" and allowed and metadata is None:
+        raise ValueError("Retrieval provenance required")
+    if metadata:
+        metadata = Retrieval.model_validate(metadata).model_dump(mode="json")
+        selected = persist_and_verify(
+            db,
+            claim.application_id,
+            snapshot["policy_snapshot"],
+            snapshot["configuration"],
+            evidence,
+            metadata,
+            output.get("pending_embeddings", []),
+        )
+        app, snapshot, _, allowed, limits, evidence, prompt_hash = context(
+            db, claim, selected_ids=selected
+        )
     policy = snapshot["policy_snapshot"]
     automatic_ids = {
         c["criterion_id"]
@@ -163,6 +200,8 @@ def finalize(db, claim, output):
         or set(str(x) for x in provenance.evidence_ids) != set(allowed)
         or set(str(x) for x in provenance.blocked_evidence_ids)
         != set(limits["blocked_evidence_ids"])
+        or set(str(x) for x in provenance.omitted_evidence_ids)
+        != set(limits["omitted_evidence_ids"])
     ):
         raise ValueError("Analysis evidence changed")
     calculation = calculate(policy, rows)
@@ -188,6 +227,10 @@ def finalize(db, claim, output):
     )
     values = result.model_dump(mode="json")
     score = calculation["score_exact"]
+    if metadata:
+        persist(
+            db, claim.application_id, metadata, output.get("pending_embeddings", [])
+        )
     db.execute(
         evaluations.insert().values(
             **values,

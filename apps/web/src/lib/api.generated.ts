@@ -1209,6 +1209,7 @@ export interface components {
             requested_model: string | null;
             /** Response Model */
             response_model: string | null;
+            retrieval?: components["schemas"]["Retrieval"] | null;
             /**
              * Started At
              * Format: date-time
@@ -1368,6 +1369,54 @@ export interface components {
             importance: "required" | "desired";
             /** Source Question Ids */
             source_question_ids: string[];
+        };
+        /** Retrieval */
+        Retrieval: {
+            /** Blocked Ids */
+            blocked_ids: string[];
+            /** Cache Hits */
+            cache_hits: number;
+            /** Cache Misses */
+            cache_misses: number;
+            /** Dimensions */
+            dimensions: number;
+            /** Duration Seconds */
+            duration_seconds: number;
+            /** Identity */
+            identity: string;
+            /** Input Tokens */
+            input_tokens: number | null;
+            /** Model */
+            model: string;
+            /** Omitted Ids */
+            omitted_ids: string[];
+            /** Providers */
+            providers: string[];
+            /** Query Hashes */
+            query_hashes: {
+                [key: string]: string;
+            };
+            /** Rankings */
+            rankings: {
+                [key: string]: components["schemas"]["RetrievalRank"][];
+            };
+            /** Selected Ids */
+            selected_ids: string[];
+            /**
+             * Version
+             * @constant
+             */
+            version: "evidence-retrieval-v1";
+        };
+        /** RetrievalRank */
+        RetrievalRank: {
+            /**
+             * Evidence Id
+             * Format: uuid
+             */
+            evidence_id: string;
+            /** Similarity */
+            similarity: number;
         };
         /** Reviewer */
         Reviewer: {

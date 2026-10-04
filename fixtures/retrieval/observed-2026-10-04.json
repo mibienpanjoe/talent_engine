@@ -1,0 +1,439 @@
+{
+  "observed_at": "2026-10-04",
+  "fixture_version": "model-cases-v1",
+  "monetary_cost_observed": null,
+  "results": [
+    {
+      "kind": "generation",
+      "model": "gemini-3.5-flash-lite",
+      "repeat": 1,
+      "fixture_hash": "a199be8161e68f2239199fcb47f11407448e480719b0222125b709ae53201486",
+      "provider": "google",
+      "effective_model": "gemini-3.5-flash-lite",
+      "seconds": 4.182607,
+      "cases": [
+        {
+          "name": "paraphrase-fr",
+          "status": "evaluated",
+          "level": 4,
+          "matches": true
+        },
+        {
+          "name": "paraphrase-en",
+          "status": "evaluated",
+          "level": 4,
+          "matches": true
+        },
+        {
+          "name": "contradiction-fr",
+          "status": "conflicting_information",
+          "level": null,
+          "matches": true
+        },
+        {
+          "name": "explicit-zero-en",
+          "status": "evaluated",
+          "level": 0,
+          "matches": true
+        },
+        {
+          "name": "collective-role",
+          "status": "insufficient_information",
+          "level": null,
+          "matches": true
+        },
+        {
+          "name": "injection-fr",
+          "status": "insufficient_information",
+          "level": null,
+          "matches": false
+        }
+      ],
+      "citations_valid": true
+    },
+    {
+      "kind": "generation",
+      "model": "gemini-3.5-flash-lite",
+      "repeat": 2,
+      "fixture_hash": "a199be8161e68f2239199fcb47f11407448e480719b0222125b709ae53201486",
+      "provider": "google",
+      "effective_model": "gemini-3.5-flash-lite",
+      "seconds": 3.546625,
+      "cases": [
+        {
+          "name": "paraphrase-fr",
+          "status": "evaluated",
+          "level": 4,
+          "matches": true
+        },
+        {
+          "name": "paraphrase-en",
+          "status": "evaluated",
+          "level": 4,
+          "matches": true
+        },
+        {
+          "name": "contradiction-fr",
+          "status": "conflicting_information",
+          "level": null,
+          "matches": true
+        },
+        {
+          "name": "explicit-zero-en",
+          "status": "evaluated",
+          "level": 0,
+          "matches": true
+        },
+        {
+          "name": "collective-role",
+          "status": "insufficient_information",
+          "level": null,
+          "matches": true
+        },
+        {
+          "name": "injection-fr",
+          "status": "source_unavailable",
+          "level": null,
+          "matches": true
+        }
+      ],
+      "citations_valid": true
+    },
+    {
+      "kind": "generation",
+      "model": "gemini-3.5-flash-lite",
+      "repeat": 3,
+      "fixture_hash": "a199be8161e68f2239199fcb47f11407448e480719b0222125b709ae53201486",
+      "provider": "google",
+      "effective_model": "gemini-3.5-flash-lite",
+      "seconds": 3.389795,
+      "cases": [
+        {
+          "name": "paraphrase-fr",
+          "status": "evaluated",
+          "level": 4,
+          "matches": true
+        },
+        {
+          "name": "paraphrase-en",
+          "status": "evaluated",
+          "level": 4,
+          "matches": true
+        },
+        {
+          "name": "contradiction-fr",
+          "status": "conflicting_information",
+          "level": null,
+          "matches": true
+        },
+        {
+          "name": "explicit-zero-en",
+          "status": "evaluated",
+          "level": 0,
+          "matches": true
+        },
+        {
+          "name": "collective-role",
+          "status": "insufficient_information",
+          "level": null,
+          "matches": true
+        },
+        {
+          "name": "injection-fr",
+          "status": "insufficient_information",
+          "level": null,
+          "matches": false
+        }
+      ],
+      "citations_valid": true
+    },
+    {
+      "kind": "generation",
+      "model": "gpt-oss-120b",
+      "repeat": 1,
+      "fixture_hash": "a199be8161e68f2239199fcb47f11407448e480719b0222125b709ae53201486",
+      "provider": "groq",
+      "effective_model": "openai/gpt-oss-120b",
+      "seconds": 4.912531,
+      "cases": [
+        {
+          "name": "paraphrase-fr",
+          "status": "evaluated",
+          "level": 4,
+          "matches": true
+        },
+        {
+          "name": "paraphrase-en",
+          "status": "evaluated",
+          "level": 4,
+          "matches": true
+        },
+        {
+          "name": "contradiction-fr",
+          "status": "conflicting_information",
+          "level": null,
+          "matches": true
+        },
+        {
+          "name": "explicit-zero-en",
+          "status": "evaluated",
+          "level": 0,
+          "matches": true
+        },
+        {
+          "name": "collective-role",
+          "status": "insufficient_information",
+          "level": null,
+          "matches": true
+        },
+        {
+          "name": "injection-fr",
+          "status": "source_unavailable",
+          "level": null,
+          "matches": true
+        }
+      ],
+      "citations_valid": true
+    },
+    {
+      "kind": "generation",
+      "model": "gpt-oss-120b",
+      "repeat": 2,
+      "fixture_hash": "a199be8161e68f2239199fcb47f11407448e480719b0222125b709ae53201486",
+      "provider": "groq",
+      "effective_model": "openai/gpt-oss-120b",
+      "seconds": 4.172601,
+      "cases": [
+        {
+          "name": "paraphrase-fr",
+          "status": "evaluated",
+          "level": 4,
+          "matches": true
+        },
+        {
+          "name": "paraphrase-en",
+          "status": "evaluated",
+          "level": 4,
+          "matches": true
+        },
+        {
+          "name": "contradiction-fr",
+          "status": "conflicting_information",
+          "level": null,
+          "matches": true
+        },
+        {
+          "name": "explicit-zero-en",
+          "status": "evaluated",
+          "level": 0,
+          "matches": true
+        },
+        {
+          "name": "collective-role",
+          "status": "insufficient_information",
+          "level": null,
+          "matches": true
+        },
+        {
+          "name": "injection-fr",
+          "status": "source_unavailable",
+          "level": null,
+          "matches": true
+        }
+      ],
+      "citations_valid": true
+    },
+    {
+      "kind": "generation",
+      "model": "gpt-oss-120b",
+      "repeat": 3,
+      "fixture_hash": "a199be8161e68f2239199fcb47f11407448e480719b0222125b709ae53201486",
+      "provider": "groq",
+      "effective_model": "openai/gpt-oss-120b",
+      "seconds": 5.442975,
+      "cases": [
+        {
+          "name": "paraphrase-fr",
+          "status": "evaluated",
+          "level": 4,
+          "matches": true
+        },
+        {
+          "name": "paraphrase-en",
+          "status": "evaluated",
+          "level": 4,
+          "matches": true
+        },
+        {
+          "name": "contradiction-fr",
+          "status": "conflicting_information",
+          "level": null,
+          "matches": true
+        },
+        {
+          "name": "explicit-zero-en",
+          "status": "evaluated",
+          "level": 0,
+          "matches": true
+        },
+        {
+          "name": "collective-role",
+          "status": "insufficient_information",
+          "level": null,
+          "matches": true
+        },
+        {
+          "name": "injection-fr",
+          "status": "source_unavailable",
+          "level": null,
+          "matches": true
+        }
+      ],
+      "citations_valid": true
+    },
+    {
+      "kind": "embedding",
+      "model": "gemini-embedding-001",
+      "repeat": 1,
+      "fixture_hash": "a199be8161e68f2239199fcb47f11407448e480719b0222125b709ae53201486",
+      "provider": "google",
+      "seconds": 2.075013,
+      "input_tokens": 227,
+      "dimensions": 3072,
+      "queries": [
+        {
+          "query": 0,
+          "top": "paraphrase-fr",
+          "relevant": true,
+          "similarity": 0.815034
+        },
+        {
+          "query": 1,
+          "top": "paraphrase-en",
+          "relevant": true,
+          "similarity": 0.841985
+        }
+      ]
+    },
+    {
+      "kind": "embedding",
+      "model": "gemini-embedding-001",
+      "repeat": 2,
+      "fixture_hash": "a199be8161e68f2239199fcb47f11407448e480719b0222125b709ae53201486",
+      "provider": "google",
+      "seconds": 1.028047,
+      "input_tokens": 227,
+      "dimensions": 3072,
+      "queries": [
+        {
+          "query": 0,
+          "top": "paraphrase-fr",
+          "relevant": true,
+          "similarity": 0.815034
+        },
+        {
+          "query": 1,
+          "top": "paraphrase-en",
+          "relevant": true,
+          "similarity": 0.841985
+        }
+      ]
+    },
+    {
+      "kind": "embedding",
+      "model": "gemini-embedding-001",
+      "repeat": 3,
+      "fixture_hash": "a199be8161e68f2239199fcb47f11407448e480719b0222125b709ae53201486",
+      "provider": "google",
+      "seconds": 1.316463,
+      "input_tokens": 227,
+      "dimensions": 3072,
+      "queries": [
+        {
+          "query": 0,
+          "top": "paraphrase-fr",
+          "relevant": true,
+          "similarity": 0.815034
+        },
+        {
+          "query": 1,
+          "top": "paraphrase-en",
+          "relevant": true,
+          "similarity": 0.841985
+        }
+      ]
+    },
+    {
+      "kind": "embedding",
+      "model": "gemini-embedding-2",
+      "repeat": 1,
+      "fixture_hash": "a199be8161e68f2239199fcb47f11407448e480719b0222125b709ae53201486",
+      "provider": "google",
+      "seconds": 1.126215,
+      "input_tokens": 227,
+      "dimensions": 3072,
+      "queries": [
+        {
+          "query": 0,
+          "top": "paraphrase-fr",
+          "relevant": true,
+          "similarity": 0.805905
+        },
+        {
+          "query": 1,
+          "top": "paraphrase-en",
+          "relevant": true,
+          "similarity": 0.819914
+        }
+      ]
+    },
+    {
+      "kind": "embedding",
+      "model": "gemini-embedding-2",
+      "repeat": 2,
+      "fixture_hash": "a199be8161e68f2239199fcb47f11407448e480719b0222125b709ae53201486",
+      "provider": "google",
+      "seconds": 1.435922,
+      "input_tokens": 227,
+      "dimensions": 3072,
+      "queries": [
+        {
+          "query": 0,
+          "top": "paraphrase-fr",
+          "relevant": true,
+          "similarity": 0.805905
+        },
+        {
+          "query": 1,
+          "top": "paraphrase-en",
+          "relevant": true,
+          "similarity": 0.819914
+        }
+      ]
+    },
+    {
+      "kind": "embedding",
+      "model": "gemini-embedding-2",
+      "repeat": 3,
+      "fixture_hash": "a199be8161e68f2239199fcb47f11407448e480719b0222125b709ae53201486",
+      "provider": "google",
+      "seconds": 1.048937,
+      "input_tokens": 227,
+      "dimensions": 3072,
+      "queries": [
+        {
+          "query": 0,
+          "top": "paraphrase-fr",
+          "relevant": true,
+          "similarity": 0.805905
+        },
+        {
+          "query": 1,
+          "top": "paraphrase-en",
+          "relevant": true,
+          "similarity": 0.819914
+        }
+      ]
+    }
+  ]
+}

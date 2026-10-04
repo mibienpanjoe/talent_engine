@@ -3,6 +3,7 @@ from dataclasses import replace
 from functools import partial
 from uuid import uuid4
 
+from embedding_fixture import ControlledEmbeddings
 from sqlalchemy import func, select
 from talent_engine.analyses.processor import process
 from talent_engine.analyses.queue import acquire, complete
@@ -51,7 +52,10 @@ def test_pdf_to_immutable_effective_calculation_and_private_api(context, tmp_pat
     client, engine = context
     app_id = receive_pdf(client, text_pdf())
     worker = partial(
-        process, upload_directory=tmp_path / "uploads", gateway=ControlledGateway()
+        process,
+        upload_directory=tmp_path / "uploads",
+        gateway=ControlledGateway(),
+        embedder=ControlledEmbeddings(),
     )
     for _ in range(3):
         assert work_once(engine, WorkerSettings(), "evaluation-test", processor=worker)
@@ -78,14 +82,20 @@ def test_real_answers_model_result_exact_score_and_invalid_citations(context):
 
     client, engine = context
     app_id = queued(client)
-    worker = partial(process, gateway=ControlledGateway())
+    worker = partial(
+        process, gateway=ControlledGateway(), embedder=ControlledEmbeddings()
+    )
     for _ in range(3):
         work_once(engine, WorkerSettings(), "controlled-model", processor=worker)
     detail = client.get("/api/v1/applications/" + app_id).json()
     assert detail["effective_evaluation"]["calculation"]["score"] == "75.000000"
     assert detail["effective_evaluation"]["provenance"]["provider"] == "test-provider"
     second = queued(client)
-    invalid = partial(process, gateway=ControlledGateway(invalid=True))
+    invalid = partial(
+        process,
+        gateway=ControlledGateway(invalid=True),
+        embedder=ControlledEmbeddings(),
+    )
     for _ in range(3):
         work_once(engine, WorkerSettings(), "invalid-model", processor=invalid)
     detail = client.get("/api/v1/applications/" + second).json()
@@ -101,7 +111,9 @@ def test_lost_lease_cannot_publish_evaluation(context):
 
     client, engine = context
     queued(client)
-    worker = partial(process, gateway=ControlledGateway())
+    worker = partial(
+        process, gateway=ControlledGateway(), embedder=ControlledEmbeddings()
+    )
     for _ in range(2):
         work_once(engine, WorkerSettings(), "sources", processor=worker)
     claim = acquire(engine, WorkerSettings(), "evaluating")
@@ -109,6 +121,9 @@ def test_lost_lease_cannot_publish_evaluation(context):
     assert not complete(engine, WorkerSettings(), replace(claim, token=uuid4()), output)
     with engine.connect() as db:
         assert db.scalar(select(func.count()).select_from(evaluations)) == 0
+        from talent_engine.evaluations.repository import embedding_cache
+
+        assert db.scalar(select(func.count()).select_from(embedding_cache)) == 0
     assert complete(engine, WorkerSettings(), claim, output)
     assert not complete(engine, WorkerSettings(), claim, output)
     with engine.connect() as db:
@@ -123,7 +138,9 @@ def test_evidence_owner_guard_and_effective_pointer_scope(context):
 
     client, engine = context
     app_id = queued(client)
-    worker = partial(process, gateway=ControlledGateway())
+    worker = partial(
+        process, gateway=ControlledGateway(), embedder=ControlledEmbeddings()
+    )
     for _ in range(3):
         work_once(engine, WorkerSettings(), "owner-test", processor=worker)
     detail = client.get("/api/v1/applications/" + app_id).json()

@@ -31,10 +31,11 @@ def process(
     ocr_gateway=None,
     portfolio_web=None,
     github_web=None,
+    embedder=None,
 ):
     if claim.step == "evaluate":
         try:
-            return evaluate(engine, claim, gateway=gateway)
+            return evaluate(engine, claim, gateway=gateway, embedder=embedder)
         except ProviderFailure as error:
             raise StepFailure(
                 error.code, retryable=error.retryable, retry_after=error.retry_after

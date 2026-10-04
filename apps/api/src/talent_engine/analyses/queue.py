@@ -350,7 +350,7 @@ def complete(engine, settings, claim, output):
             output = persist(db, claim, output)
         final = claim.step == "evaluate"
         if final:
-            if output.get("version") != "evaluation-v1":
+            if output.get("version") not in ("evaluation-v1", "evaluation-v2"):
                 return fail_locked(
                     db, settings, claim, step, timestamp, "assessment_invalid"
                 )
