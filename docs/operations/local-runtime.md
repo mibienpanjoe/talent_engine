@@ -39,7 +39,10 @@ worker partagent `private_uploads`, jamais le serveur web. Les documents ne
 sont téléchargés que par la route privée authentifiée. Les volumes PostgreSQL
 et documents sont conservés par `make down`.
 
-`docker compose logs worker` montre les événements JSON sans données candidates.
+Les événements JSON privés du worker se lisent avec :
+`docker compose exec worker cat /app/private-logs/worker.jsonl`.
+Le volume `technical_logs` applique une rotation horaire et une rétention de
+sept jours ; Compose désactive la copie des journaux du worker dans Docker.
 `docker compose run --rm worker python -m talent_engine.analyses.worker --once`
 traite au plus une étape éligible. Le nettoyage des temporaires est périodique ;
 une exécution ponctuelle utilise `python -m talent_engine.documents.cleanup`

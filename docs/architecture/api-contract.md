@@ -152,3 +152,28 @@ La pagination des candidatures utilise un curseur opaque signé, lié au
 responsable, à la campagne et à list_revision. Une nouvelle réception l’invalide
 avec `409 cursor_invalidated`. La liste et le détail utilisent une transaction
 REPEATABLE READ pour rendre une vue cohérente des données et étapes.
+
+
+## Surface exécutée T28–T31
+
+L’export généré `contracts/openapi.json` est la référence exécutable ;
+`contracts/api-design.openapi.json` conserve le document initial de conception.
+Les corrections utilisent `review_revision`, `effective_evaluation_id`,
+`target_kind`, `criterion_id` et les champs plats `action/status/level`.
+Ces noms précisent le transport initial décrit plus haut, sans changer les
+règles de version, preuve ou recalcul.
+
+Les mutations de revue contrôlent `If-Match`, session et CSRF. La correction
+POST répond 201 ; la décision PATCH singulière `/decision` répond 200 ;
+POST `/analyses` répond 202, POST `/activations` répond 200. Une clé
+d’idempotence lie route, dossier, propriétaire et contenu ; les relances
+conservent leur reçu initial même après exécution. Une seule analyse active
+est admise. Les historiques et versions ont des curseurs signés liés aux
+révisions, avec `X-Next-Cursor`.
+
+DELETE dossier répond 202 avec une demande minimale de nettoyage, puis 200
+sur rejeu après purge. Le premier appel exige `If-Match` ; les répétitions
+retrouvent la même demande sans nécessiter l’ancienne révision. Les lectures
+privées `/cleanup-requests/{id}` et `/campaigns/{id}/cleanup-requests`
+exposent état, tentatives, incident et prochaine reprise, sans contenu supprimé,
+nom de fichier ni chemin privé. Le suivi terminé expire après sept jours.

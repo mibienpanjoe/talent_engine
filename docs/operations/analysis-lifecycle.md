@@ -161,3 +161,34 @@ Preuves : tests PostgreSQL de concurrence, fencing, budget de trois crashes,
 attentes différées, suppression en vol ; un vrai processus est tué après un
 checkpoint et l’acquisition suivante. Deux processus reprennent après expiration
 avec tentatives 1/2/1 : le checkpoint déjà réussi n’est pas recalculé.
+
+
+## Implémentation T30–T31
+
+Une nouvelle analyse crée un run et une tâche persistants, sans remplacer la
+version effective. Les relances sont idempotentes, ciblées sur des sources
+échouées ou sur l’évaluation, avec le budget de trois tentatives par étape.
+
+La suppression incrémente la génération, annule les leases et retire le dossier
+des lectures et compteurs dans la même transaction que la demande de purge.
+Le worker traite cette file avant les analyses, indépendamment de la passerelle
+IA. Il efface les fichiers avant les données SQL, puis vérifie l’absence des
+données liées avant de terminer. Les reprises sont différées de 30 s, 120 s,
+puis une heure sans abandon ; un incident devient visible après trois échecs.
+Une interruption SQL après effacement des fichiers reprend sans danger.
+
+Au démarrage puis chaque heure, le worker collecte les temporaires de 24 h,
+programme la suppression des dossiers de 90 jours et retire les suivis terminés
+depuis sept jours. Les lectures et écritures de worker refusent déjà un dossier
+de 90 jours avant ce balayage. Les transferts en cours sont enregistrés avant
+création du fichier ; une capacité révoquée ne peut ni recréer ni rattacher un
+document après purge.
+
+Les événements de worker sont écrits dans le volume privé `technical_logs`,
+avec rotation horaire et collecte des journaux de sept jours. Compose désactive
+leur copie Docker. Ils contiennent IDs techniques et codes assainis, jamais
+contact, preuves, URLs privées ou secrets.
+
+Preuves : scénarios PostgreSQL de purge concurrente, stockage indisponible,
+rollback après effacement, expiration, cache supprimé, sortie d’analyse tardive
+et upload en vol ; vrai worker Compose et interface de suivi sur dossiers fictifs.

@@ -135,3 +135,24 @@ pointeur. La décision humaine du dossier reste indépendante. Les anciennes
 
 Ces scénarios définissent les oracles de revue. Leur validation documentaire
 ne remplace pas les tests transactionnels et parcours navigateur futurs.
+
+
+## Implémentation T28–T30
+
+Les bases automatiques restent immuables. Les projections corrigées, événements
+et décisions sont transactionnels, avec auteur, date, motif, ancienne/nouvelle
+valeur et contrôle de révision. Une note humaine devient une preuve privée,
+distincte d’une source automatiquement recueillie. Une restauration crée un
+événement ; elle n’efface pas les corrections précédentes.
+
+La relance ciblée ne recueille que les sources échouées choisies et réutilise
+les autres versions et leur cache. Les nouvelles évaluations restent proposées
+jusqu’à activation explicite. La réapplication exige la même politique et
+snapshot, une correction encore active et une preuve valide dans la nouvelle
+analyse. Prendre la nouvelle base exige confirmation si des corrections actives
+seraient écartées. Les décisions restent inchangées.
+
+Preuves : tests PostgreSQL de concurrence, idempotence, preuves étrangères,
+réapplication refusée atomiquement, quotas et pagination invalidée ; parcours
+navigateur mobile avec note humaine, décision et deux activations. Les résultats
+de ces recettes sont explicitement préchargés, sans appel modèle revendiqué.
