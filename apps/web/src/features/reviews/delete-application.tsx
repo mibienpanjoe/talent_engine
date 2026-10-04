@@ -54,7 +54,7 @@ export function DeleteApplication({
     }
   }
   return (
-    <section className="review-section">
+    <section className="review-section dossier-danger">
       <h2>Supprimer ce dossier</h2>
       <Dialog
         open={open}
@@ -63,7 +63,7 @@ export function DeleteApplication({
         }}
       >
         <DialogTrigger asChild>
-          <Button variant="secondary">Supprimer le dossier</Button>
+          <Button variant="secondary" className="dossier-delete-button">Supprimer le dossier</Button>
         </DialogTrigger>
         <DialogContent
           onEscapeKeyDown={(e) => {

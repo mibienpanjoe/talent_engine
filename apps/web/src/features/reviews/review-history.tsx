@@ -69,9 +69,10 @@ export function ReviewHistory({ dossier }: { dossier: Detail }) {
       {error && <Alert tone="danger">{error}</Alert>}
       {items &&
         (items.length ? (
-          <ol>
+          <ol className="review-timeline">
             {items.map((item) => (
-              <li key={item.id} className="criterion-result">
+              <li key={item.id} className="review-event">
+                <span className="review-event-kind">{item.kind === "decision" ? "Décision" : item.kind === "activation" ? "Analyse activée" : "Correction humaine"}</span>
                 <h3>
                   {item.kind === "decision"
                     ? "Décision humaine"
@@ -82,12 +83,12 @@ export function ReviewHistory({ dossier }: { dossier: Detail }) {
                         )?.expectation ?? "Correction")}
                 </h3>
                 <p>
-                  {display(item.previous)} → {display(item.value)}
+                  <span className="review-event-before">{display(item.previous)}</span> → <span className="review-event-after">{display(item.value)}</span>
                   {item.action === "restore_base" &&
                     " · retour à la base automatique"}
                 </p>
-                <p className="preserve-lines">{item.reason}</p>
-                <p>
+                <p className="preserve-lines review-event-reason">{item.reason}</p>
+                <p className="review-event-meta">
                   {new Date(item.created_at).toLocaleString("fr-FR", {
                     timeZone: "UTC",
                   })}{" "}
@@ -99,12 +100,13 @@ export function ReviewHistory({ dossier }: { dossier: Detail }) {
                       <EvidenceButton
                         key={String(id)}
                         id={String(id)}
-                        label={`Vérification ${i + 1}`}
+                        label={`Justificatif de la correction ${i + 1}`}
+                        className="criterion-proof"
                       />
                     ))}
                   </div>
                 )}
-                <details>
+                <details className="provenance-details">
                   <summary>Version concernée</summary>
                   <p className="hash-text">
                     {item.evaluation_id ??

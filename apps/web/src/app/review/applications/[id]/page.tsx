@@ -133,66 +133,76 @@ export default async function ApplicationPage({
             ))
           )}
         </section>
-        <AnalysisActions
-          key={`analysis:${a.review_revision}`}
-          dossier={result.data}
-        />
-        <VersionHistory
-          key={`versions:${a.review_revision}`}
-          dossier={result.data}
-        />
-        <div className="inline-actions dossier-tools">
-          <RefreshButton />
-          <PolicyDetails snapshotId={a.snapshot_id} />
-        </div>
+        <details className="analysis-tools" open={(result.data.pending_evaluation_ids?.length ?? 0) > 0}>
+          <summary>Outils d’analyse{(result.data.pending_evaluation_ids?.length ?? 0) > 0 ? " · Nouvelle analyse à comparer" : ""}</summary>
+          <AnalysisActions
+            key={`analysis:${a.review_revision}`}
+            dossier={result.data}
+          />
+          <VersionHistory
+            key={`versions:${a.review_revision}`}
+            dossier={result.data}
+          />
+          <div className="inline-actions dossier-tools">
+            <RefreshButton />
+            <PolicyDetails snapshotId={a.snapshot_id} />
+          </div>
+        </details>
+        {(result.data.sources?.length ?? 0) > 0 && <SourceList dossier={result.data} />}
+        <section className="review-section recorded-answers" aria-labelledby="answers-title">
+          <h2 id="answers-title">Réponses enregistrées</h2>
+          <div className="answer-list">
+            {answers.map((answer) => {
+              const q = questions.find((q) => q.id === answer.question_id);
+              let text: string;
+              if (answer.kind === "single_choice")
+                text =
+                  q?.options?.find((o) => o.id === answer.value)?.label ??
+                  "Choix indisponible";
+              else if (answer.kind === "multiple_choice")
+                text =
+                  answer.value
+                    .map(
+                      (id) =>
+                        q?.options?.find((o) => o.id === id)?.label ??
+                        "Choix indisponible",
+                    )
+                    .join(", ") || "Aucun choix confirmé";
+              else if (answer.kind === "file")
+                text = `${answer.value.length} document(s)`;
+              else text = String(answer.value);
+              return (
+                <article className="answer-card" key={answer.question_id}>
+                  <h3>{q?.label ?? "Question"}</h3>
+                  <p className="preserve-lines">
+                    {answer.kind === "url" && /^https?:\/\//i.test(text) ? (
+                      <a href={text} target="_blank" rel="noopener noreferrer">{text} ↗</a>
+                    ) : answer.kind === "date" ? new Date(`${text}T00:00:00Z`).toLocaleDateString("fr-FR", { timeZone: "UTC" }) : text}
+                  </p>
+                  {answer.kind === "file" && (
+                    <ul>
+                      {uploads
+                        .filter((file) => file.question_id === answer.question_id)
+                        .map((file) => (
+                          <li key={file.id}>
+                            <a href={`/api/v1/uploads/${file.id}/download`} target="_blank" rel="noopener noreferrer">
+                              {file.filename}
+                            </a>{" "}
+                            · {Math.ceil(file.bytes / 1024)} Kio
+                          </li>
+                        ))}
+                    </ul>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        </section>
         <DeleteApplication
           key={`delete:${a.review_revision}`}
           application={a}
         />
-        {(result.data.sources?.length ?? 0) > 0 && <SourceList dossier={result.data} />}
-        <section className="empty-state">
-          <h2>Réponses enregistrées</h2>
-          {answers.map((answer) => {
-            const q = questions.find((q) => q.id === answer.question_id);
-            let text: string;
-            if (answer.kind === "single_choice")
-              text =
-                q?.options?.find((o) => o.id === answer.value)?.label ??
-                "Choix indisponible";
-            else if (answer.kind === "multiple_choice")
-              text =
-                answer.value
-                  .map(
-                    (id) =>
-                      q?.options?.find((o) => o.id === id)?.label ??
-                      "Choix indisponible",
-                  )
-                  .join(", ") || "Aucun choix confirmé";
-            else if (answer.kind === "file")
-              text = `${answer.value.length} document(s)`;
-            else text = String(answer.value);
-            return (
-              <section key={answer.question_id}>
-                <h3>{q?.label ?? "Question"}</h3>
-                <p className="preserve-lines">{text}</p>
-                {answer.kind === "file" && (
-                  <ul>
-                    {uploads
-                      .filter((file) => file.question_id === answer.question_id)
-                      .map((file) => (
-                        <li key={file.id}>
-                          <a href={`/api/v1/uploads/${file.id}/download`}>
-                            {file.filename}
-                          </a>{" "}
-                          · {Math.ceil(file.bytes / 1024)} Kio
-                        </li>
-                      ))}
-                  </ul>
-                )}
-              </section>
-            );
-          })}
-        </section>
+
       </main>
     </>
   );

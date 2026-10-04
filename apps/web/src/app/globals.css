@@ -181,3 +181,26 @@ textarea.ui-input { resize:vertical; }
 .criterion-proof { background:#182334; color:var(--accent); border-color:#354c6b; text-align:left; overflow-wrap:anywhere; max-width:100%; }
 .criterion-correction { padding-top:.75rem; border-top:1px solid var(--border); }
 .criterion-correction-button { color:var(--muted); }
+
+.answer-list { display:grid; gap:1rem; margin-top:1.5rem; }
+.answer-card { padding:1.25rem; border:1px solid var(--border); border-radius:var(--radius-control); background:var(--surface); overflow-wrap:anywhere; }
+.answer-card h3 { margin:0 0 .75rem; font-size:1rem; font-weight:500; line-height:1.5; }
+.answer-card p { margin:0; }
+.answer-card ul { display:grid; gap:.5rem; padding-left:1.25rem; margin:1rem 0 0; }
+.answer-card a { display:inline-block; padding-block:.375rem; }
+.analysis-tools { margin-top:2.5rem; padding:1.25rem; border:1px solid var(--border); border-radius:var(--radius-surface); }
+.analysis-tools > summary { cursor:pointer; padding-block:.75rem; min-height:44px; font-weight:500; }
+.analysis-tools > .review-section { margin-top:1.5rem; padding-top:1.5rem; }
+.analysis-tools .review-section > p { margin-block:1rem; }
+.dossier-danger { padding:1.25rem; border:1px solid #69463f; border-radius:var(--radius-control); }
+.dossier-delete-button { color:var(--danger); border-color:#69463f; }
+.review-timeline { display:grid; gap:1rem; padding:0; margin-top:1.5rem; list-style:none; }
+.review-event { border:1px solid var(--border); border-left:3px solid var(--accent); border-radius:var(--radius-control); padding:1.25rem; background:var(--surface); }
+.review-event-kind { display:inline-block; color:var(--accent); font-size:.8125rem; margin-bottom:.75rem; }
+.review-event h3 { font-weight:500; font-size:1rem; margin:0 0 .75rem; }
+.review-event p { margin-block:.75rem; }
+.review-event-before { color:var(--muted); }
+.review-event-after { color:var(--text); font-weight:500; }
+.review-event-meta { font-size:.8125rem; }
+.review-event .inline-actions { margin-top:1rem; }
+.review-event .provenance-details { margin-bottom:0; }
