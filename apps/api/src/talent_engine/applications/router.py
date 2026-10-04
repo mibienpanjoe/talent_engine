@@ -1,17 +1,22 @@
+from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, Query, Response
-from sqlalchemy import func, select
+from sqlalchemy import select
 from talent_engine.access import build_access_guards
 from talent_engine.campaigns.data import owned, snapshots
 from talent_engine.campaigns.lifecycle import public_campaign, snapshot_result
 from talent_engine.errors import AccessError, Error
 from talent_engine.evaluations.data import evaluations
 from talent_engine.evaluations.engine import views
-from talent_engine.evaluations.schemas import Evaluation
+from talent_engine.evaluations.schemas import Calculation, Evaluation
+from talent_engine.sources.data import excerpts, run_sources, sources
+from talent_engine.sources.schemas import Evidence, SourceVersion
 
 from .cursor import decode, encode
-from .repository import analysis_runs, applications, jobs
+from .repository import analysis_runs, jobs
+from .review import dataset, dossier_rank
+from .review import listing as review_listing
 from .schemas import (
     ApplicationDetail,
     ApplicationPage,
@@ -22,7 +27,15 @@ from .schemas import (
 from .service import owned_application, receive
 
 
-def summary(row, evaluation=None):
+def summary(row, evaluation=None, *, rank=None):
+    calculation = (
+        evaluation.calculation
+        if evaluation
+        else Calculation.model_validate(row["calculation"])
+        if row.get("calculation")
+        else None
+    )
+    eligibility = evaluation.eligibility if evaluation else row.get("eligibility")
     return ApplicationSummary(
         **{
             k: row[k]
@@ -39,12 +52,15 @@ def summary(row, evaluation=None):
                 "effective_evaluation_id",
             )
         },
-        calculation=evaluation.calculation if evaluation else None,
-        eligibility=evaluation.eligibility if evaluation else None,
+        calculation=calculation,
+        eligibility=eligibility,
         views=views(
-            evaluation.calculation.model_dump(mode="json") if evaluation else None,
-            evaluation.eligibility if evaluation else None,
+            calculation.model_dump(mode="json") if calculation else None, eligibility
         ),
+        rank=rank if rank is not None else row.get("rank"),
+        evaluation_mode=evaluation.provenance.mode
+        if evaluation
+        else row.get("evaluation_mode"),
     )
 
 
@@ -120,44 +136,52 @@ def build_application_router(engine, settings):
         campaign_id: UUID,
         response: Response,
         limit: int = Query(25, ge=1, le=100),
-        cursor: str | None = Query(None, max_length=400),
+        cursor: str | None = Query(None, max_length=500),
+        view: Literal["all", "ready", "needs_review", "condition_unmet"] = "all",
+        decision: Literal["to_review", "shortlisted", "not_selected"] | None = None,
+        processing_state: Literal[
+            "queued",
+            "collecting",
+            "evaluating",
+            "completed",
+            "completed_partial",
+            "failed",
+        ]
+        | None = None,
         session=Depends(read_guard),
     ):
         with engine.connect().execution_options(
             isolation_level="REPEATABLE READ"
         ) as db:
             campaign = owned(db, campaign_id, session["reviewer_id"])
-            base = select(applications).where(
-                (applications.c.campaign_id == campaign_id)
-                & (applications.c.mode == "real")
-                & (applications.c.deleted_at.is_(None))
+            # Read revision/counts within the same database snapshot as the page.
+            counts, revision = dataset(db, campaign)
+            binding = {**campaign, "list_revision": revision}
+            scope = [view, decision, processing_state]
+            offset = (
+                decode(settings, session["reviewer_id"], binding, cursor, scope=scope)
+                if cursor
+                else 0
             )
-            total = db.scalar(select(func.count()).select_from(base.subquery()))
-            if cursor:
-                base = base.where(
-                    applications.c.id
-                    > decode(settings, session["reviewer_id"], campaign, cursor)
-                )
-            rows = (
-                db.execute(base.order_by(applications.c.id).limit(limit + 1))
-                .mappings()
-                .all()
+            rows = review_listing(
+                db,
+                campaign,
+                view=view,
+                decision=decision,
+                processing_state=processing_state,
+                limit=limit,
+                offset=offset,
             )
         response.headers["Cache-Control"] = "no-store"
         return ApplicationPage(
             items=[summary(r) for r in rows[:limit]],
             next_cursor=encode(
-                settings, session["reviewer_id"], campaign, rows[limit - 1]["id"]
+                settings, session["reviewer_id"], binding, offset + limit, scope=scope
             )
             if len(rows) > limit
             else None,
-            list_revision=str(campaign["list_revision"]),
-            counts={
-                "all": total,
-                "ready": 0,
-                "needs_review": total,
-                "condition_unmet": 0,
-            },
+            list_revision=revision,
+            counts=counts,
         )
 
     @router.get(
@@ -235,6 +259,62 @@ def build_application_router(engine, settings):
                     .one()
                 )
                 effective = Evaluation(**{k: base[k] for k in Evaluation.model_fields})
+            rank = dossier_rank(db, row)
+            pending = list(
+                db.scalars(
+                    select(evaluations.c.id)
+                    .where(
+                        (evaluations.c.application_id == application_id)
+                        & (
+                            evaluations.c.created_at > effective.created_at
+                            if effective
+                            else evaluations.c.id.is_not(None)
+                        )
+                    )
+                    .order_by(evaluations.c.created_at)
+                )
+            )
+            source_run = (
+                effective.run_id
+                if effective
+                else next((r["id"] for r in histories if r["manifest"]), None)
+            )
+            source_rows = [
+                SourceVersion(**{k: r[k] for k in SourceVersion.model_fields})
+                for r in db.execute(
+                    select(sources)
+                    .where(
+                        (sources.c.application_id == application_id)
+                        & sources.c.id.in_(
+                            select(run_sources.c.source_version_id).where(
+                                run_sources.c.run_id == source_run
+                            )
+                        )
+                    )
+                    .order_by(sources.c.source_key)
+                ).mappings()
+            ]
+            evidence_ids = set()
+            if effective:
+                evidence_ids.update(effective.provenance.evidence_ids)
+                evidence_ids.update(effective.provenance.blocked_evidence_ids[:10])
+                for condition in effective.conditions:
+                    evidence_ids.update(condition.evidence_ids)
+            evidence_rows = [
+                Evidence(**{k: r[k] for k in Evidence.model_fields})
+                for r in db.execute(
+                    select(excerpts)
+                    .where(
+                        (excerpts.c.application_id == application_id)
+                        & excerpts.c.id.in_(evidence_ids)
+                    )
+                    .order_by(
+                        excerpts.c.source_version_id,
+                        excerpts.c.locator["page"].as_integer(),
+                        excerpts.c.locator["start"].as_integer(),
+                    )
+                ).mappings()
+            ]
             documents = [
                 Upload(**{k: r[k] for k in Upload.model_fields})
                 for r in db.execute(
@@ -244,12 +324,33 @@ def build_application_router(engine, settings):
         response.headers["Cache-Control"] = "no-store"
         response.headers["ETag"] = f'"{row["review_revision"]}"'
         return ApplicationDetail(
-            application=summary(row, effective),
+            application=summary(row, effective, rank=rank),
+            sources=source_rows,
+            evidence=evidence_rows,
+            pending_evaluation_ids=pending,
             effective_evaluation=effective,
             answers=row["answers"],
             snapshot=snapshot_result(snapshot),
             uploads=documents,
             analyses=progress,
         )
+
+    @router.get(
+        "/evidence/{evidence_id}", response_model=Evidence, operation_id="read_evidence"
+    )
+    def read_evidence(
+        evidence_id: UUID, response: Response, session=Depends(read_guard)
+    ):
+        with engine.connect() as db:
+            record = (
+                db.execute(select(excerpts).where(excerpts.c.id == evidence_id))
+                .mappings()
+                .first()
+            )
+            if not record:
+                raise AccessError(404, "not_found", "Evidence unavailable")
+            owned_application(db, record["application_id"], session["reviewer_id"])
+        response.headers["Cache-Control"] = "no-store"
+        return Evidence(**{k: record[k] for k in Evidence.model_fields})
 
     return router

@@ -79,7 +79,8 @@ Eligibility = Literal["eligible", "condition_unmet", "needs_review", "not_applic
 
 
 class Provenance(Model):
-    mode: Literal["live"]
+    mode: Literal["live", "preloaded"]
+    fixture_version: str | None = Field(default=None, max_length=100)
     requested_model: str | None
     provider: str | None
     effective_model: str | None
@@ -94,6 +95,27 @@ class Provenance(Model):
     duration_seconds: float
     started_at: datetime
     finished_at: datetime
+
+    @model_validator(mode="after")
+    def honest_origin(self):
+        if self.mode == "preloaded" and (
+            not self.fixture_version
+            or any(
+                x is not None
+                for x in (
+                    self.provider,
+                    self.requested_model,
+                    self.effective_model,
+                    self.response_model,
+                )
+            )
+        ):
+            raise ValueError(
+                "Preloaded provenance must identify its fixture without model claims"
+            )
+        if self.mode == "live" and self.fixture_version is not None:
+            raise ValueError("Live provenance cannot claim a fixture")
+        return self
 
 
 class Evaluation(Model):

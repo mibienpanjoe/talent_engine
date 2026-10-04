@@ -37,4 +37,8 @@ du pipeline. Le format de manifeste courant est `received-sources-v2`.
 `fixtures/documents/textual-demo.pdf` est un document intégralement fictif,
 avec deux pages de texte. Les tests exercent sa réception HTTP, son extraction
 par le worker et la persistance des pages/extraits sur PostgreSQL. Ces essais
-ne prouvent pas encore une appréciation LLM, qui est l'étape suivante.
+vérifient la provenance indépendamment du modèle. `amina-demo.pdf` est un autre
+document fictif de trois pages, utilisé pour exercer le parcours complet :
+dépôt HTTP, extraction, appréciation réelle via FreeLLMAPI, persistance du
+score et affichage des citations dans la fiche privée. Cette recette ne
+constitue pas une calibration des barèmes ni des modèles.

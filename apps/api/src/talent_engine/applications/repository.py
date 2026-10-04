@@ -27,6 +27,7 @@ applications = Table(
     Column("review_revision", BigInteger, nullable=False),
     Column("processing_generation", BigInteger, nullable=False),
     Column("processing_state", String(30), nullable=False),
+    Column("processing_revision", BigInteger, nullable=False, server_default="1"),
     Column("effective_evaluation_id", Uuid),
     Column("deleted_at", DateTime(timezone=True)),
     UniqueConstraint("id", "campaign_id", "snapshot_id"),

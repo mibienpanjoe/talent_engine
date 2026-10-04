@@ -9,7 +9,9 @@ Prérequis : Docker Compose, Node 24, pnpm 10.28.0, Python 3.13 et uv 0.12.
 5. `make down` arrête les services et conserve les données. `docker compose down --volumes` supprime les données du projet Compose : réserver cette commande à une base de test jetable.
 
 Les ports publiés écoutent uniquement sur loopback. PostgreSQL n’est pas publié.
-Aucun LLM ni worker n’est nécessaire aux fondations. Le worker sera ajouté avec les tâches d’analyse ; il partagera le package et l’image de l’API. Le stockage privé sera ajouté avec la réception des fichiers.
+Le worker partage l’image API et le stockage privé des documents. La réception
+reste disponible sans passerelle LLM ; les appréciations automatiques requièrent
+la configuration serveur décrite dans la [note FreeLLMAPI](../integrations/local-freellmapi.md).
 
 Hors Docker : `make install`, puis configurer `TALENT_DATABASE_URL` avec une URL `postgresql+psycopg://…`. Lancer `uv run --project apps/api uvicorn talent_engine.main:create_app --factory`, et `pnpm --filter @talent-engine/web dev`. Le proxy utilise `http://127.0.0.1:8000` par défaut.
 
@@ -43,6 +45,26 @@ traite au plus une étape éligible. Le nettoyage des temporaires est périodiqu
 une exécution ponctuelle utilise `python -m talent_engine.documents.cleanup`
 dans le service worker, avec son environnement et son volume.
 
-En T18, réponses et sources reçues sont checkpointées. Le service d’évaluation
-reste non configuré jusqu’à la phase suivante : l’incident est visible, aucun
-score n’est inventé et les candidatures restent conservées.
+Réponses, sources extraites et évaluation sont checkpointées. Les PDF textuels
+et réponses alimentent les appréciations ; scans et images indiquent encore
+qu’un OCR est requis. Sans passerelle configurée, un besoin d’appel modèle
+produit un incident explicite, sans perdre la candidature ni inventer de score.
+
+## Revue sourcée
+
+La liste privée propose tous les dossiers, les prêts à examiner, les dossiers
+à vérifier et les conditions non satisfaites. Les deux dernières files peuvent
+se chevaucher. Les compteurs portent sur toute la campagne ; les filtres de
+décision et traitement s’appliquent ensuite à la liste. Les essais privés sont
+exclus de ces files et du classement.
+
+Le classement des prêts à examiner utilise le rapport exact avant arrondi,
+avec des rangs de compétition (1, 1, 3). Une panne technique ultérieure ne
+remplace pas un résultat effectif. Une liste paginée modifiée doit être rechargée.
+
+La fiche distingue score éventuel, couverture, disponibilité, décision humaine
+et traitement. Les preuves citées ouvrent le texte réellement conservé avec
+page ou réponse d’origine ; les documents restent accessibles uniquement au
+propriétaire connecté. Un résultat préchargé indique son origine et ne prétend
+pas provenir d’un appel modèle. Le jeu de démonstration distribuable reste à
+implémenter dans la phase dédiée.

@@ -201,7 +201,10 @@ def finalize(db, claim, output):
         .mappings()
         .one()
     )
-    updates = dict(processing_state=state)
+    updates = dict(
+        processing_state=state,
+        processing_revision=applications.c.processing_revision + 1,
+    )
     if run["reason"] == "initial" and app["effective_evaluation_id"] is None:
         updates.update(
             effective_evaluation_id=result.id,

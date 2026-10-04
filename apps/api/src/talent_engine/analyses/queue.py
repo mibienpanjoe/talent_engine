@@ -67,7 +67,10 @@ def terminal(db, job, timestamp, code):
     db.execute(
         applications.update()
         .where(applications.c.id == job["application_id"])
-        .values(processing_state="failed")
+        .values(
+            processing_state="failed",
+            processing_revision=applications.c.processing_revision + 1,
+        )
     )
 
 
@@ -243,7 +246,10 @@ def acquire(engine, settings, worker_id):
         db.execute(
             applications.update()
             .where(applications.c.id == app["id"])
-            .values(processing_state=state)
+            .values(
+                processing_state=state,
+                processing_revision=applications.c.processing_revision + 1,
+            )
         )
     event("job_acquired", claim)
     return claim

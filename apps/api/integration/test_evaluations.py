@@ -113,3 +113,48 @@ def test_lost_lease_cannot_publish_evaluation(context):
     assert not complete(engine, WorkerSettings(), claim, output)
     with engine.connect() as db:
         assert db.scalar(select(func.count()).select_from(evaluations)) == 1
+
+
+def test_evidence_owner_guard_and_effective_pointer_scope(context):
+    import pytest
+    from sqlalchemy.exc import IntegrityError
+    from talent_engine.access import hasher, reviewers
+    from test_worker import queued
+
+    client, engine = context
+    app_id = queued(client)
+    worker = partial(process, gateway=ControlledGateway())
+    for _ in range(3):
+        work_once(engine, WorkerSettings(), "owner-test", processor=worker)
+    detail = client.get("/api/v1/applications/" + app_id).json()
+    evidence_id = detail["effective_evaluation"]["assessments"][0]["evidence_ids"][0]
+    response = client.get("/api/v1/evidence/" + evidence_id)
+    assert (
+        response.status_code == 200 and response.headers["cache-control"] == "no-store"
+    )
+    assert response.json()["text"] == "Projet fictif et contribution personnelle."
+    second = queued(client)
+    with pytest.raises(IntegrityError), engine.begin() as db:
+        db.execute(
+            applications.update()
+            .where(applications.c.id == second)
+            .values(effective_evaluation_id=detail["effective_evaluation"]["id"])
+        )
+    client.cookies.clear()
+    assert client.get("/api/v1/evidence/" + evidence_id).status_code == 401
+    with engine.begin() as db:
+        db.execute(
+            reviewers.insert().values(
+                id=uuid4(),
+                login="other",
+                password_hash=hasher.hash("test-only-password"),
+            )
+        )
+    result = client.post(
+        "/api/v1/access/session",
+        headers={"Origin": "http://localhost:3003"},
+        json={"login": "other", "password": "test-only-password"},
+    )
+    assert result.status_code == 200
+    assert client.get("/api/v1/evidence/" + evidence_id).status_code == 404
+    assert client.get("/api/v1/applications/" + app_id).status_code == 404
