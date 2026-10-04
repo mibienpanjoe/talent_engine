@@ -1,0 +1,15 @@
+# Optional local integration with the existing FreeLLMAPI installation.
+# The key is supplied in the process environment, never stored in this file.
+services:
+  worker:
+    environment:
+      TALENT_LLM_BASE_URL: ${TALENT_LLM_BASE_URL:-http://freellmapi:3001/v1}
+      TALENT_LLM_API_KEY: ${TALENT_LLM_API_KEY:?Supply the existing gateway key server-side}
+      TALENT_LLM_MODEL: ${TALENT_LLM_MODEL:-auto:fast}
+    networks:
+      - default
+      - llm_gateway
+networks:
+  llm_gateway:
+    external: true
+    name: ${TALENT_LLM_NETWORK:-freellmapi_default}
