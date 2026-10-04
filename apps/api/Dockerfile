@@ -7,6 +7,7 @@ RUN uv sync --locked --no-dev --no-install-project
 COPY apps/api/src ./src
 COPY apps/api/migrations ./migrations
 COPY apps/api/alembic.ini ./
+COPY fixtures ./fixtures
 RUN uv sync --locked --no-dev && mkdir -p /app/private-uploads /app/private-logs && chown -R talent:talent /app
 USER talent
 ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1

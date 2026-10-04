@@ -14,7 +14,17 @@ from .schemas import Receipt
 from .validation import canonical_payload, validate_answers
 
 
-def receive(db, settings, campaign, payload, key, mode="real"):
+def receive(
+    db,
+    settings,
+    campaign,
+    payload,
+    key,
+    mode="real",
+    *,
+    application_id=None,
+    receipt_id=None,
+):
     if not key or len(key) < 22 or len(key) > 200:
         raise AccessError(
             422, "invalid_idempotency_key", "Use a random Idempotency-Key"
@@ -119,7 +129,7 @@ def receive(db, settings, campaign, payload, key, mode="real"):
     ):
         raise AccessError(409, "revision_exhausted", "Campaign exhausted")
     validate_answers(payload, snapshot["configuration"])
-    app_id = uuid4()
+    app_id = application_id or uuid4()
     db.execute(
         applications.insert().values(
             id=app_id,
@@ -161,7 +171,7 @@ def receive(db, settings, campaign, payload, key, mode="real"):
     ref = secrets.token_urlsafe(24)
     db.execute(
         receipts.insert().values(
-            id=uuid4(),
+            id=receipt_id or uuid4(),
             campaign_id=campaign["id"],
             mode=mode,
             key_digest=digest,

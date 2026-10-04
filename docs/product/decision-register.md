@@ -34,7 +34,7 @@ d’implémentation arrêtés par l’assistant pour exécuter cette phase. Les 
 et limites de démo sont des choix documentés, pas des valeurs métier mesurées.
 Échéance, budget, capacité et fournisseurs restent non inventés.
 
-## 2. Trace des résolutions
+## 2. Trace historique des résolutions de la phase contrats
 
 | ID | Statut | Choix et motif | Documents à mettre à jour |
 | --- | --- | --- | --- |
@@ -70,3 +70,17 @@ patches/locks compatibles T07–T08, transactions/authentification et UI en
 fondations/tranches, fournisseurs/embeddings/OCR T21–T27, calibration avant
 personnes réelles, CI distante après push autorisé. L’échéance, les volumes et
 le budget n’ont pas été fournis ; aucun périmètre n’est réduit implicitement.
+
+## 4. Vérification du MVP local, 4 octobre 2026
+
+Les contrats acceptés ont été implémentés : configuration figée au premier
+dépôt réel, politiques et calcul backend, revue, corrections, décisions,
+reprises et suppression. La [recette](../testing/acceptance-and-reference-cases.md)
+relie les exigences à leurs tests et parcours ; les tableaux historiques
+ci-dessus ne décrivent pas un reste à implémenter.
+
+Les locks installés, l’interface sombre et les trois usages FreeLLMAPI ont
+été exercés. Les [démonstrations](../testing/demonstrations.md) distinguent
+résultats préchargés sans clé et dossiers neufs analysés avec fournisseur
+identifié. Les choix de démonstration restent non calibrés sur des personnes.
+Échéance, capacité, budget, production et conformité restent hors preuve.

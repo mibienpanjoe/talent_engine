@@ -5,7 +5,9 @@ import type { ComponentProps } from "react";
 import { Button } from "./button";
 export const Dialog = Primitive.Root;
 export const DialogTrigger = Primitive.Trigger;
-export const DialogTitle = Primitive.Title;
+export function DialogTitle({ className = "", ...props }: ComponentProps<typeof Primitive.Title>) {
+  return <Primitive.Title className={`dialog-title ${className}`} {...props} />;
+}
 export const DialogDescription = Primitive.Description;
 export function DialogContent({ children, className = "", ...props }: ComponentProps<typeof Primitive.Content>) {
   return <Primitive.Portal><Primitive.Overlay className="dialog-overlay" />

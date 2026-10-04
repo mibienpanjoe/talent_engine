@@ -19,10 +19,12 @@ export function CorrectionEditor({
   dossier,
   criterionId,
   kind,
+  initialValue,
 }: {
   dossier: Detail;
   criterionId: string;
   kind: "assessment" | "condition";
+  initialValue: string;
 }) {
   const router = useRouter();
   const actionKey = useActionKey();
@@ -30,7 +32,7 @@ export function CorrectionEditor({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [action, setAction] = useState<"set" | "restore_base">("set");
-  const [value, setValue] = useState(kind === "assessment" ? "3" : "met");
+  const [value, setValue] = useState(initialValue);
   const [reason, setReason] = useState("");
   const [note, setNote] = useState("");
   const [zero, setZero] = useState("");
@@ -108,10 +110,10 @@ export function CorrectionEditor({
       </DialogTrigger>
       <DialogContent className="form-preview">
         <DialogTitle>Correction humaine</DialogTitle>
-        <DialogDescription>
-          {label}. Le résultat sera recalculé et cette correction restera dans
-          l’historique.
-        </DialogDescription>
+        <DialogDescription>{label}</DialogDescription>
+        <p>
+          Le résultat sera recalculé et cette correction restera dans l’historique.
+        </p>
         <form
           className="form-stack"
           onSubmit={(e) => {

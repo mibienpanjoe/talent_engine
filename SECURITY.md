@@ -1,7 +1,8 @@
 # Protection des données et frontières de confiance
 
-**Date :** 2026-10-03. **Statut :** règles d'implémentation du MVP ; contrôles d'accès des fondations exercés,
-revue globale du MVP et conformité réglementaire non démontrées.
+**Date :** 2026-10-04. **Statut :** mesures du MVP local, contrôles ciblés reliés
+à la [recette](docs/testing/acceptance-and-reference-cases.md) ; pas d’audit
+exhaustif de sécurité ni de conformité réglementaire démontrée.
 
 ## Accès et secrets
 
@@ -118,7 +119,7 @@ reprise, sans CV/secret dans traces. Avant usage réel, revoir contexte de
 traitement, base légale, prestataires et conservation ; ce document fixe
 des mesures techniques, pas un avis juridique.
 
-Vérifications prévues : accès direct non autorisé, CSRF/login, upload étranger,
+Contrôles ciblés exercés : accès direct non autorisé, CSRF/login, upload étranger,
 fichier hostile, SSRF et rebinding, injection de prompt, fuite bundle/logs,
 suppression concurrente et purge interrompue. T11/T17/T22/T25/T31 les exercent.
 
@@ -126,7 +127,7 @@ suppression concurrente et purge interrompue. T11/T17/T22/T25/T31 les exercent.
 
 Les tests d’accès PostgreSQL couvrent sessions valides/expirées, Origin et CSRF hostiles, cookie Secure sous HTTPS simulé, révocation après changement de mot de passe et dix tentatives simultanées respectant la limite atomique. Le parcours navigateur local connexion → espace privé → déconnexion a été exercé avec une session réellement persistée puis révoquée.
 
-Ces preuves couvrent l’accès responsable des fondations. Fichiers, collecte externe, traitement candidat, rétention et déploiement HTTPS seront exercés avec leurs phases respectives. L’[exception d’audit ESLint](docs/operations/dependency-audit.md) est limitée à un avis non corrigé et absent du runtime.
+Ces preuves couvrent l’accès responsable. Les tests de fichiers, collecte externe, traitement et rétention sont maintenant reliés à la matrice d’acceptation. Aucun déploiement HTTPS public n’est revendiqué. L’[exception d’audit ESLint](docs/operations/dependency-audit.md) est limitée à un avis non corrigé et absent du runtime.
 
 
 ### Preuves de la phase campagne et réception

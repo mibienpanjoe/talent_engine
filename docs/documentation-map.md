@@ -1,10 +1,18 @@
 # Talent Engine — Carte documentaire et organisation proposée
 
-**Date :** 2026-10-03  
-**Statut :** structure documentaire ; contrats T01–T06 présents, runtime non créé.
-Les fichiers non signalés comme présents restent des cibles.
+**Date :** 2026-10-04
+**Statut :** index actuel du MVP, suivi de la structure historique proposée.
+Le runtime local, les contrats, les adaptateurs et les démonstrations sont
+présents ; leurs preuves et limites figurent dans la recette.
 
-## 1. Point d'entrée actuel
+## 1. Point d’entrée actuel
+
+- [Installation locale](operations/local-runtime.md) : commandes, configuration et accès.
+- [Démonstrations](testing/demonstrations.md) : développement/marketing, préchargé ou réel.
+- [Recette du MVP](testing/acceptance-and-reference-cases.md) : couverture des exigences et limites des preuves.
+- [Adaptateurs IA](integrations/ai-adapters.md) et [passerelle serveur](integrations/local-freellmapi.md) : provenance, budgets et choix vérifiés.
+
+### Sources initiales et contrats
 
 Lire dans cet ordre :
 
@@ -23,7 +31,7 @@ refléter les décisions explicites ; les propositions du moteur restent ouverte
 Les nouveaux documents restent en français pour suivre la langue des sources ;
 cette convention est révisable.
 
-## 2. Structure documentaire cible
+## 2. Structure documentaire cible historique
 
 Cette arborescence décrit la cible ; elle ne représente pas les fichiers
 présents sur disque.
@@ -64,7 +72,7 @@ docs/
     local-freellmapi.md                    présent : installation et limites vérifiées
   operations/
     analysis-lifecycle.md                 présent : tâches, tentatives et reprise
-    local-development.md                  démarrage réel et modes de démonstration
+    local-runtime.md                      présent : démarrage vérifié et modes de démonstration
   design/
     visual-identity.md                    présent : direction sombre proposée
     brand-assets.md                       présent : assets, usages et vérifications
@@ -86,7 +94,8 @@ copies de l'overview.
 
 Les schémas HTTP typés se trouvent dans
 [contracts/api-design.openapi.json](../contracts/api-design.openapi.json),
-contrat manuel de conception distinct du futur export serveur. Les oracles
+contrat manuel de conception distinct de l’export serveur actuel
+`contracts/openapi.json`. Les oracles
 numériques fictifs sont sous `fixtures/expected-results/`.
 
 ## 3. Ordre de rédaction et provenance
@@ -153,7 +162,8 @@ Après le contrat de campagne, lire :
 
 Les textes initialement proposés conservent leur contexte historique ; les
 contrats propriétaires détaillés fixent maintenant les règles de réalisation.
-Les capacités d’intégration et de runtime attendent leurs preuves dédiées.
+Les preuves d’intégration et de runtime sont reliées à la recette actuelle ;
+les tableaux de conception ci-dessus conservent leur contexte historique.
 
 Les adaptateurs implémentés, la récupération et leur comparaison réelle sont
 décrits dans [Adaptateurs IA et récupération versionnée](integrations/ai-adapters.md).

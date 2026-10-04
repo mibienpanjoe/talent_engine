@@ -1,8 +1,9 @@
 # Talent Engine — Cadrage MVP et acceptation
 
-**Date :** 2026-10-03  
-**Statut :** objectif de livraison retenu ; exigences dérivées des sources,
-contrats détaillés proposés et implémentation non vérifiée.  
+**Date :** 2026-10-04
+**Statut :** périmètre retenu et implémenté ; preuves et limites dans la
+[recette du MVP](../testing/acceptance-and-reference-cases.md). Les sources
+initiales, contrats acceptés et vérifications d’exécution restent distincts.
 **Sources :** [overview](project-overview.md), [moteur](../evaluation/evaluation-engine-spec.md)
 et [décisions](decision-register.md).
 
@@ -16,7 +17,7 @@ Le responsable crée une campagne, reçoit une candidature, examine une
 évaluation sourcée et prend une décision. Une formation en développement et
 un recrutement marketing montrent l'adaptation du même moteur à deux besoins.
 
-## 2. Exigences et acceptation proposées
+## 2. Exigences et acceptation retenues
 
 | ID | Exigence | Acceptation observable | Source |
 | --- | --- | --- | --- |
@@ -68,9 +69,10 @@ La version de politique, la contribution du candidat, les échecs techniques
 et les limites des modèles restent consultables. Un incident technique ne
 supprime pas la candidature ou une correction humaine.
 
-## 5. Arbitrages nécessaires pour rendre ces exigences exécutables
+## 5. Contrats qui rendent ces exigences exécutables
 
-Définir le cycle de configuration, les familles et leurs poids, les barèmes
-marketing, l'effet des compétences indispensables, les files, le résultat
-effectif corrigé, l'idempotence et les transitions de tâches. Les exigences
-fixent le comportement visé ; elles ne remplacent pas ces contrats ouverts.
+Les contrats campagne, politiques, évaluation, revue, réception et tâches
+fixent le cycle de configuration, les familles et poids, les barèmes marketing,
+les compétences indispensables, les files, le résultat corrigé, l’idempotence
+et les transitions. Leur réalisation est reliée aux tests et recettes dans la
+matrice d’acceptation ; la calibration sur des personnes reste ouverte.

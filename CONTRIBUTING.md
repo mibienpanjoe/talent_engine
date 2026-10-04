@@ -55,6 +55,9 @@ Voir [runtime local](docs/operations/local-runtime.md) pour l'installation.
 | `make install` | pnpm frozen-lockfile et uv locked. |
 | `make up` / `make down` | Runtime Compose ; arrêt sans suppression des volumes. |
 | `make migrate` | Migration explicite dans Compose. |
+| `make seed-access` | Initialise/renouvelle le responsable et révoque ses sessions. |
+| `make seed-demo` | Deux campagnes fictives préchargées, sans clé ni doublons. |
+| `make integration-test` | Tests PostgreSQL sur une base isolée `_test`. |
 | `make api-test` | Tests comportementaux pytest. |
 | `make lint` / `make typecheck` | Ruff et contrôle TypeScript. |
 | `make build` | Build web ; images construites par `make up`. |
@@ -62,7 +65,9 @@ Voir [runtime local](docs/operations/local-runtime.md) pour l'installation.
 | `make check` | Tests, lint, contrats, types et build. |
 
 Les tests PostgreSQL utilisent une base isolée et `apps/api/checks/check_database.py`.
-Les commandes E2E et seed-demo seront ajoutées avec leurs tranches respectives.
+La recette navigateur et fournisseur est décrite dans la
+[matrice d’acceptation](docs/testing/acceptance-and-reference-cases.md) ; aucun
+runner E2E automatique n’est annoncé.
 uv `--locked` vérifie la fraîcheur du lock ; ne pas masquer une dérive avec
 `--frozen`. Toute mise à jour de dépendance est revue et testée avant nouveau lock.
 

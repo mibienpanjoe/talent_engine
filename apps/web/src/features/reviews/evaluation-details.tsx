@@ -172,6 +172,12 @@ export function EvaluationDetails({ dossier }: { dossier: Detail }) {
             <div className="inline-actions">
               {assessment.evidence_ids.map(proof)}
               <CorrectionEditor
+                key={`${assessment.criterion_id}:${dossier.application.review_revision}`}
+                initialValue={
+                  assessment.level === null
+                    ? assessment.status
+                    : String(assessment.level)
+                }
                 dossier={dossier}
                 criterionId={assessment.criterion_id}
                 kind="assessment"
@@ -219,6 +225,8 @@ export function EvaluationDetails({ dossier }: { dossier: Detail }) {
                 <div className="inline-actions">
                   {condition.evidence_ids?.map(proof)}
                   <CorrectionEditor
+                    key={`${condition.criterion_id}:${dossier.application.review_revision}`}
+                    initialValue={condition.status}
                     dossier={dossier}
                     criterionId={condition.criterion_id}
                     kind="condition"

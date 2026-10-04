@@ -1,4 +1,4 @@
-"""Receive-stage checkpoints. Evaluation adapters arrive in the next phase."""
+"""Persistent source and evaluation steps, finalized under worker fencing."""
 
 from pathlib import Path
 
