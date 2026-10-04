@@ -47,6 +47,7 @@ analysis_runs = Table(
     Column("error_code", String(100)),
     Column("created_at", DateTime(timezone=True), nullable=False),
     Column("finished_at", DateTime(timezone=True)),
+    UniqueConstraint("id", "application_id"),
 )
 jobs = Table(
     "jobs",

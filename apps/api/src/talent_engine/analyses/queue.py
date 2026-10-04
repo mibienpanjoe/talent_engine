@@ -11,6 +11,7 @@ from uuid import uuid4
 from sqlalchemy import or_, select
 from talent_engine.applications.data import analysis_runs, applications, jobs
 from talent_engine.campaigns.lifecycle import now
+from talent_engine.sources.data import persist
 
 from .repository import steps
 
@@ -323,7 +324,12 @@ def complete(engine, settings, claim, output):
             return fail_locked(
                 db, settings, claim, step, timestamp, "step_timeout", retryable=True
             )
-        # Checkpoint output is immutable once succeeded. No evaluation is invented.
+        if (
+            claim.step == "source_manifest"
+            and output.get("version") == "received-sources-v2"
+        ):
+            output = persist(db, claim, output)
+        # Checkpoint output is immutable once succeeded.
         db.execute(
             steps.update()
             .where((steps.c.run_id == claim.run_id) & (steps.c.name == claim.step))
