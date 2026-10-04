@@ -30,6 +30,7 @@ def process(
     gateway=None,
     ocr_gateway=None,
     portfolio_web=None,
+    github_web=None,
 ):
     if claim.step == "evaluate":
         try:
@@ -93,6 +94,7 @@ def process(
             ocr_gateway=ocr_gateway,
             retry_errors=claim.attempt < 3,
             portfolio_web=portfolio_web,
+            github_web=github_web,
         )
     except (ProviderFailure, WebFailure) as error:
         raise StepFailure(

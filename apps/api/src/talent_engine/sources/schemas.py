@@ -37,6 +37,32 @@ class WebCollection(Model):
     error_code: str | None = None
 
 
+class GitHubLocator(Model):
+    kind: Literal["github"]
+    repository: str = Field(max_length=2048)
+    commit: str = Field(pattern=r"^[0-9a-f]{40}$")
+    path: str = Field(max_length=512)
+    start: int = Field(ge=0)
+    end: int = Field(ge=0)
+
+
+class GitHubFile(Model):
+    path: str = Field(max_length=512)
+    status: Literal["succeeded", "failed"]
+    content_hash: str | None = None
+    blob_sha: str | None = None
+    size: int | None = None
+    error_code: str | None = None
+
+
+class GitHubSnapshot(Model):
+    repository: str = Field(max_length=2048)
+    commit: str | None = Field(default=None, pattern=r"^[0-9a-f]{40}$")
+    fetched_at: datetime
+    personal_role_verified: Literal[False] = False
+    files: list[GitHubFile] = Field(max_length=6)
+
+
 class OCRAttempt(Model):
     page: int = Field(ge=1, le=30)
     method: Literal["ocr"]
@@ -58,6 +84,7 @@ class ExtractionMetadata(Model):
     ocr: list[OCRAttempt] = Field(default_factory=list, max_length=30)
     web: list[WebCollection] = Field(default_factory=list, max_length=3)
     source_url: str | None = Field(default=None, max_length=2048)
+    github: GitHubSnapshot | None = None
 
 
 class Evidence(Model):
@@ -65,7 +92,8 @@ class Evidence(Model):
     source_version_id: UUID
     text: str
     locator: Annotated[
-        AnswerLocator | PDFLocator | WebLocator, Field(discriminator="kind")
+        AnswerLocator | PDFLocator | WebLocator | GitHubLocator,
+        Field(discriminator="kind"),
     ]
     nature: Literal[
         "declaration",

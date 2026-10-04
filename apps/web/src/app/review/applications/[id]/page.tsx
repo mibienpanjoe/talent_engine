@@ -184,6 +184,39 @@ export default async function ApplicationPage({
                     <details className="provenance-details">
                       <summary>Version de la source</summary>
                       <p>{source.extractor_version}</p>
+                      {source.extraction_metadata?.github && (
+                        <>
+                          <p>Contribution personnelle à vérifier séparément.</p>
+                          <a
+                            href={`${source.extraction_metadata.github.repository}/tree/${source.extraction_metadata.github.commit}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Dépôt au commit recueilli
+                          </a>
+                          <p className="hash-text">
+                            Commit : {source.extraction_metadata.github.commit}
+                          </p>
+                          <p>
+                            Recueilli le{" "}
+                            {new Date(
+                              source.extraction_metadata.github.fetched_at,
+                            ).toLocaleString("fr-FR", { timeZone: "UTC" })}{" "}
+                            UTC.
+                          </p>
+                          {source.extraction_metadata.github.files.map(
+                            (file) => (
+                              <p key={file.path}>
+                                {file.path} ·{" "}
+                                {file.status === "succeeded"
+                                  ? "Recueilli"
+                                  : "Indisponible"}
+                                {file.error_code && ` (${file.error_code})`}
+                              </p>
+                            ),
+                          )}
+                        </>
+                      )}
                       {source.extraction_metadata?.web?.map((page, index) => (
                         <p key={index}>
                           {page.url} ·{" "}

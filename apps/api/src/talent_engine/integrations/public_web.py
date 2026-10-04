@@ -185,8 +185,9 @@ def exchange(url, hostname, address, port, deadline):
 
 
 class PublicWeb:
-    def __init__(self, *, resolver=resolve, exchange=exchange):
+    def __init__(self, *, resolver=resolve, exchange=exchange, allowed_hosts=None):
         self.resolver, self.exchange = resolver, exchange
+        self.allowed_hosts = allowed_hosts
 
     def get(self, value, *, deadline):
         from talent_engine.integrations.llm import retry_delay
@@ -194,6 +195,8 @@ class PublicWeb:
         for hop in range(4):
             remaining(deadline)
             url, host, port = normalize_url(value)
+            if self.allowed_hosts is not None and host not in self.allowed_hosts:
+                raise WebFailure("url_blocked")
             addresses = public_addresses(host, port, resolver=self.resolver)
             remaining(deadline)
             status, headers, body = self.exchange(
@@ -204,6 +207,8 @@ class PublicWeb:
                     raise WebFailure("source_redirect_limit")
                 value = urljoin(url, headers["location"])
                 continue
+            if status == 403 and headers.get("x-ratelimit-remaining") == "0":
+                raise WebFailure("source_rate_limited", retryable=True, retry_after=60)
             if status in (401, 403):
                 raise WebFailure("source_access_restricted")
             if status == 429:

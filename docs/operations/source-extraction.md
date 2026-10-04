@@ -101,3 +101,29 @@ Les 429 et erreurs transitoires utilisent les reprises du worker.
 Le parcours dépôt → collecte → appréciation → fiche a été exercé sur le
 portfolio public fourni par son propriétaire, avec vérification des offsets
 et empreintes. La collecte valide la provenance, pas la calibration du modèle.
+
+## Dépôts GitHub publics
+
+Le lien doit désigner la racine d’un dépôt GitHub HTTPS public, sans paramètres.
+Les variantes de casse, slash final et suffixe `.git` sont dédupliquées. Un
+profil ou lien vers un fichier demande explicitement une URL de dépôt. Le
+collecteur utilise uniquement l’[API officielle de contenus](https://docs.github.com/en/rest/repos/contents)
+et l’[arbre Git](https://docs.github.com/en/rest/git/trees), sans token : accès
+public seulement. Les redirections ne peuvent pas quitter `api.github.com`.
+
+La branche par défaut est résolue une fois en commit SHA. Les fichiers sont
+ensuite lus avec ce SHA et leur empreinte Git est vérifiée contre l’arbre.
+L’arbre est borné à 1 000 entrées et 2 MiB ; un arbre tronqué n’est pas utilisé.
+Lecture d’un README racine et de cinq fichiers texte au plus, en donnant
+priorité aux chemins sources/tests puis à l’ordre lexical. Pas de symlinks,
+submodules, code exécuté, assets binaires, clone ou consultation de commits
+supplémentaires. Maximum 1 MiB par fichier, 3 MiB au total et 200 000 caractères
+extraits, dans le budget de collecte commun. Ces limites sont explicites dans
+la provenance. Un projet volumineux peut donc fournir une couverture partielle.
+
+Les preuves conservent dépôt, commit, chemin, offsets, empreintes et date. Le
+texte historique reste dans la fiche ; le lien original vise le même commit.
+Un dépôt collectif ou possédé par le candidat ne prouve pas sa contribution
+personnelle : celle-ci reste à établir séparément. La répétition du lien ne
+crée pas de source supplémentaire ni de bonus. Les accès privés/404, quotas
+et fichiers trop volumineux conservent la candidature avec une erreur visible.

@@ -69,7 +69,9 @@ export function EvidenceButton({
                 ? `${evidence.locator.method === "ocr" ? "Texte OCR" : "Document"} · page ${evidence.locator.page}`
                 : evidence.locator.kind === "web"
                   ? "Page de portfolio"
-                  : "Réponse au formulaire"}{" "}
+                  : evidence.locator.kind === "github"
+                    ? `Dépôt GitHub · ${evidence.locator.path}`
+                    : "Réponse au formulaire"}{" "}
               ·{" "}
               {evidence.nature === "declaration"
                 ? "Déclaration du candidat"
@@ -93,6 +95,21 @@ export function EvidenceButton({
               >
                 Ouvrir la page d’origine
               </a>
+            )}
+            {evidence.locator.kind === "github" && (
+              <>
+                <p>
+                  Le dépôt ne suffit pas à établir la contribution personnelle.
+                </p>
+                <a
+                  href={`${evidence.locator.repository}/blob/${evidence.locator.commit}/${evidence.locator.path.split("/").map(encodeURIComponent).join("/")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Ouvrir le fichier au commit recueilli
+                </a>
+                <p className="hash-text">Commit : {evidence.locator.commit}</p>
+              </>
             )}
             <details className="provenance-details">
               <summary>Vérifier la provenance</summary>

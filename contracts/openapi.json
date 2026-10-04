@@ -1209,6 +1209,7 @@
             "discriminator": {
               "mapping": {
                 "answer": "#/components/schemas/AnswerLocator",
+                "github": "#/components/schemas/GitHubLocator",
                 "pdf": "#/components/schemas/PDFLocator",
                 "web": "#/components/schemas/WebLocator"
               },
@@ -1223,6 +1224,9 @@
               },
               {
                 "$ref": "#/components/schemas/WebLocator"
+              },
+              {
+                "$ref": "#/components/schemas/GitHubLocator"
               }
             ],
             "title": "Locator"
@@ -1261,6 +1265,16 @@
       "ExtractionMetadata": {
         "additionalProperties": false,
         "properties": {
+          "github": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GitHubSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "ocr": {
             "items": {
               "$ref": "#/components/schemas/OCRAttempt"
@@ -1356,6 +1370,167 @@
           }
         },
         "title": "FormLimits",
+        "type": "object"
+      },
+      "GitHubFile": {
+        "additionalProperties": false,
+        "properties": {
+          "blob_sha": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blob Sha"
+          },
+          "content_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Hash"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "path": {
+            "maxLength": 512,
+            "title": "Path",
+            "type": "string"
+          },
+          "size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size"
+          },
+          "status": {
+            "enum": [
+              "succeeded",
+              "failed"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "status"
+        ],
+        "title": "GitHubFile",
+        "type": "object"
+      },
+      "GitHubLocator": {
+        "additionalProperties": false,
+        "properties": {
+          "commit": {
+            "pattern": "^[0-9a-f]{40}$",
+            "title": "Commit",
+            "type": "string"
+          },
+          "end": {
+            "minimum": 0.0,
+            "title": "End",
+            "type": "integer"
+          },
+          "kind": {
+            "const": "github",
+            "title": "Kind",
+            "type": "string"
+          },
+          "path": {
+            "maxLength": 512,
+            "title": "Path",
+            "type": "string"
+          },
+          "repository": {
+            "maxLength": 2048,
+            "title": "Repository",
+            "type": "string"
+          },
+          "start": {
+            "minimum": 0.0,
+            "title": "Start",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind",
+          "repository",
+          "commit",
+          "path",
+          "start",
+          "end"
+        ],
+        "title": "GitHubLocator",
+        "type": "object"
+      },
+      "GitHubSnapshot": {
+        "additionalProperties": false,
+        "properties": {
+          "commit": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9a-f]{40}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commit"
+          },
+          "fetched_at": {
+            "format": "date-time",
+            "title": "Fetched At",
+            "type": "string"
+          },
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/GitHubFile"
+            },
+            "maxItems": 6,
+            "title": "Files",
+            "type": "array"
+          },
+          "personal_role_verified": {
+            "const": false,
+            "default": false,
+            "title": "Personal Role Verified",
+            "type": "boolean"
+          },
+          "repository": {
+            "maxLength": 2048,
+            "title": "Repository",
+            "type": "string"
+          }
+        },
+        "required": [
+          "repository",
+          "fetched_at",
+          "files"
+        ],
+        "title": "GitHubSnapshot",
         "type": "object"
       },
       "HTTPValidationError": {

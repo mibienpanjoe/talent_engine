@@ -9,6 +9,7 @@ from uuid import UUID, uuid5
 
 from talent_engine.integrations.public_web import WebFailure, normalize_url
 
+from .github import collect_github, repository_url
 from .ocr import transcribe_pages
 from .portfolio import collect_portfolio
 
@@ -71,7 +72,16 @@ def make_source(
             part = text[start : start + 2000]
             if not part.strip():
                 continue
-            if kind == "portfolio":
+            if kind == "github":
+                locator = dict(
+                    kind="github",
+                    repository=page["repository"],
+                    commit=page["commit"],
+                    path=page["path"],
+                    start=start,
+                    end=start + len(part),
+                )
+            elif kind == "portfolio":
                 locator = dict(
                     kind="web", url=page["url"], start=start, end=start + len(part)
                 )
@@ -129,6 +139,7 @@ def collect_sources(
     ocr_gateway=None,
     retry_errors=False,
     portfolio_web=None,
+    github_web=None,
 ):
     deadline = time.monotonic() + 50
     sources = []
@@ -144,8 +155,17 @@ def collect_sources(
         qid = str(answer["question_id"])
         external = answer["kind"] == "url"
         if external:
+            is_github = False
             try:
                 text = normalize_url(text)[0]
+                from urllib.parse import urlsplit
+
+                is_github = urlsplit(text).hostname == "github.com"
+                if is_github:
+                    try:
+                        text = repository_url(text)
+                    except WebFailure:
+                        pass
             except WebFailure:
                 pass
             key = digest(text)
@@ -154,17 +174,20 @@ def collect_sources(
                     set(links[key]["question_ids"] + [qid])
                 )
                 continue
-            extraction = collect_portfolio(
-                text, deadline=deadline, web=portfolio_web, retry_errors=retry_errors
+            extraction = (collect_github if is_github else collect_portfolio)(
+                text,
+                deadline=deadline,
+                web=github_web if is_github else portfolio_web,
+                retry_errors=retry_errors,
             )
             source = make_source(
                 application_id,
-                "portfolio:" + key,
-                "portfolio",
+                ("github:" if is_github else "portfolio:") + key,
+                "github" if is_github else "portfolio",
                 extraction.pop("content_hash"),
                 [qid],
                 extraction,
-                version="portfolio-html-v1",
+                version="github-api-v1" if is_github else "portfolio-html-v1",
             )
             links[key] = source
             sources.append(source)

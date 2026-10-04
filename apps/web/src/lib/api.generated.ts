@@ -883,7 +883,7 @@ export interface components {
              */
             id: string;
             /** Locator */
-            locator: components["schemas"]["AnswerLocator"] | components["schemas"]["PDFLocator"] | components["schemas"]["WebLocator"];
+            locator: components["schemas"]["AnswerLocator"] | components["schemas"]["PDFLocator"] | components["schemas"]["WebLocator"] | components["schemas"]["GitHubLocator"];
             /**
              * Nature
              * @enum {string}
@@ -899,6 +899,7 @@ export interface components {
         };
         /** ExtractionMetadata */
         ExtractionMetadata: {
+            github?: components["schemas"]["GitHubSnapshot"] | null;
             /** Ocr */
             ocr?: components["schemas"]["OCRAttempt"][];
             /** Source Url */
@@ -945,6 +946,62 @@ export interface components {
              * @default 31457280
              */
             max_total_bytes: number;
+        };
+        /** GitHubFile */
+        GitHubFile: {
+            /** Blob Sha */
+            blob_sha?: string | null;
+            /** Content Hash */
+            content_hash?: string | null;
+            /** Error Code */
+            error_code?: string | null;
+            /** Path */
+            path: string;
+            /** Size */
+            size?: number | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "succeeded" | "failed";
+        };
+        /** GitHubLocator */
+        GitHubLocator: {
+            /** Commit */
+            commit: string;
+            /** End */
+            end: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "github";
+            /** Path */
+            path: string;
+            /** Repository */
+            repository: string;
+            /** Start */
+            start: number;
+        };
+        /** GitHubSnapshot */
+        GitHubSnapshot: {
+            /** Commit */
+            commit?: string | null;
+            /**
+             * Fetched At
+             * Format: date-time
+             */
+            fetched_at: string;
+            /** Files */
+            files: components["schemas"]["GitHubFile"][];
+            /**
+             * Personal Role Verified
+             * @default false
+             * @constant
+             */
+            personal_role_verified: false;
+            /** Repository */
+            repository: string;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
