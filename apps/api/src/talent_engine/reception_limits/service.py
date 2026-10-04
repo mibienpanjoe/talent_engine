@@ -65,7 +65,7 @@ def requests(engine, settings, scopes):
         )
 
 
-def reserve_transfer(db, session_id):
+def reserve_transfer(db, session_id, storage_key=None):
     # Caller holds the upload-session lock, shared by every API instance.
     timestamp = now(db)
     db.execute(
@@ -94,6 +94,7 @@ def reserve_transfer(db, session_id):
         transfers.insert().values(
             id=transfer_id,
             session_id=session_id,
+            storage_key=storage_key,
             expires_at=timestamp + timedelta(seconds=120),
         )
     )

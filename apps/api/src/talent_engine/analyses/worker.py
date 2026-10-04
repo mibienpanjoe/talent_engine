@@ -10,8 +10,10 @@ from uuid import uuid4
 from sqlalchemy.exc import SQLAlchemyError
 from talent_engine.config import Settings
 from talent_engine.database import build_engine
+from talent_engine.deletions.data import collect_retention, purge_once
 from talent_engine.documents.cleanup import collect
 from talent_engine.schema import register_models
+from talent_engine.technical_logs import collect_logs, configure_logs
 
 from .processor import StepFailure, process
 from .queue import acquire, complete, event, fail, heartbeat
@@ -88,6 +90,7 @@ def main():
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     settings = Settings()
+    log_handler = configure_logs(settings.log_directory)
     worker_settings = WorkerSettings()
     engine = build_engine(settings)
     register_models()
@@ -101,11 +104,19 @@ def main():
         while not stopping.is_set():
             try:
                 if time.monotonic() >= cleanup_at:
-                    removed = collect(engine, settings)
-                    if removed:
-                        event("temporary_files_collected", count=removed)
-                    cleanup_at = time.monotonic() + 3600
-                worked = work_once(
+                    try:
+                        collect_logs(log_handler)
+                        removed = collect(engine, settings)
+                        expired = collect_retention(engine)
+                        if removed:
+                            event("temporary_files_collected", count=removed)
+                        if expired:
+                            event("retention_cleanup_requested", count=expired)
+                        cleanup_at = time.monotonic() + (60 if expired == 100 else 3600)
+                    except OSError:
+                        event("private_storage_unavailable", worker_id=worker_id)
+                        cleanup_at = time.monotonic() + 60
+                worked = purge_once(engine, settings) or work_once(
                     engine,
                     worker_settings,
                     worker_id,

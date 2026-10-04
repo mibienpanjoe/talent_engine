@@ -14,6 +14,7 @@ transfers = Table(
     metadata,
     Column("id", Uuid, primary_key=True),
     Column("session_id", Uuid, ForeignKey("upload_sessions.id"), nullable=False),
+    Column("storage_key", String(100)),
     Column("expires_at", DateTime(timezone=True), nullable=False),
 )
 Index("ix_upload_transfers_session", transfers.c.session_id)

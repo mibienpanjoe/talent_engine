@@ -1,3 +1,4 @@
+import { CleanupStatus } from "../../../../../features/reviews/cleanup-status";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { reviewerApi } from "../../../../../lib/server-api";
@@ -63,6 +64,14 @@ export default async function ApplicationsPage({
       signal: AbortSignal.timeout(5000),
     },
   );
+  const cleanups = await client.GET(
+    "/api/v1/campaigns/{campaign_id}/cleanup-requests",
+    {
+      params: { path: { campaign_id: id } },
+      signal: AbortSignal.timeout(5000),
+    },
+  );
+  if (!cleanups.data) throw new Error("Cleanup status unavailable");
   if (result.response.status === 404 || result.response.status === 422)
     notFound();
   const changed =
@@ -77,6 +86,7 @@ export default async function ApplicationsPage({
       <main id="main" className="page-width">
         <Link href={`/review/campaigns/${id}`}>← La campagne</Link>
         <h1>Candidatures reçues</h1>
+        <CleanupStatus requests={cleanups.data} />
         {changed ? (
           <section className="empty-state">
             <h2>La liste a changé.</h2>

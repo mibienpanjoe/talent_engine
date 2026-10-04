@@ -1,3 +1,4 @@
+import { DeleteApplication } from "../../../../features/reviews/delete-application";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { reviewerApi } from "../../../../lib/server-api";
@@ -136,6 +137,10 @@ export default async function ApplicationPage({
           dossier={result.data}
         />
         <RefreshButton />
+        <DeleteApplication
+          key={`delete:${a.review_revision}`}
+          application={a}
+        />
         <PolicyDetails snapshotId={a.snapshot_id} />
         {(result.data.sources?.length ?? 0) > 0 && (
           <section className="review-section">

@@ -194,6 +194,7 @@ def owned_application(db, application_id, owner_id):
             select(applications).where(
                 (applications.c.id == application_id)
                 & (applications.c.deleted_at.is_(None))
+                & (applications.c.received_at > now(db) - timedelta(days=90))
             )
         )
         .mappings()

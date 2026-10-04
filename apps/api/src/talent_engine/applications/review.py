@@ -1,5 +1,7 @@
 """Read-only review projection; exact ranks precede all user filters."""
 
+from datetime import timedelta
+
 from sqlalchemy import and_, case, func, literal, or_, select
 from talent_engine.reviews.data import evaluations
 
@@ -37,6 +39,7 @@ def real_rows(application, campaign_id):
         application.c.campaign_id == campaign_id,
         application.c.mode == "real",
         application.c.deleted_at.is_(None),
+        application.c.received_at > func.now() - timedelta(days=90),
     )
 
 

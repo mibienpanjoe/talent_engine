@@ -87,6 +87,7 @@ def acquire(engine, settings, worker_id):
                 select(applications)
                 .where(
                     applications.c.deleted_at.is_(None)
+                    & (applications.c.received_at > timestamp - timedelta(days=90))
                     & applications.c.id.in_(
                         select(jobs.c.application_id).where(eligible)
                     )
@@ -268,6 +269,7 @@ def fenced(db, claim):
     if (
         not app
         or app["deleted_at"]
+        or app["received_at"] <= now(db) - timedelta(days=90)
         or app["processing_generation"] != claim.application_generation
     ):
         return None

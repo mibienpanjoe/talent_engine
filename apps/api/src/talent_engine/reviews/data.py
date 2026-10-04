@@ -3,7 +3,7 @@
 from sqlalchemy import case, select
 from talent_engine.evaluations.data import evaluations as bases
 
-from .repository import events, projections
+from .repository import application_actions, events, projections
 
 # A corrected partial score is NULL: COALESCE would restore the base score.
 evaluations = (
@@ -28,4 +28,4 @@ evaluations = (
     )
     .subquery("projected_evaluations")
 )
-__all__ = ["evaluations", "projections", "events"]
+__all__ = ["evaluations", "projections", "events", "application_actions"]

@@ -18,6 +18,7 @@ from talent_engine.campaigns.lifecycle import build_lifecycle_router
 from talent_engine.campaigns.router import build_campaign_router
 from talent_engine.config import Settings
 from talent_engine.database import build_engine
+from talent_engine.deletions.router import build_deletion_router
 from talent_engine.documents.router import build_document_router
 from talent_engine.errors import AccessError, Error, ErrorDetail, error_payload
 from talent_engine.evaluations.data import evaluations
@@ -51,6 +52,7 @@ def create_app(
     app.include_router(build_application_router(engine, settings))
     app.include_router(build_document_router(engine, settings))
     app.include_router(build_review_router(engine, settings))
+    app.include_router(build_deletion_router(engine, settings))
     app.add_middleware(BodyLimit)
     app.add_middleware(PublicLimits, engine=engine, settings=settings)
 
