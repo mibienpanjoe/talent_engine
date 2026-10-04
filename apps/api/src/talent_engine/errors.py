@@ -22,15 +22,26 @@ class Error(BaseModel):
     error: ErrorBody
 
 
-def error_payload(code: str, message: str) -> dict:
+def error_payload(
+    code: str, message: str, details: list[ErrorDetail] | None = None
+) -> dict:
     return Error(
-        error=ErrorBody(code=code, message=message, request_id=str(uuid4()), details=[])
+        error=ErrorBody(
+            code=code, message=message, request_id=str(uuid4()), details=details or []
+        )
     ).model_dump()
 
 
 class AccessError(Exception):
     def __init__(
-        self, status: int, code: str, message: str, retry_after: int | None = None
+        self,
+        status: int,
+        code: str,
+        message: str,
+        retry_after: int | None = None,
+        *,
+        details: list[ErrorDetail] | None = None,
     ):
         self.status, self.code, self.message = status, code, message
         self.retry_after = retry_after
+        self.details = details or []

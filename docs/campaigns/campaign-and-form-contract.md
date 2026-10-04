@@ -184,3 +184,34 @@ idempotence, fichiers et limites ; T05 traduit ces invariants en modèle et
 API ; T13–T18 implémentent et exercent les comportements avec PostgreSQL et
 navigateur. La pertinence d'une appréciation reste indépendante de la validité
 du formulaire et de la provenance de son snapshot.
+
+## 9. État d’implémentation
+
+T13 : brouillons privés persistés avec révision, création idempotente, liste
+paginée, édition guidée et erreurs de préparation. Les accès réutilisent les
+gardes de session, origine et CSRF. La création et le rechargement après
+redémarrage ont été exercés depuis l’interface sur PostgreSQL. Publication,
+réception et gel seront vérifiés dans les étapes suivantes ; ce contrat reste
+leur référence, pas une preuve anticipée.
+
+T14 : aperçu avec renderer partagé de questions et leurs contraintes. Retirer
+l’unique source affiche un manque et une action de réparation ; les associations
+vides restent visibles en préparation serveur. Suppression, réparation et
+sauvegarde ont été exercées sur le runtime réel à 320 px.
+
+T15 : snapshots immuables réels et privés, compilation des poids rationnels
+et des barèmes versionnés, republication, fermeture et duplication. Les
+mutations sont sérialisées sur la campagne et contrôlent la révision. Le
+public lit uniquement le snapshot actif sans exigences, propriétaire ni
+politique privée. Les scénarios de concurrence avec une réception réelle
+seront exercés en T16, lorsque cette réception existe.
+
+
+### Clôture de l’implémentation campagne et réception
+
+Le premier dépôt réel pose un gel permanent, même si le dossier est ensuite
+marqué supprimé. Les essais privés n’y participent pas. Publication, fermeture
+et réception sont sérialisées sur la campagne. Le titre d’affichage est corrigible
+seul après gel sur campagne ouverte, avec If-Match et historique ancien/nouveau,
+auteur/date ; ni snapshot, ni politique, ni brouillon de travail ne sont changés.
+Un dossier conserve le titre de sa version soumise.

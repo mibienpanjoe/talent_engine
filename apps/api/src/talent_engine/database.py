@@ -1,7 +1,9 @@
-from sqlalchemy import create_engine
+from sqlalchemy import MetaData, create_engine
 from sqlalchemy.engine import Engine
 
 from talent_engine.config import DatabaseSettings
+
+metadata = MetaData()
 
 
 def build_engine(settings: DatabaseSettings) -> Engine:

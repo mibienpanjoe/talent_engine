@@ -21,8 +21,11 @@ services:
     environment:
       TALENT_DATABASE_URL: postgresql+psycopg://talent:${TALENT_DB_PASSWORD}@db:5432/talent
       TALENT_PUBLIC_ORIGIN: ${TALENT_PUBLIC_ORIGIN:-http://localhost:3003}
+      TALENT_UPLOAD_DIRECTORY: /app/private-uploads
       TALENT_LOCAL_DEVELOPMENT: 'true'
       TALENT_CSRF_SECRET: ${TALENT_CSRF_SECRET:?Set TALENT_CSRF_SECRET in .env}
+    volumes:
+      - private_uploads:/app/private-uploads
     ports:
       - "127.0.0.1:${TALENT_API_PORT:-8001}:8000"
     depends_on:
@@ -33,6 +36,21 @@ services:
       interval: 10s
       timeout: 5s
       retries: 6
+    restart: unless-stopped
+  worker:
+    image: ${COMPOSE_PROJECT_NAME:-talent-engine}-api
+    environment:
+      TALENT_DATABASE_URL: postgresql+psycopg://talent:${TALENT_DB_PASSWORD}@db:5432/talent
+      TALENT_PUBLIC_ORIGIN: ${TALENT_PUBLIC_ORIGIN:-http://localhost:3003}
+      TALENT_LOCAL_DEVELOPMENT: 'true'
+      TALENT_CSRF_SECRET: ${TALENT_CSRF_SECRET:?Set TALENT_CSRF_SECRET in .env}
+      TALENT_UPLOAD_DIRECTORY: /app/private-uploads
+    volumes:
+      - private_uploads:/app/private-uploads
+    command: ["python", "-m", "talent_engine.analyses.worker"]
+    depends_on:
+      api:
+        condition: service_healthy
     restart: unless-stopped
   migrate:
     image: ${COMPOSE_PROJECT_NAME:-talent-engine}-api
@@ -71,3 +89,4 @@ services:
     restart: unless-stopped
 volumes:
   postgres_data:
+  private_uploads:

@@ -1,3 +1,4 @@
+from pathlib import Path
 from urllib.parse import urlsplit
 
 from pydantic import SecretStr, field_validator, model_validator
@@ -26,6 +27,7 @@ class DatabaseSettings(BaseSettings):
 
 
 class Settings(DatabaseSettings):
+    upload_directory: Path = Path("/tmp/talent-engine-uploads")
     public_origin: str
     local_development: bool = False
     csrf_secret: SecretStr

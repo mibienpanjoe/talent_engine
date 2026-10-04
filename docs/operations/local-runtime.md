@@ -28,3 +28,21 @@ Les compteurs de login utilisent l’adresse du pair réseau et ignorent les en-
 `make integration-test` requiert `TALENT_TEST_DATABASE_URL` pointant sur une base loopback jetable dont le nom se termine par `_test`. Chaque test d’accès utilise son propre schéma, retiré ensuite. Aucune purge de données applicatives n’est exécutée.
 
 En cas de rotation de `TALENT_CSRF_SECRET`, réinitialiser le même compte avec `make seed-access` pour révoquer ses sessions avant de redémarrer l’API avec le nouveau secret. Ne jamais conserver les sessions d’avant rotation.
+
+
+## Worker et documents privés
+
+Après `make migrate`, `make up` démarre aussi le worker persistant. API et
+worker partagent `private_uploads`, jamais le serveur web. Les documents ne
+sont téléchargés que par la route privée authentifiée. Les volumes PostgreSQL
+et documents sont conservés par `make down`.
+
+`docker compose logs worker` montre les événements JSON sans données candidates.
+`docker compose run --rm worker python -m talent_engine.analyses.worker --once`
+traite au plus une étape éligible. Le nettoyage des temporaires est périodique ;
+une exécution ponctuelle utilise `python -m talent_engine.documents.cleanup`
+dans le service worker, avec son environnement et son volume.
+
+En T18, réponses et sources reçues sont checkpointées. Le service d’évaluation
+reste non configuré jusqu’à la phase suivante : l’incident est visible, aucun
+score n’est inventé et les candidatures restent conservées.

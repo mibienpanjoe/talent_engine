@@ -1,0 +1,326 @@
+"use client";
+import { useRef, useState } from "react";
+import type { components } from "../../lib/api.generated";
+import { api } from "../../lib/api";
+import { Alert } from "../../components/ui/alert";
+import { Field } from "../../components/ui/field";
+import { Button } from "../../components/ui/button";
+import { QuestionRenderer, type QuestionAnswer } from "./question-renderer";
+import {
+  prepareDocuments,
+  DocumentPreparationError,
+  type DocumentCache,
+} from "./prepare-documents";
+type Form = components["schemas"]["PublicForm"];
+type Answer = components["schemas"]["SubmissionInput"]["answers"][number];
+export function PublicFormView({
+  form: initial,
+  test = false,
+  publicToken,
+  campaignId,
+}: {
+  form: Form;
+  test?: boolean;
+  publicToken?: string;
+  campaignId?: string;
+}) {
+  const [form, setForm] = useState(initial);
+  const [answers, setAnswers] = useState<Record<string, QuestionAnswer>>({});
+  const [contact, setContact] = useState({ name: "", email: "" });
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+  const [errorCode, setErrorCode] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [receipt, setReceipt] = useState<components["schemas"]["Receipt"]>();
+  const documents = useRef<DocumentCache>({ ready: new Map() });
+  const key = useRef<string | null>(null);
+  async function reloadForm() {
+    if (!publicToken) return;
+    setBusy(true);
+    try {
+      const result = await api.GET("/api/v1/public/campaigns/{public_token}", {
+        params: { path: { public_token: publicToken } },
+      });
+      if (result.data) {
+        setForm(result.data);
+        setMessage(
+          "Le formulaire a été actualisé. Vos réponses sont conservées : vérifiez les questions avant de confirmer l’envoi.",
+        );
+        setErrorCode("");
+      } else setMessage("Le formulaire n’a pas pu être actualisé.");
+    } catch {
+      setMessage("Le formulaire n’a pas pu être actualisé.");
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function submit() {
+    setBusy(true);
+    setMessage("");
+    setErrors({});
+    setErrorCode("");
+    key.current ??= crypto.randomUUID();
+    try {
+      const typed: Answer[] = [];
+      for (const q of form.questions) {
+        const value = answers[q.id];
+        if (value === undefined || value === "") continue;
+        if (q.type === "file") {
+          continue;
+        }
+        if (q.type === "multiple_choice") {
+          typed.push({
+            question_id: q.id,
+            kind: q.type,
+            value: value as string[],
+          });
+          continue;
+        }
+        if (q.type === "number") {
+          typed.push({ question_id: q.id, kind: q.type, value: Number(value) });
+          continue;
+        }
+        typed.push({
+          question_id: q.id,
+          kind: q.type,
+          value: value as string,
+        } as Answer);
+      }
+      const csrf = test
+        ? (await api.GET("/api/v1/access/csrf")).data?.csrf_token
+        : undefined;
+      if (test && !csrf) throw new Error("session");
+      const prepared = await prepareDocuments(
+        form,
+        answers,
+        documents.current,
+        test,
+        publicToken,
+        csrf,
+      );
+      const body = {
+        snapshot_id: form.snapshot_id,
+        contact,
+        answers: [...typed, ...prepared.answers],
+        upload_session_id: prepared.upload_session_id,
+        upload_token: prepared.upload_token,
+      };
+      const result =
+        test && campaignId
+          ? await (async () => {
+              return api.POST(
+                "/api/v1/campaigns/{campaign_id}/test-applications",
+                {
+                  params: { path: { campaign_id: campaignId } },
+                  headers: {
+                    "Idempotency-Key": key.current!,
+                    "X-CSRF-Token": csrf!,
+                  },
+                  body,
+                },
+              );
+            })()
+          : publicToken
+            ? await api.POST(
+                "/api/v1/public/campaigns/{public_token}/applications",
+                {
+                  params: { path: { public_token: publicToken } },
+                  headers: { "Idempotency-Key": key.current },
+                  body,
+                },
+              )
+            : null;
+      if (result?.data) {
+        setReceipt(result.data);
+        return;
+      }
+      const code = result?.error?.error.code ?? "network";
+      setErrorCode(code);
+      const messages: Record<string, string> = {
+        snapshot_conflict:
+          "Le formulaire a changé. Actualisez-le et vérifiez vos réponses avant de les envoyer.",
+        campaign_closed: "Cette campagne n’accepte plus de candidatures.",
+        idempotency_conflict:
+          "Un dépôt est déjà enregistré avec d’autres réponses. Réessayez avec vos réponses précédentes ou préparez un nouveau dépôt.",
+        validation_error: "Vérifiez les coordonnées et les réponses indiquées.",
+        payload_too_large: "Vos réponses dépassent la taille autorisée.",
+        submission_deleted:
+          "Ce dépôt a été supprimé. Il ne peut pas être recréé par un nouvel essai.",
+      };
+      setMessage(
+        messages[code] ??
+          "L’enregistrement n’a pas été confirmé. Conservez vos réponses et réessayez le même envoi.",
+      );
+      const localized: Record<string, string> = {};
+      for (const detail of result?.error?.error.details ?? []) {
+        const parts = detail.path.replace(/^body\./, "").split(".");
+        let questionId: string | undefined;
+        if (parts[0] === "answers")
+          questionId = body.answers[Number(parts[1])]?.question_id;
+        if (parts[0] === "questions") questionId = parts[1];
+        if (questionId)
+          localized[questionId] = "Vérifiez cette réponse et ses contraintes.";
+        if (parts[0] === "contact")
+          localized[parts[1]] = "Vérifiez cette coordonnée.";
+      }
+      setErrors(localized);
+    } catch (error) {
+      if (error instanceof DocumentPreparationError) {
+        setErrorCode(error.code);
+        const text =
+          (
+            {
+              unsupported_file_type:
+                "Ce fichier doit être un PDF, PNG ou JPEG lisible.",
+              payload_too_large:
+                "Maximum : 10 Mio par fichier, 5 fichiers et 30 Mio au total.",
+              upload_expired:
+                "La préparation des documents a expiré. Réessayez pour les préparer à nouveau.",
+              invalid_upload:
+                "Vérifiez les documents sélectionnés et les limites de la question.",
+              snapshot_conflict:
+                "Le formulaire a changé. Actualisez-le avant de confirmer.",
+              campaign_closed: "Cette campagne n’accepte plus de candidatures.",
+            } as Record<string, string>
+          )[error.code] ??
+          "Les documents n’ont pas pu être préparés. Vos réponses sont conservées.";
+        setMessage(text);
+        if (error.questionId) setErrors({ [error.questionId]: text });
+        return;
+      }
+      setMessage(
+        "L’enregistrement n’a pas été confirmé. Réessayez le même envoi avec les mêmes réponses.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+  if (receipt)
+    return (
+      <>
+        <p className="eyebrow">{test ? "Essai privé" : "Candidature"}</p>
+        <h1>{test ? "Essai enregistré." : "Candidature reçue."}</h1>
+        <Alert tone="success">
+          {test
+            ? "Cet essai reste privé et ne verrouille pas la campagne."
+            : "Vos réponses ont été enregistrées. Leur analyse est indépendante de cette confirmation."}
+        </Alert>
+        <p>Référence : {receipt.receipt_ref}</p>
+        <p>
+          Reçue le{" "}
+          {new Date(receipt.received_at).toLocaleString("fr-FR", {
+            timeZone: "UTC",
+          })}{" "}
+          UTC.
+        </p>
+      </>
+    );
+  return (
+    <>
+      <p className="eyebrow">{test ? "Essai privé" : "Candidature"}</p>
+      <h1>{form.title}</h1>
+      <p className="preserve-lines">{form.description}</p>
+      <p>
+        {form.domain} · {form.target_level}
+      </p>
+      {form.deadline && (
+        <p>
+          Échéance :{" "}
+          {new Date(form.deadline).toLocaleString("fr-FR", {
+            timeZone: "UTC",
+            dateStyle: "long",
+            timeStyle: "short",
+          })}{" "}
+          UTC.
+        </p>
+      )}
+      <Alert>
+        {test
+          ? "Cet essai privé ne compte pas comme candidature réelle et ne verrouille pas la campagne."
+          : form.processing_notice}
+      </Alert>
+      {form.state === "closed" ? (
+        <Alert>Cette campagne n’accepte plus de candidatures.</Alert>
+      ) : (
+        <form
+          className="public-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void submit();
+          }}
+        >
+          <fieldset disabled={busy} className="submission-fields">
+            <legend>Vos coordonnées</legend>
+            <Field
+              id="candidate-name"
+              label="Nom"
+              required
+              maxLength={200}
+              value={contact.name}
+              error={errors.name}
+              onChange={(e) => setContact({ ...contact, name: e.target.value })}
+            />
+            <Field
+              id="candidate-email"
+              label="Email"
+              type="email"
+              required
+              maxLength={320}
+              value={contact.email}
+              error={errors.email}
+              onChange={(e) =>
+                setContact({ ...contact, email: e.target.value })
+              }
+            />
+            {form.questions.map((q) => (
+              <QuestionRenderer
+                key={q.id}
+                question={q}
+                value={answers[q.id]}
+                error={errors[q.id]}
+                onChange={(value) =>
+                  setAnswers((previous) => ({ ...previous, [q.id]: value }))
+                }
+              />
+            ))}
+          </fieldset>
+          {message && <Alert tone="danger">{message}</Alert>}
+          <div className="inline-actions">
+            <Button type="submit" disabled={busy}>
+              {busy
+                ? "Enregistrement…"
+                : test
+                  ? "Envoyer l’essai privé"
+                  : "Envoyer ma candidature"}
+            </Button>
+            {errorCode === "snapshot_conflict" && (
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={busy}
+                onClick={reloadForm}
+              >
+                Actualiser le formulaire
+              </Button>
+            )}
+            {errorCode === "idempotency_conflict" && (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => {
+                  key.current = crypto.randomUUID();
+                  setErrorCode("");
+                  setMessage(
+                    "Nouveau dépôt préparé. Vérifiez vos réponses puis confirmez l’envoi.",
+                  );
+                }}
+              >
+                Préparer un nouveau dépôt
+              </Button>
+            )}
+          </div>
+        </form>
+      )}
+    </>
+  );
+}

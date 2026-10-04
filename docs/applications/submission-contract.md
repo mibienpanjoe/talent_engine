@@ -147,3 +147,30 @@ nouvelle intention de dépôt, jamais un remplacement silencieux de la clé.
 
 La [suppression](../../SECURITY.md) coordonne base, worker et volume.
 Les détails d'API et contraintes de données sont définis en T05.
+
+
+## Implémentation T16
+
+La réception JSON réelle et les essais privés enregistrent candidature,
+exécution, tâche, reçu et gel dans une transaction PostgreSQL. Le rejeu
+précède les contrôles de version, fermeture et échéance. La liste privée
+exclut les essais ; le dossier retourne le snapshot reçu avec ses réponses.
+Les documents et le traitement des tâches relèvent de T17 et T18.
+
+
+## Implémentation T17
+
+Les sessions réelles et privées durent 24 h et utilisent une capacité
+256 bits. Le multipart est borné pendant sa lecture, les fichiers sont
+écrits par blocs et synchronisés sur le volume privé. PDF/PNG/JPEG sont
+vérifiés dans un processus isolé (mémoire, CPU, délai, pages et pixels
+bornés). L’attachement SQL ne déplace aucun octet. Sur résultat SQL incertain,
+le fichier reste privé pour éviter de supprimer un document reçu ; les
+orphelins non référencés âgés de plus de 24 h sont collectés.
+
+Le téléchargement impose la session responsable et la propriété du dossier,
+avec disposition attachment, nosniff, no-store et CSP sandbox. Le rejeu
+reconstruit les fichiers originaux sans exiger leur session encore vivante ;
+une nouvelle référence équivalente exige sa propre capacité et reste non attachée.
+`python -m talent_engine.documents.cleanup` collecte les temporaires expirés,
+sous le même verrou de ligne que la réception, puis les orphelins anciens.

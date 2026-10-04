@@ -127,3 +127,19 @@ suppression concurrente et purge interrompue. T11/T17/T22/T25/T31 les exercent.
 Les tests d’accès PostgreSQL couvrent sessions valides/expirées, Origin et CSRF hostiles, cookie Secure sous HTTPS simulé, révocation après changement de mot de passe et dix tentatives simultanées respectant la limite atomique. Le parcours navigateur local connexion → espace privé → déconnexion a été exercé avec une session réellement persistée puis révoquée.
 
 Ces preuves couvrent l’accès responsable des fondations. Fichiers, collecte externe, traitement candidat, rétention et déploiement HTTPS seront exercés avec leurs phases respectives. L’[exception d’audit ESLint](docs/operations/dependency-audit.md) est limitée à un avis non corrigé et absent du runtime.
+
+
+### Preuves de la phase campagne et réception
+
+Les quotas publics utilisent des compteurs PostgreSQL atomiques avec expiration.
+Réception 10/min/IP et 100/min/campagne, sessions 10/min/IP, fichiers 20/min/IP ;
+les rejeux sont comptés. Deux transferts simultanés maximum par session, slots
+expirant après 120 s en cas de crash. Les headers forwarded fournis par le client
+ne changent pas la clé IP ; aucun proxy additionnel n’est déclaré de confiance.
+Dans le Compose local, les appels passant par le web partagent donc son IP côté
+API. Une exposition publique devra configurer un proxy de confiance explicitement.
+
+Les tests incluent capacités étrangères/expirées, test-vers-réel refusé,
+PDF chiffré, type déguisé, taille/pixels, téléchargement anonyme, rollback et
+rejeu ; le worker refuse les écritures d’une génération périmée ou supprimée.
+Le runtime livré ici reste local ; aucun déploiement Internet n’est revendiqué.

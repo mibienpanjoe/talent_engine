@@ -32,15 +32,20 @@ API FastAPI, PostgreSQL avec migrations, un frontend Next.js, un accès
 responsable par session serveur et un runtime Docker Compose. Le client
 TypeScript est généré depuis l’API réellement implémentée.
 
-Les campagnes, candidatures, sources et évaluations du parcours ci-dessous
-restent à implémenter. L’accès responsable est le parcours actuellement
-exécutable ; il ne constitue pas encore une démonstration complète du MVP.
+Les campagnes guidées, l’aperçu partagé, la publication et la réception durable
+sont exécutables. Le premier dépôt réel fige le formulaire et sa politique.
+Les documents PDF/PNG/JPEG restent privés ; les dossiers affichent les réponses
+et la progression du worker PostgreSQL, reprenable après interruption.
+
+L’extraction du contenu des sources, les appréciations et les scores restent
+à implémenter. Le worker conserve réponses et manifeste reçu puis signale
+l’indisponibilité de l’évaluation, sans produire de résultat artificiel.
 
 Le périmètre complet est décrit dans les
 [exigences et critères d'acceptation](docs/product/mvp-requirements-and-acceptance.md).
 Les barèmes chiffrés sont des exemples fictifs à calibrer.
 
-## Démarrer les fondations
+## Démarrer en local
 
 Docker Compose est requis. Copier `.env.example` vers `.env`, renseigner deux
 secrets aléatoires distincts pour la base et CSRF ainsi que les identifiants du
@@ -52,7 +57,9 @@ make migrate
 make seed-access
 ```
 
-Ouvrir <http://localhost:3003> et se connecter. `make down` conserve les données.
+Ouvrir <http://localhost:3003>, se connecter, créer puis publier une campagne.
+Son lien public permet un dépôt ; le dossier est consultable dans l’espace privé.
+`make down` conserve la base et le volume des documents.
 Voir le [guide local](docs/operations/local-runtime.md) pour les prérequis,
 origines, limites du proxy local et tests. Les secrets restent hors Git.
 
@@ -68,9 +75,9 @@ Créer une campagne et préciser les exigences
   → corriger une appréciation et prendre une décision humaine
 ```
 
-Les capacités prévues comprennent la création guidée de campagnes, les
-formulaires publics, l'extraction documentaire avec OCR conditionnel, la lecture
-ciblée de liens et la revue des candidatures.
+La création guidée, les formulaires publics et la consultation des candidatures
+reçues sont livrés. L’extraction documentaire avec OCR conditionnel, la lecture
+ciblée de liens et la revue des appréciations suivent dans les prochaines phases.
 
 L'IA aide à extraire et apprécier les informations. Le backend possède les
 politiques et calcule les scores. Une information absente n'est pas une note
@@ -91,13 +98,13 @@ La [structure détaillée](docs/architecture/repository-structure.md) et
 l'[architecture système](docs/architecture/system-architecture.md) fixent les
 responsabilités, pnpm/uv, les versions cibles et le worker Python avec tâches
 PostgreSQL. Les commandes des fondations sont décrites dans le guide local ;
-le worker arrivera avec les tâches d’analyse.
+le worker persistant partage le package API et le volume privé des documents.
 
 ```text
 assets/brand/    Logos, symboles, icône d'application et manifest
 docs/           Produit, évaluation, architecture, design et décisions
 apps/web/       Frontend Next.js et primitives accessibles
-apps/api/       API FastAPI, accès responsable et migrations
+apps/api/       API FastAPI, campagnes, réception, documents, worker et migrations
 ```
 
 FreeLLMAPI est la piste d'intégration côté serveur pour les appels LLM.
