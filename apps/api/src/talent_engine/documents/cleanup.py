@@ -6,6 +6,7 @@ from sqlalchemy import select
 from talent_engine.campaigns.lifecycle import now
 from talent_engine.config import Settings
 from talent_engine.database import build_engine
+from talent_engine.reception_limits.data import public_limits, transfers
 
 from .repository import uploads
 from .service import storage_path
@@ -14,6 +15,8 @@ from .service import storage_path
 def collect(engine, settings):
     removed = 0
     with engine.begin() as db:
+        db.execute(public_limits.delete().where(public_limits.c.expires_at <= now(db)))
+        db.execute(transfers.delete().where(transfers.c.expires_at <= now(db)))
         rows = (
             db.execute(
                 select(uploads)

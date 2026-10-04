@@ -11,7 +11,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException
 
 from talent_engine.access import build_access_router
-from talent_engine.analyses import repository as analysis_repository
+from talent_engine.analyses.data import steps
 from talent_engine.applications.router import build_application_router
 from talent_engine.body_limit import BodyLimit
 from talent_engine.campaigns.lifecycle import build_lifecycle_router
@@ -20,6 +20,7 @@ from talent_engine.config import Settings
 from talent_engine.database import build_engine
 from talent_engine.documents.router import build_document_router
 from talent_engine.errors import AccessError, Error, ErrorDetail, error_payload
+from talent_engine.reception_limits.middleware import PublicLimits
 
 
 class Health(BaseModel):
@@ -30,7 +31,7 @@ class Health(BaseModel):
 def create_app(
     settings: Settings | None = None, *, engine: Engine | None = None
 ) -> FastAPI:
-    _ = analysis_repository.steps  # Register shared persistence schema.
+    _ = steps  # Register shared persistence schema.
     settings = settings or Settings()
     engine = engine or build_engine(settings)
 
@@ -47,6 +48,7 @@ def create_app(
     app.include_router(build_application_router(engine, settings))
     app.include_router(build_document_router(engine, settings))
     app.add_middleware(BodyLimit)
+    app.add_middleware(PublicLimits, engine=engine, settings=settings)
 
     @app.exception_handler(AccessError)
     async def access_error(request: Request, error: AccessError):

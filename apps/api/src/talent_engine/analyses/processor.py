@@ -1,11 +1,11 @@
 """Receive-stage checkpoints. Evaluation adapters arrive in the next phase."""
 
 from sqlalchemy import select
-from talent_engine.applications.repository import applications
+from talent_engine.applications.data import applications
 from talent_engine.applications.schemas import SubmissionInput
 from talent_engine.applications.validation import validate_answers
-from talent_engine.campaigns.repository import snapshots
-from talent_engine.documents.repository import uploads
+from talent_engine.campaigns.data import snapshots
+from talent_engine.documents.data import uploads
 
 
 class StepFailure(Exception):

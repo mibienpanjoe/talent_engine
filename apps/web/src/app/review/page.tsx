@@ -36,7 +36,9 @@ export default async function ReviewPage({
             {result.data.items.map((c) => (
               <li key={c.id}>
                 <Link href={`/review/campaigns/${c.id}`}>
-                  {c.configuration.title || "Brouillon sans titre"}
+                  {c.display_title ||
+                    c.configuration.title ||
+                    "Brouillon sans titre"}
                 </Link>
                 <span>
                   {

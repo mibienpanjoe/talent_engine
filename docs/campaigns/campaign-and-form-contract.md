@@ -205,3 +205,13 @@ mutations sont sérialisées sur la campagne et contrôlent la révision. Le
 public lit uniquement le snapshot actif sans exigences, propriétaire ni
 politique privée. Les scénarios de concurrence avec une réception réelle
 seront exercés en T16, lorsque cette réception existe.
+
+
+### Clôture de l’implémentation campagne et réception
+
+Le premier dépôt réel pose un gel permanent, même si le dossier est ensuite
+marqué supprimé. Les essais privés n’y participent pas. Publication, fermeture
+et réception sont sérialisées sur la campagne. Le titre d’affichage est corrigible
+seul après gel sur campagne ouverte, avec If-Match et historique ancien/nouveau,
+auteur/date ; ni snapshot, ni politique, ni brouillon de travail ne sont changés.
+Un dossier conserve le titre de sa version soumise.

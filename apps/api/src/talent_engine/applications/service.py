@@ -5,8 +5,8 @@ from datetime import timedelta
 from uuid import uuid4
 
 from sqlalchemy import select
+from talent_engine.campaigns.data import campaigns, owned, snapshots
 from talent_engine.campaigns.lifecycle import active_snapshot, now
-from talent_engine.campaigns.repository import campaigns, snapshots
 from talent_engine.errors import AccessError
 
 from .repository import analysis_runs, applications, jobs, receipts
@@ -186,3 +186,20 @@ def receive(db, settings, campaign, payload, key, mode="real"):
             )
         )
     return Receipt(receipt_ref=ref, received_at=decision_time), True
+
+
+def owned_application(db, application_id, owner_id):
+    row = (
+        db.execute(
+            select(applications).where(
+                (applications.c.id == application_id)
+                & (applications.c.deleted_at.is_(None))
+            )
+        )
+        .mappings()
+        .first()
+    )
+    if not row:
+        raise AccessError(404, "not_found", "Application unavailable")
+    owned(db, row["campaign_id"], owner_id)
+    return row

@@ -10,7 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from talent_engine.config import Settings
 from talent_engine.database import build_engine
 from talent_engine.documents.cleanup import collect
-from talent_engine.main import create_app
+from talent_engine.schema import register_models
 
 from .processor import StepFailure, process
 from .queue import acquire, complete, event, fail, heartbeat
@@ -89,7 +89,7 @@ def main():
     settings = Settings()
     worker_settings = WorkerSettings()
     engine = build_engine(settings)
-    create_app(settings, engine=engine)  # Register the complete persistence schema.
+    register_models()
     worker_id = "worker-" + uuid4().hex
     stopping = threading.Event()
     signal.signal(signal.SIGTERM, lambda *_: stopping.set())

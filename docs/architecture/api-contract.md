@@ -126,3 +126,29 @@ Tests : ID d'extrait étranger, body inconnu, révision absente/obsolète,
 session/CSRF, plusieurs pages après changement de classement, double dépôt,
 upload étranger et réanalyse sans changement implicite du résultat effectif.
 Un OpenAPI validé structurellement ne démontre pas les transactions SQL.
+
+
+## Surface implémentée en phase campagne et réception
+
+`contracts/openapi.json` exporte les routes effectivement exécutées ; le client
+web en dérive. Le contrat de conception conserve la cible des phases suivantes.
+La réception annonce 201 et son rejeu 200, les quotas 429 avec Retry-After.
+Le multipart explicite question_id/file, sous borne ASGI et capacité privée.
+
+Le dossier privé inclut son snapshot reçu, ses uploads téléchargeables et les
+étapes de ses exécutions, sans exposer sorties brutes de checkpoints ni tokens
+de lease. PATCH campagne accepte configuration ou titre d’affichage, jamais
+les deux. `GET /campaigns/{id}/title-history` ajoute l’historique éditorial
+privé sans modifier les snapshots.
+
+Les façades `*/data.py` exposent le schéma transactionnel partagé nécessaire
+à la réception multi-domaines. Chaque service possède ses validations ; le
+caller contrôle le commit commun. Les consommateurs n’importent pas le
+repository privé d’un autre domaine, et le worker enregistre les modèles sans
+construire l’application HTTP.
+
+
+La pagination des candidatures utilise un curseur opaque signé, lié au
+responsable, à la campagne et à list_revision. Une nouvelle réception l’invalide
+avec `409 cursor_invalidated`. La liste et le détail utilisent une transaction
+REPEATABLE READ pour rendre une vue cohérente des données et étapes.

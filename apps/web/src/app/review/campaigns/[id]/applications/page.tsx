@@ -26,6 +26,24 @@ export default async function ApplicationsPage({
   );
   if (result.response.status === 404 || result.response.status === 422)
     notFound();
+  if (result.error?.error.code === "cursor_invalidated")
+    return (
+      <>
+        <SiteHeader>
+          <AccountDialog
+            login={reviewer.login}
+            expiresAt={reviewer.expires_at}
+          />
+        </SiteHeader>
+        <main id="main" className="page-width campaign-editor">
+          <h1>La liste a changé.</h1>
+          <p>De nouvelles candidatures ont été reçues depuis cette page.</p>
+          <Link href={`/review/campaigns/${id}/applications`}>
+            Recharger les candidatures
+          </Link>
+        </main>
+      </>
+    );
   if (!result.data) throw new Error("Applications unavailable");
   return (
     <>

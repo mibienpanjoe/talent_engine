@@ -6,14 +6,17 @@ from uuid import UUID, uuid4
 from fastapi import APIRouter, Depends, Header, Request, Response
 from fastapi.responses import FileResponse
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from starlette.concurrency import run_in_threadpool
 from starlette.datastructures import UploadFile
 from talent_engine.access import build_access_guards
-from talent_engine.applications.router import owned_application
+from talent_engine.applications.service import owned_application
+from talent_engine.campaigns.data import owned, snapshots
 from talent_engine.campaigns.lifecycle import now, public_campaign
-from talent_engine.campaigns.repository import owned, snapshots
 from talent_engine.campaigns.schemas import DraftConfiguration
 from talent_engine.errors import AccessError, Error
+from talent_engine.reception_limits.data import transfers
+from talent_engine.reception_limits.service import reserve_transfer
 
 from .repository import uploads
 from .schemas import Upload, UploadSessionCreated, UploadSessionInput
@@ -33,7 +36,8 @@ def build_document_router(engine, settings):
         prefix="/api/v1",
         tags=["documents"],
         responses={
-            code: {"model": Error} for code in [401, 403, 404, 409, 410, 413, 415, 422]
+            code: {"model": Error}
+            for code in [401, 403, 404, 408, 409, 410, 413, 415, 422, 429]
         },
     )
 
@@ -86,10 +90,9 @@ def build_document_router(engine, settings):
         return result
 
     async def save(request, session_id, token, mode, owner_id=None):
-        with engine.connect() as db:
-            authorized_session(
-                db, settings, session_id, token, mode, owner_id, lock=False
-            )
+        with engine.begin() as db:
+            authorized_session(db, settings, session_id, token, mode, owner_id)
+            transfer_id = reserve_transfer(db, session_id)
         key = mode + "/" + str(uuid4())
         path = storage_path(settings, key)
         path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -143,7 +146,7 @@ def build_document_router(engine, settings):
                         db, settings, session_id, token, mode, owner_id, lock=False
                     )
                     if mode == "real":
-                        from talent_engine.campaigns.repository import campaigns
+                        from talent_engine.campaigns.data import campaigns
 
                         campaign = (
                             db.execute(
@@ -231,6 +234,22 @@ def build_document_router(engine, settings):
             if not persistence_attempted:
                 path.unlink(missing_ok=True)
             raise
+        finally:
+            try:
+                with engine.begin() as db:
+                    db.execute(transfers.delete().where(transfers.c.id == transfer_id))
+            except SQLAlchemyError:
+                # Crash/connection failure releases its slot by the 120 s TTL.
+                pass
+
+    async def bounded_save(*args):
+        try:
+            async with asyncio.timeout(120):
+                return await save(*args)
+        except TimeoutError:
+            raise AccessError(
+                408, "request_timeout", "Document preparation timed out"
+            ) from None
 
     @router.post(
         "/upload-sessions/{session_id}/files",
@@ -262,7 +281,7 @@ def build_document_router(engine, settings):
         response: Response,
         x_upload_token: str | None = Header(None),
     ):
-        result = await save(request, session_id, x_upload_token, "real")
+        result = await bounded_save(request, session_id, x_upload_token, "real")
         response.headers["Cache-Control"] = "no-store"
         return result
 
@@ -297,7 +316,7 @@ def build_document_router(engine, settings):
         x_upload_token: str | None = Header(None),
         session=Depends(write_guard),
     ):
-        result = await save(
+        result = await bounded_save(
             request, session_id, x_upload_token, "test", session["reviewer_id"]
         )
         response.headers["Cache-Control"] = "no-store"

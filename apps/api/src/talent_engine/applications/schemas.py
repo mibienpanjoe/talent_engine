@@ -7,8 +7,7 @@ from uuid import UUID
 
 from pydantic import EmailStr, Field, StrictFloat, StrictInt, StrictStr, field_validator
 from talent_engine.analyses.schemas import AnalysisProgress
-from talent_engine.campaigns.lifecycle import PublishedSnapshot
-from talent_engine.campaigns.schemas import Model
+from talent_engine.campaigns.schemas import Model, PublishedSnapshot
 from talent_engine.documents.schemas import Upload
 
 

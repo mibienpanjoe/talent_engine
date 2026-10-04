@@ -256,3 +256,33 @@ def test_private_detail_uses_received_snapshot_and_invalid_unicode_is_rejected(c
     assert detail["answers"] == body["answers"]
     client.cookies.clear()
     assert client.get(path).status_code == 401
+
+
+def test_application_cursor_binds_campaign_and_revision_without_skips(context):
+    client, _ = context
+    _, campaign, token, body = prepare(client)
+    public = "/api/v1/public/campaigns/" + token + "/applications"
+    for _ in range(3):
+        assert (
+            client.post(
+                public, headers={"Idempotency-Key": uuid4().hex}, json=body
+            ).status_code
+            == 201
+        )
+    path = "/api/v1/campaigns/" + campaign["id"] + "/applications"
+    first = client.get(path, params={"limit": 1}).json()
+    cursor = first["next_cursor"]
+    second = client.get(path, params={"limit": 1, "cursor": cursor}).json()
+    assert first["items"][0]["id"] != second["items"][0]["id"]
+    assert client.get(path, params={"cursor": cursor + "bad"}).status_code == 400
+    assert (
+        client.post(
+            public, headers={"Idempotency-Key": uuid4().hex}, json=body
+        ).status_code
+        == 201
+    )
+    stale = client.get(path, params={"cursor": cursor})
+    assert (
+        stale.status_code == 409
+        and stale.json()["error"]["code"] == "cursor_invalidated"
+    )

@@ -1,4 +1,5 @@
 "use client";
+import { TitleEditor } from "./title-editor";
 import { CampaignActions } from "./campaign-actions";
 import { FormPreview } from "./form-preview";
 import { QuestionsEditor } from "./questions-editor";
@@ -145,6 +146,9 @@ export function DraftEditor({ initial }: { initial: Campaign | null }) {
         <Alert>
           Cette configuration est figée. Dupliquez la campagne pour la modifier.
         </Alert>
+      )}
+      {campaign?.configuration_locked_at && campaign.state === "published" && (
+        <TitleEditor campaign={campaign} saved={setCampaign} />
       )}
       <fieldset disabled={busy || locked} className="editor-fields">
         <legend>Le besoin</legend>

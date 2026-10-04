@@ -9,7 +9,7 @@ from datetime import timedelta
 from uuid import uuid4
 
 from sqlalchemy import or_, select
-from talent_engine.applications.repository import analysis_runs, applications, jobs
+from talent_engine.applications.data import analysis_runs, applications, jobs
 from talent_engine.campaigns.lifecycle import now
 
 from .repository import steps

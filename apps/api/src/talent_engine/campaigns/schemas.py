@@ -202,6 +202,7 @@ class CampaignInput(Model):
 
 
 class Campaign(Model):
+    display_title: str | None = None
     id: UUID
     state: Literal["draft", "published", "closed"]
     revision: int
@@ -272,3 +273,31 @@ def preparation_issues(draft: DraftConfiguration) -> list[ErrorDetail]:
     if not any(r.evaluation_mode == "qualitative" for r in draft.requirements):
         add("requirements", "qualitative_required")
     return issues
+
+
+class TitleInput(Model):
+    title: str = Field(min_length=1, max_length=200)
+
+    @model_validator(mode="after")
+    def nonblank(self):
+        if not self.title.strip():
+            raise ValueError("Title required")
+        return self
+
+
+class TitleChange(Model):
+    id: UUID
+    previous_title: str
+    title: str
+    author_id: UUID
+    changed_at: datetime
+
+
+class PublishedSnapshot(Model):
+    id: UUID
+    campaign_id: UUID
+    mode: Literal["real", "test"]
+    version: int
+    configuration: DraftConfiguration
+    policy_version: str
+    created_at: datetime

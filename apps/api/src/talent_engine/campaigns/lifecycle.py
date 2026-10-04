@@ -22,7 +22,7 @@ from .repository import (
     owned,
     snapshots,
 )
-from .schemas import Campaign, DraftConfiguration, Model, Question
+from .schemas import Campaign, DraftConfiguration, Model, PublishedSnapshot, Question
 
 
 class EmptyInput(Model):
@@ -31,16 +31,6 @@ class EmptyInput(Model):
 
 class DuplicationInput(Model):
     source: Literal["draft", "published"]
-
-
-class PublishedSnapshot(Model):
-    id: UUID
-    campaign_id: UUID
-    mode: Literal["real", "test"]
-    version: int
-    configuration: DraftConfiguration
-    policy_version: str
-    created_at: datetime
 
 
 class FormLimits(Model):
@@ -144,7 +134,9 @@ def form_result(db, campaign, snapshot):
     return PublicForm(
         snapshot_id=snapshot["id"],
         state=state,
-        title=config.title,
+        title=(campaign.get("display_title") or config.title)
+        if snapshot["mode"] == "real"
+        else config.title,
         description=config.description,
         type=config.type,
         domain=config.domain,

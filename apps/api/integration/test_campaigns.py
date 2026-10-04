@@ -285,3 +285,68 @@ def test_test_snapshot_is_private_and_never_activates_public_form(context):
     assert (
         client.get("/api/v1/test-snapshots/" + snapshot.json()["id"]).status_code == 401
     )
+
+
+def test_frozen_title_correction_keeps_snapshot_and_audits_author(context):
+    from test_submissions import prepare
+
+    client, _ = context
+    h, campaign, token, body = prepare(client)
+    path = "/api/v1/campaigns/" + campaign["id"]
+    original_title = campaign["configuration"]["title"]
+    draft = {**campaign["configuration"], "title": "Titre de brouillon non publié"}
+    assert (
+        client.patch(
+            path, headers={**h, "If-Match": '"2"'}, json={"configuration": draft}
+        ).status_code
+        == 200
+    )
+    assert (
+        client.post(
+            "/api/v1/public/campaigns/" + token + "/applications",
+            headers={"Idempotency-Key": uuid4().hex},
+            json=body,
+        ).status_code
+        == 201
+    )
+    before = client.get(path).json()
+    assert before["display_title"] == original_title
+    result = client.patch(
+        path, headers={**h, "If-Match": '"4"'}, json={"title": "Titre corrigé"}
+    )
+    assert result.status_code == 200, result.text
+    after = result.json()
+    assert after["active_snapshot_id"] == before["active_snapshot_id"]
+    assert after["configuration"] == before["configuration"] and after["revision"] == 5
+    assert (
+        client.get("/api/v1/public/campaigns/" + token).json()["title"]
+        == "Titre corrigé"
+    )
+    history = client.get(path + "/title-history").json()
+    assert len(history) == 1 and history[0]["previous_title"] == original_title
+    assert (
+        history[0]["title"] == "Titre corrigé"
+        and history[0]["author_id"]
+        and history[0]["changed_at"]
+    )
+    assert (
+        client.patch(
+            path, headers={**h, "If-Match": '"4"'}, json={"title": "Autre"}
+        ).status_code
+        == 409
+    )
+    assert (
+        client.patch(
+            path,
+            headers={**h, "If-Match": '"5"'},
+            json={"title": "Autre", "configuration": draft},
+        ).status_code
+        == 422
+    )
+    application_id = client.get(path + "/applications").json()["items"][0]["id"]
+    assert (
+        client.get("/api/v1/applications/" + application_id).json()["snapshot"][
+            "configuration"
+        ]["title"]
+        == original_title
+    )

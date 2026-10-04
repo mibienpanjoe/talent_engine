@@ -34,6 +34,7 @@ campaigns = Table(
     Column("revision", BigInteger, nullable=False),
     Column("list_revision", BigInteger, nullable=False),
     Column("draft_configuration", JSONB, nullable=False),
+    Column("display_title", String(200)),
     Column("active_snapshot_id", Uuid),
     Column("configuration_locked_at", DateTime(timezone=True)),
     Column("closed_at", DateTime(timezone=True)),
@@ -83,6 +84,8 @@ campaigns.append_constraint(
 def campaign_result(row, *, db=None, origin=None):
     return Campaign(
         id=row["id"],
+        display_title=row["display_title"]
+        or (row.get("active_configuration") or {}).get("title"),
         state=row["state"],
         revision=row["revision"],
         configuration=row["draft_configuration"],
@@ -199,3 +202,16 @@ def insert_campaign(db, owner_id, configuration):
         .one()
     )
     return campaign_result(row)
+
+
+title_changes = Table(
+    "campaign_title_changes",
+    metadata,
+    Column("id", Uuid, primary_key=True),
+    Column("campaign_id", Uuid, ForeignKey("campaigns.id"), nullable=False),
+    Column("previous_title", String(200), nullable=False),
+    Column("title", String(200), nullable=False),
+    Column("author_id", Uuid, ForeignKey("reviewers.id"), nullable=False),
+    Column("changed_at", DateTime(timezone=True), nullable=False),
+)
+Index("ix_title_changes_campaign", title_changes.c.campaign_id)

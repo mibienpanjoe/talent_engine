@@ -10,8 +10,8 @@ from datetime import timedelta
 from uuid import UUID, uuid4
 
 from sqlalchemy import select
+from talent_engine.campaigns.data import snapshots
 from talent_engine.campaigns.lifecycle import active_snapshot, now
-from talent_engine.campaigns.repository import snapshots
 from talent_engine.campaigns.schemas import DraftConfiguration
 from talent_engine.errors import AccessError
 
