@@ -57,6 +57,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/applications/{application_id}/corrections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Correction */
+        post: operations["correct_assessment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/applications/{application_id}/review-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** History */
+        get: operations["review_history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/campaigns": {
         parameters: {
             query?: never;
@@ -722,6 +756,40 @@ export interface components {
             /** Name */
             name: string;
         };
+        /** CorrectionInput */
+        CorrectionInput: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "set" | "restore_base";
+            /**
+             * Criterion Id
+             * Format: uuid
+             */
+            criterion_id: string;
+            /** Effective Evaluation Id */
+            effective_evaluation_id: string | null;
+            /** Evidence Ids */
+            evidence_ids?: string[];
+            /** Human Note */
+            human_note?: string | null;
+            /** Level */
+            level?: number | null;
+            /** Reason */
+            reason: string;
+            /** Review Revision */
+            review_revision: number;
+            /** Status */
+            status?: ("evaluated" | "insufficient_information" | "conflicting_information" | "source_unavailable" | "met" | "unmet" | "unknown") | null;
+            /**
+             * Target Kind
+             * @enum {string}
+             */
+            target_kind: "assessment" | "condition";
+            /** Zero Evidence Quote */
+            zero_evidence_quote?: string | null;
+        };
         /** CsrfToken */
         CsrfToken: {
             /** Csrf Token */
@@ -883,7 +951,7 @@ export interface components {
              */
             id: string;
             /** Locator */
-            locator: components["schemas"]["AnswerLocator"] | components["schemas"]["PDFLocator"] | components["schemas"]["WebLocator"] | components["schemas"]["GitHubLocator"];
+            locator: components["schemas"]["AnswerLocator"] | components["schemas"]["PDFLocator"] | components["schemas"]["WebLocator"] | components["schemas"]["GitHubLocator"] | components["schemas"]["HumanLocator"];
             /**
              * Nature
              * @enum {string}
@@ -1015,6 +1083,18 @@ export interface components {
              * @enum {string}
              */
             status: "alive" | "ready";
+        };
+        /** HumanLocator */
+        HumanLocator: {
+            /** End */
+            end: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "human";
+            /** Start */
+            start: number;
         };
         /** LoginInput */
         LoginInput: {
@@ -1417,6 +1497,51 @@ export interface components {
             evidence_id: string;
             /** Similarity */
             similarity: number;
+        };
+        /** ReviewEvent */
+        ReviewEvent: {
+            /** Action */
+            action: string;
+            /**
+             * Application Id
+             * Format: uuid
+             */
+            application_id: string;
+            /**
+             * Author Id
+             * Format: uuid
+             */
+            author_id: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Criterion Id */
+            criterion_id: string | null;
+            /** Evaluation Id */
+            evaluation_id: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Origin Event Id */
+            origin_event_id: string | null;
+            /** Previous */
+            previous: {
+                [key: string]: unknown;
+            };
+            /** Reason */
+            reason: string;
+            /** Review Revision */
+            review_revision: number;
+            /** Value */
+            value: {
+                [key: string]: unknown;
+            };
         };
         /** Reviewer */
         Reviewer: {
@@ -2014,6 +2139,144 @@ export interface operations {
             };
             /** @description Too Many Requests */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    correct_assessment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                application_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CorrectionInput"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewEvent"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+        };
+    };
+    review_history: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                application_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewEvent"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -71,13 +71,17 @@ export function EvidenceButton({
                   ? "Page de portfolio"
                   : evidence.locator.kind === "github"
                     ? `Dépôt GitHub · ${evidence.locator.path}`
-                    : "Réponse au formulaire"}{" "}
+                    : evidence.locator.kind === "human"
+                      ? "Note de vérification humaine"
+                      : "Réponse au formulaire"}{" "}
               ·{" "}
               {evidence.nature === "declaration"
                 ? "Déclaration du candidat"
                 : evidence.nature === "contextual_explanation"
                   ? "Explication fournie"
-                  : "Élément consultable"}
+                  : evidence.nature === "human_verification"
+                    ? "Vérification du responsable"
+                    : "Élément consultable"}
             </p>
             <blockquote className="evidence-quote preserve-lines">
               {evidence.text}

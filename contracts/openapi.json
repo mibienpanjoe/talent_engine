@@ -851,6 +851,134 @@
         "title": "Contact",
         "type": "object"
       },
+      "CorrectionInput": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "enum": [
+              "set",
+              "restore_base"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "criterion_id": {
+            "format": "uuid",
+            "title": "Criterion Id",
+            "type": "string"
+          },
+          "effective_evaluation_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Evaluation Id"
+          },
+          "evidence_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 30,
+            "title": "Evidence Ids",
+            "type": "array"
+          },
+          "human_note": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Human Note"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "maximum": 4.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level"
+          },
+          "reason": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          },
+          "review_revision": {
+            "maximum": 9007199254740990.0,
+            "minimum": 1.0,
+            "title": "Review Revision",
+            "type": "integer"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "enum": [
+                  "evaluated",
+                  "insufficient_information",
+                  "conflicting_information",
+                  "source_unavailable",
+                  "met",
+                  "unmet",
+                  "unknown"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "target_kind": {
+            "enum": [
+              "assessment",
+              "condition"
+            ],
+            "title": "Target Kind",
+            "type": "string"
+          },
+          "zero_evidence_quote": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Zero Evidence Quote"
+          }
+        },
+        "required": [
+          "review_revision",
+          "effective_evaluation_id",
+          "target_kind",
+          "criterion_id",
+          "action",
+          "reason"
+        ],
+        "title": "CorrectionInput",
+        "type": "object"
+      },
       "CsrfToken": {
         "additionalProperties": false,
         "properties": {
@@ -1210,6 +1338,7 @@
               "mapping": {
                 "answer": "#/components/schemas/AnswerLocator",
                 "github": "#/components/schemas/GitHubLocator",
+                "human": "#/components/schemas/HumanLocator",
                 "pdf": "#/components/schemas/PDFLocator",
                 "web": "#/components/schemas/WebLocator"
               },
@@ -1227,6 +1356,9 @@
               },
               {
                 "$ref": "#/components/schemas/GitHubLocator"
+              },
+              {
+                "$ref": "#/components/schemas/HumanLocator"
               }
             ],
             "title": "Locator"
@@ -1562,6 +1694,33 @@
           "status"
         ],
         "title": "Health",
+        "type": "object"
+      },
+      "HumanLocator": {
+        "additionalProperties": false,
+        "properties": {
+          "end": {
+            "minimum": 0.0,
+            "title": "End",
+            "type": "integer"
+          },
+          "kind": {
+            "const": "human",
+            "title": "Kind",
+            "type": "string"
+          },
+          "start": {
+            "minimum": 0.0,
+            "title": "Start",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind",
+          "start",
+          "end"
+        ],
+        "title": "HumanLocator",
         "type": "object"
       },
       "LoginInput": {
@@ -2749,6 +2908,110 @@
         "title": "RetrievalRank",
         "type": "object"
       },
+      "ReviewEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "application_id": {
+            "format": "uuid",
+            "title": "Application Id",
+            "type": "string"
+          },
+          "author_id": {
+            "format": "uuid",
+            "title": "Author Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "criterion_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Criterion Id"
+          },
+          "evaluation_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evaluation Id"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "origin_event_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origin Event Id"
+          },
+          "previous": {
+            "additionalProperties": true,
+            "title": "Previous",
+            "type": "object"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "review_revision": {
+            "title": "Review Revision",
+            "type": "integer"
+          },
+          "value": {
+            "additionalProperties": true,
+            "title": "Value",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "application_id",
+          "evaluation_id",
+          "author_id",
+          "created_at",
+          "review_revision",
+          "kind",
+          "criterion_id",
+          "action",
+          "reason",
+          "previous",
+          "value",
+          "origin_event_id"
+        ],
+        "title": "ReviewEvent",
+        "type": "object"
+      },
       "Reviewer": {
         "additionalProperties": false,
         "properties": {
@@ -3841,6 +4104,186 @@
         "summary": "Read",
         "tags": [
           "applications"
+        ]
+      }
+    },
+    "/api/v1/applications/{application_id}/corrections": {
+      "post": {
+        "operationId": "correct_assessment",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "application_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Application Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CorrectionInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewEvent"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Correction",
+        "tags": [
+          "reviews"
+        ]
+      }
+    },
+    "/api/v1/applications/{application_id}/review-history": {
+      "get": {
+        "operationId": "review_history",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "application_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Application Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReviewEvent"
+                  },
+                  "title": "Response Review History",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "History",
+        "tags": [
+          "reviews"
         ]
       }
     },

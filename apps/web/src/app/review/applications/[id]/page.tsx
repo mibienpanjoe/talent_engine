@@ -5,6 +5,7 @@ import { SiteHeader } from "../../../../components/site-header";
 import { AccountDialog } from "../../../../features/access/account-dialog";
 import { PolicyDetails } from "../../../../features/campaigns/policy-details";
 import { EvaluationDetails } from "../../../../features/reviews/evaluation-details";
+import { ReviewHistory } from "../../../../features/reviews/review-history";
 import { decisionLabels } from "../../../../features/reviews/labels";
 import { RefreshButton } from "../../../../features/campaigns/refresh-button";
 export default async function ApplicationPage({
@@ -61,6 +62,7 @@ export default async function ApplicationPage({
         </p>
         <p>Décision humaine : {decisionLabels[a.decision]}.</p>
         <EvaluationDetails dossier={result.data} />
+        <ReviewHistory key={a.review_revision} dossier={result.data} />
         <section aria-label="Progression du traitement" className="empty-state">
           <h2>Traitement du dossier</h2>
           {analyses.length === 0 ? (

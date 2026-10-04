@@ -1,7 +1,7 @@
 """Read-only review projection; exact ranks precede all user filters."""
 
 from sqlalchemy import and_, case, func, literal, or_, select
-from talent_engine.evaluations.data import evaluations
+from talent_engine.reviews.data import evaluations
 
 from .repository import applications
 

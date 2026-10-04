@@ -7,9 +7,9 @@ from talent_engine.access import build_access_guards
 from talent_engine.campaigns.data import owned, snapshots
 from talent_engine.campaigns.lifecycle import public_campaign, snapshot_result
 from talent_engine.errors import AccessError, Error
-from talent_engine.evaluations.data import evaluations
 from talent_engine.evaluations.engine import views
 from talent_engine.evaluations.schemas import Calculation, Evaluation
+from talent_engine.reviews.data import evaluations
 from talent_engine.sources.data import excerpts, run_sources, sources
 from talent_engine.sources.schemas import Evidence, SourceVersion
 
@@ -298,6 +298,8 @@ def build_application_router(engine, settings):
             if effective:
                 evidence_ids.update(effective.provenance.evidence_ids)
                 evidence_ids.update(effective.provenance.blocked_evidence_ids[:10])
+                for assessment in effective.assessments:
+                    evidence_ids.update(assessment.evidence_ids)
                 for condition in effective.conditions:
                     evidence_ids.update(condition.evidence_ids)
             evidence_rows = [

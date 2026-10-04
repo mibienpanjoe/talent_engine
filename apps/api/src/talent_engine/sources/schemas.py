@@ -87,12 +87,18 @@ class ExtractionMetadata(Model):
     github: GitHubSnapshot | None = None
 
 
+class HumanLocator(Model):
+    kind: Literal["human"]
+    start: int = Field(ge=0)
+    end: int = Field(ge=0)
+
+
 class Evidence(Model):
     id: UUID
     source_version_id: UUID
     text: str
     locator: Annotated[
-        AnswerLocator | PDFLocator | WebLocator | GitHubLocator,
+        AnswerLocator | PDFLocator | WebLocator | GitHubLocator | HumanLocator,
         Field(discriminator="kind"),
     ]
     nature: Literal[
