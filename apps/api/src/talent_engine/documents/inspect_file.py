@@ -33,6 +33,10 @@ def inspect(path):
                 raise ValueError("Image limit")
             kind = image.format
             image.verify()
+        # JPEG.verify() alone does not decode the image data.
+        # Reopen after verify() and fully decode under the same process limits.
+        with Image.open(path) as image:
+            image.load()
         return "image/png" if kind == "PNG" else "image/jpeg"
     raise ValueError("Unsupported format")
 

@@ -296,3 +296,17 @@ def test_test_upload_capability_cannot_be_used_on_real_route(context):
         ).status_code
         == 401
     )
+
+
+def test_truncated_jpeg_is_rejected_after_full_isolated_decode(context):
+    from PIL import Image
+
+    client, _ = context
+    _, _, _, _, q, session = file_campaign(client)
+    data = BytesIO()
+    Image.new("RGB", (50, 50)).save(data, format="JPEG")
+    assert upload(client, session, q, data.getvalue(), "valid.jpg").status_code == 201
+    assert (
+        upload(client, session, q, data.getvalue()[:-20], "truncated.jpg").status_code
+        == 415
+    )
