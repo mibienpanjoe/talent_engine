@@ -22,11 +22,14 @@ export function DecisionEditor({
     try {
       const csrf = await api.GET("/api/v1/access/csrf");
       if (!csrf.data) throw new Error();
-      const result = await api.POST(
-        "/api/v1/applications/{application_id}/decisions",
+      const result = await api.PATCH(
+        "/api/v1/applications/{application_id}/decision",
         {
           params: { path: { application_id: application.id } },
-          headers: { "X-CSRF-Token": csrf.data.csrf_token },
+          headers: {
+            "X-CSRF-Token": csrf.data.csrf_token,
+            "If-Match": `"${application.review_revision}"`,
+          },
           body: {
             review_revision: application.review_revision,
             effective_evaluation_id:

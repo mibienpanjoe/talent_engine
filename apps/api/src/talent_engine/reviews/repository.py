@@ -4,6 +4,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     ForeignKeyConstraint,
+    Index,
     Numeric,
     String,
     Table,
@@ -49,3 +50,17 @@ events = Table(
         ["evaluations.id", "evaluations.application_id"],
     ),
 )
+
+application_actions = Table(
+    "application_actions",
+    metadata,
+    Column("application_id", Uuid, ForeignKey("applications.id"), primary_key=True),
+    Column("route", String(30), primary_key=True),
+    Column("key_digest", String(64), primary_key=True),
+    Column("payload_hash", String(64), nullable=False),
+    Column("result_id", Uuid, nullable=False),
+    Column("request", JSONB),
+    Column("expires_at", DateTime(timezone=True)),
+)
+
+Index("ix_review_history", events.c.application_id, events.c.created_at, events.c.id)

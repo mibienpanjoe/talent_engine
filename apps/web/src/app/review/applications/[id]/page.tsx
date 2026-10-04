@@ -5,6 +5,8 @@ import { SiteHeader } from "../../../../components/site-header";
 import { AccountDialog } from "../../../../features/access/account-dialog";
 import { PolicyDetails } from "../../../../features/campaigns/policy-details";
 import { EvaluationDetails } from "../../../../features/reviews/evaluation-details";
+import { AnalysisActions } from "../../../../features/reviews/analysis-actions";
+import { VersionHistory } from "../../../../features/reviews/version-history";
 import { DecisionEditor } from "../../../../features/reviews/decision-editor";
 import { ReviewHistory } from "../../../../features/reviews/review-history";
 import { RefreshButton } from "../../../../features/campaigns/refresh-button";
@@ -125,14 +127,16 @@ export default async function ApplicationPage({
             ))
           )}
         </section>
+        <AnalysisActions
+          key={`analysis:${a.review_revision}`}
+          dossier={result.data}
+        />
+        <VersionHistory
+          key={`versions:${a.review_revision}`}
+          dossier={result.data}
+        />
         <RefreshButton />
         <PolicyDetails snapshotId={a.snapshot_id} />
-        {(result.data.pending_evaluation_ids?.length ?? 0) > 0 && (
-          <p>
-            Une nouvelle analyse est disponible, en attente d’activation. Le
-            résultat effectif reste celui affiché ci-dessus.
-          </p>
-        )}
         {(result.data.sources?.length ?? 0) > 0 && (
           <section className="review-section">
             <h2>Sources de cette analyse</h2>

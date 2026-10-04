@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useActionKey } from "./use-action-key";
 import { api } from "../../lib/api";
 import type { components } from "../../lib/api.generated";
 import { Button } from "../../components/ui/button";
@@ -24,6 +25,7 @@ export function CorrectionEditor({
   kind: "assessment" | "condition";
 }) {
   const router = useRouter();
+  const actionKey = useActionKey();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -43,30 +45,35 @@ export function CorrectionEditor({
       if (!csrf.data) throw new Error();
       const level =
         kind === "assessment" && /^\d$/.test(value) ? Number(value) : null;
+      const body: components["schemas"]["CorrectionInput"] = {
+        review_revision: dossier.application.review_revision,
+        effective_evaluation_id:
+          dossier.application.effective_evaluation_id ?? null,
+        criterion_id: criterionId,
+        target_kind: kind,
+        action,
+        reason,
+        ...(action === "set"
+          ? {
+              status: (level !== null
+                ? "evaluated"
+                : value) as components["schemas"]["CorrectionInput"]["status"],
+              level,
+              human_note: note,
+              zero_evidence_quote: level === 0 ? zero : null,
+            }
+          : {}),
+      };
       const result = await api.POST(
         "/api/v1/applications/{application_id}/corrections",
         {
           params: { path: { application_id: dossier.application.id } },
-          headers: { "X-CSRF-Token": csrf.data.csrf_token },
-          body: {
-            review_revision: dossier.application.review_revision,
-            effective_evaluation_id:
-              dossier.application.effective_evaluation_id ?? null,
-            criterion_id: criterionId,
-            target_kind: kind,
-            action,
-            reason,
-            ...(action === "set"
-              ? {
-                  status: (level !== null
-                    ? "evaluated"
-                    : value) as components["schemas"]["CorrectionInput"]["status"],
-                  level,
-                  human_note: note,
-                  zero_evidence_quote: level === 0 ? zero : null,
-                }
-              : {}),
+          headers: {
+            "X-CSRF-Token": csrf.data.csrf_token,
+            "If-Match": `"${dossier.application.review_revision}"`,
+            "Idempotency-Key": actionKey(body),
           },
+          body,
         },
       );
       if (result.data) {

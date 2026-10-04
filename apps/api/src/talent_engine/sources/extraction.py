@@ -140,6 +140,7 @@ def collect_sources(
     retry_errors=False,
     portfolio_web=None,
     github_web=None,
+    only_keys=None,
 ):
     deadline = time.monotonic() + 50
     sources = []
@@ -169,6 +170,11 @@ def collect_sources(
             except WebFailure:
                 pass
             key = digest(text)
+            if (
+                only_keys is not None
+                and ("github:" if is_github else "portfolio:") + key not in only_keys
+            ):
+                continue
             if key in links:
                 links[key]["question_ids"] = sorted(
                     set(links[key]["question_ids"] + [qid])
@@ -192,6 +198,8 @@ def collect_sources(
             links[key] = source
             sources.append(source)
             continue
+        if only_keys is not None and "answer:" + qid not in only_keys:
+            continue
         extraction = dict(
             state="available",
             error_code=None,
@@ -212,6 +220,8 @@ def collect_sources(
     unique = {}
     for document in documents:
         key = document["sha256"]
+        if only_keys is not None and "document:" + key not in only_keys:
+            continue
         if key in unique:
             unique[key]["question_ids"] = sorted(
                 set(unique[key]["question_ids"] + [str(document["question_id"])])

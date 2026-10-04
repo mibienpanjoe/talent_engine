@@ -1,6 +1,70 @@
 {
   "components": {
     "schemas": {
+      "ActivationInput": {
+        "additionalProperties": false,
+        "properties": {
+          "confirm_discard_corrections": {
+            "default": false,
+            "title": "Confirm Discard Corrections",
+            "type": "boolean"
+          },
+          "corrections": {
+            "items": {
+              "$ref": "#/components/schemas/Reapplication"
+            },
+            "maxItems": 20,
+            "title": "Corrections",
+            "type": "array"
+          },
+          "effective_evaluation_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Evaluation Id"
+          },
+          "evaluation_id": {
+            "format": "uuid",
+            "title": "Evaluation Id",
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "use_new_base",
+              "reapply_selected"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "reason": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          },
+          "review_revision": {
+            "maximum": 9007199254740990.0,
+            "minimum": 1.0,
+            "title": "Review Revision",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "review_revision",
+          "effective_evaluation_id",
+          "evaluation_id",
+          "mode",
+          "reason"
+        ],
+        "title": "ActivationInput",
+        "type": "object"
+      },
       "Alert": {
         "additionalProperties": false,
         "properties": {
@@ -23,6 +87,59 @@
           "code"
         ],
         "title": "Alert",
+        "type": "object"
+      },
+      "AnalysisInput": {
+        "additionalProperties": false,
+        "properties": {
+          "base_run_id": {
+            "format": "uuid",
+            "title": "Base Run Id",
+            "type": "string"
+          },
+          "effective_evaluation_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Evaluation Id"
+          },
+          "reason": {
+            "enum": [
+              "retry_sources",
+              "reanalyze"
+            ],
+            "title": "Reason",
+            "type": "string"
+          },
+          "review_revision": {
+            "maximum": 9007199254740990.0,
+            "minimum": 1.0,
+            "title": "Review Revision",
+            "type": "integer"
+          },
+          "source_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 30,
+            "title": "Source Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "review_revision",
+          "effective_evaluation_id",
+          "reason",
+          "base_run_id"
+        ],
+        "title": "AnalysisInput",
         "type": "object"
       },
       "AnalysisProgress": {
@@ -81,6 +198,48 @@
           "steps"
         ],
         "title": "AnalysisProgress",
+        "type": "object"
+      },
+      "AnalysisReceipt": {
+        "additionalProperties": false,
+        "properties": {
+          "application_id": {
+            "format": "uuid",
+            "title": "Application Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "reason": {
+            "enum": [
+              "retry_sources",
+              "reanalyze"
+            ],
+            "title": "Reason",
+            "type": "string"
+          },
+          "state": {
+            "const": "queued",
+            "default": "queued",
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "application_id",
+          "reason",
+          "created_at"
+        ],
+        "title": "AnalysisReceipt",
         "type": "object"
       },
       "AnswerLocator": {
@@ -1364,6 +1523,30 @@
           "created_at"
         ],
         "title": "Evaluation",
+        "type": "object"
+      },
+      "EvaluationVersion": {
+        "additionalProperties": false,
+        "properties": {
+          "base": {
+            "$ref": "#/components/schemas/Evaluation"
+          },
+          "corrected": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Evaluation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "base",
+          "corrected"
+        ],
+        "title": "EvaluationVersion",
         "type": "object"
       },
       "Evidence": {
@@ -2692,6 +2875,25 @@
         "title": "Rational",
         "type": "object"
       },
+      "Reapplication": {
+        "additionalProperties": false,
+        "properties": {
+          "correction": {
+            "$ref": "#/components/schemas/CorrectionInput"
+          },
+          "origin_event_id": {
+            "format": "uuid",
+            "title": "Origin Event Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "origin_event_id",
+          "correction"
+        ],
+        "title": "Reapplication",
+        "type": "object"
+      },
       "Receipt": {
         "additionalProperties": false,
         "properties": {
@@ -2969,6 +3171,17 @@
             "format": "uuid",
             "title": "Author Id",
             "type": "string"
+          },
+          "author_login": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Author Login"
           },
           "created_at": {
             "format": "date-time",
@@ -4152,6 +4365,276 @@
         ]
       }
     },
+    "/api/v1/applications/{application_id}/activations": {
+      "post": {
+        "operationId": "activate_evaluation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "application_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Application Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "if-match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
+            "name": "idempotency-key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivationInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewEvent"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Precondition Required"
+          }
+        },
+        "summary": "Activation",
+        "tags": [
+          "reviews"
+        ]
+      }
+    },
+    "/api/v1/applications/{application_id}/analyses": {
+      "post": {
+        "operationId": "request_analysis",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "application_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Application Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "if-match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
+            "name": "idempotency-key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalysisInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisReceipt"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Precondition Required"
+          }
+        },
+        "summary": "Analysis",
+        "tags": [
+          "reviews"
+        ]
+      }
+    },
     "/api/v1/applications/{application_id}/corrections": {
       "post": {
         "operationId": "correct_assessment",
@@ -4164,6 +4647,38 @@
               "format": "uuid",
               "title": "Application Id",
               "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "if-match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
+            }
+          },
+          {
+            "in": "header",
+            "name": "idempotency-key",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
             }
           }
         ],
@@ -4237,6 +4752,16 @@
               }
             },
             "description": "Unprocessable Content"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Precondition Required"
           }
         },
         "summary": "Correction",
@@ -4245,9 +4770,9 @@
         ]
       }
     },
-    "/api/v1/applications/{application_id}/decisions": {
-      "post": {
-        "operationId": "change_decision",
+    "/api/v1/applications/{application_id}/decision": {
+      "patch": {
+        "operationId": "set_decision",
         "parameters": [
           {
             "in": "path",
@@ -4257,6 +4782,22 @@
               "format": "uuid",
               "title": "Application Id",
               "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "if-match",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "If-Match"
             }
           }
         ],
@@ -4271,7 +4812,7 @@
           "required": true
         },
         "responses": {
-          "201": {
+          "200": {
             "content": {
               "application/json": {
                 "schema": {
@@ -4330,9 +4871,145 @@
               }
             },
             "description": "Unprocessable Content"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Precondition Required"
           }
         },
         "summary": "Decision",
+        "tags": [
+          "reviews"
+        ]
+      }
+    },
+    "/api/v1/applications/{application_id}/evaluation-versions": {
+      "get": {
+        "operationId": "evaluation_versions",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "application_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Application Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 25,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 500,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EvaluationVersion"
+                  },
+                  "title": "Response Evaluation Versions",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Precondition Required"
+          }
+        },
+        "summary": "Versions",
         "tags": [
           "reviews"
         ]
@@ -4350,6 +5027,45 @@
               "format": "uuid",
               "title": "Application Id",
               "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 100,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 500,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "active_only",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Active Only",
+              "type": "boolean"
             }
           }
         ],
@@ -4417,6 +5133,16 @@
               }
             },
             "description": "Unprocessable Content"
+          },
+          "428": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            },
+            "description": "Precondition Required"
           }
         },
         "summary": "History",

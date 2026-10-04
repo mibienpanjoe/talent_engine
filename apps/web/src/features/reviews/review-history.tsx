@@ -25,18 +25,28 @@ function display(value: Event["value"]): string {
 }
 export function ReviewHistory({ dossier }: { dossier: Detail }) {
   const [items, setItems] = useState<Event[]>();
+  const [next, setNext] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  async function load() {
+  async function load(cursor?: string) {
     setBusy(true);
     setError("");
     try {
       const result = await api.GET(
         "/api/v1/applications/{application_id}/review-history",
-        { params: { path: { application_id: dossier.application.id } } },
+        {
+          params: {
+            path: { application_id: dossier.application.id },
+            query: { cursor },
+          },
+        },
       );
-      if (result.data) setItems(result.data);
-      else setError("L’historique est indisponible. Réessayez.");
+      if (result.data) {
+        setItems((current) =>
+          cursor ? [...(current ?? []), ...result.data!] : result.data,
+        );
+        setNext(result.response.headers.get("X-Next-Cursor"));
+      } else setError("L’historique est indisponible. Réessayez.");
     } catch {
       setError("L’historique est indisponible. Réessayez.");
     } finally {
@@ -46,9 +56,14 @@ export function ReviewHistory({ dossier }: { dossier: Detail }) {
   return (
     <section className="review-section">
       <h2>Historique de la revue</h2>
-      <Button variant="secondary" disabled={busy} onClick={load}>
+      <Button variant="secondary" disabled={busy} onClick={() => load()}>
         {busy ? "Chargement…" : "Consulter l’historique"}
       </Button>
+      {next && (
+        <Button variant="secondary" disabled={busy} onClick={() => load(next)}>
+          Suite de l’historique
+        </Button>
+      )}
       {error && <Alert tone="danger">{error}</Alert>}
       {items &&
         (items.length ? (
@@ -74,7 +89,7 @@ export function ReviewHistory({ dossier }: { dossier: Detail }) {
                   {new Date(item.created_at).toLocaleString("fr-FR", {
                     timeZone: "UTC",
                   })}{" "}
-                  UTC · auteur {item.author_id}
+                  UTC · auteur {item.author_login ?? item.author_id}
                 </p>
                 {Array.isArray(item.value.evidence_ids) && (
                   <div className="inline-actions">

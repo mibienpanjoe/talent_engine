@@ -1,10 +1,18 @@
 from concurrent.futures import ThreadPoolExecutor
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from sqlalchemy import select
 from talent_engine.evaluations.data import evaluations
 from test_campaigns import headers
 from test_reviews import deposit, prepared
+
+
+def review_headers(headers, payload):
+    return {
+        **headers,
+        "If-Match": f'"{payload["review_revision"]}"',
+        "Idempotency-Key": headers.get("Idempotency-Key", uuid4().hex),
+    }
 
 
 def test_correction_projection_restore_and_stale_write(context):
@@ -27,7 +35,9 @@ def test_correction_projection_restore_and_stale_write(context):
         human_note="Le projet a été expliqué et exécuté devant le responsable.",
     )
     h = headers(client)
-    response = client.post(path + "/corrections", headers=h, json=payload)
+    response = client.post(
+        path + "/corrections", headers=review_headers(h, payload), json=payload
+    )
     assert response.status_code == 201, response.text
     after = client.get(path).json()
     assert after["application"]["calculation"]["score"] == "85.000000"
@@ -45,7 +55,10 @@ def test_correction_projection_restore_and_stale_write(context):
         assert base["calculation"]["score"] is None
         assert base["assessments"][1]["level"] is None
     assert (
-        client.post(path + "/corrections", headers=h, json=payload).status_code == 409
+        client.post(
+            path + "/corrections", headers=review_headers(h, payload), json=payload
+        ).status_code
+        == 409
     )
     history = client.get(path + "/review-history").json()
     assert len(history) == 1 and history[0]["previous"]["level"] is None
@@ -59,7 +72,10 @@ def test_correction_projection_restore_and_stale_write(context):
         "human_note": None,
     }
     assert (
-        client.post(path + "/corrections", headers=h, json=restore).status_code == 201
+        client.post(
+            path + "/corrections", headers=review_headers(h, restore), json=restore
+        ).status_code
+        == 201
     )
     restored = client.get(path).json()
     assert restored["application"]["calculation"]["score"] is None
@@ -92,7 +108,9 @@ def test_invalid_and_concurrent_corrections_are_atomic(context):
     ):
         assert (
             client.post(
-                path + "/corrections", headers=h, json={**payload, **change}
+                path + "/corrections",
+                headers=review_headers(h, {**payload, **change}),
+                json={**payload, **change},
             ).status_code
             == 422
         )
@@ -101,7 +119,9 @@ def test_invalid_and_concurrent_corrections_are_atomic(context):
             pool.map(
                 lambda _: (
                     client.post(
-                        path + "/corrections", headers=h, json=payload
+                        path + "/corrections",
+                        headers=review_headers(h, payload),
+                        json=payload,
                     ).status_code
                 ),
                 range(2),
@@ -111,7 +131,10 @@ def test_invalid_and_concurrent_corrections_are_atomic(context):
     assert len(client.get(path + "/review-history").json()) == 1
     client.cookies.clear()
     assert (
-        client.post(path + "/corrections", headers=h, json=payload).status_code == 401
+        client.post(
+            path + "/corrections", headers=review_headers(h, payload), json=payload
+        ).status_code
+        == 401
     )
     assert client.get(path + "/review-history").status_code == 401
 
@@ -137,12 +160,17 @@ def test_condition_correction_and_evidence_boundaries(context):
     )
     h = headers(client)
     assert (
-        client.post(path + "/corrections", headers=h, json=payload).status_code == 422
+        client.post(
+            path + "/corrections", headers=review_headers(h, payload), json=payload
+        ).status_code
+        == 422
     )
     assert client.get(path + "/review-history").json() == []
     assert (
         client.post(
-            path + "/corrections", headers={"Origin": h["Origin"]}, json=payload
+            path + "/corrections",
+            headers=review_headers({"Origin": h["Origin"]}, payload),
+            json=payload,
         ).status_code
         == 403
     )
@@ -151,7 +179,10 @@ def test_condition_correction_and_evidence_boundaries(context):
         human_note="Le candidat confirme sa disponibilité au 5 octobre.",
     )
     assert (
-        client.post(path + "/corrections", headers=h, json=payload).status_code == 201
+        client.post(
+            path + "/corrections", headers=review_headers(h, payload), json=payload
+        ).status_code
+        == 201
     )
     after = client.get(path).json()
     assert after["effective_evaluation"]["conditions"][0]["status"] == "met"
@@ -179,17 +210,21 @@ def test_decisions_preserve_evaluation_alerts_and_detect_conflicts(context):
         effective_evaluation_id=before["application"]["effective_evaluation_id"],
     )
     for choice in ("shortlisted", "not_selected", "to_review"):
-        response = client.post(
-            path + "/decisions", headers=h, json={**expectation, "decision": choice}
+        response = client.patch(
+            path + "/decision",
+            headers=review_headers(h, {**expectation, "decision": choice}),
+            json={**expectation, "decision": choice},
         )
-        assert response.status_code == 201, response.text
+        assert response.status_code == 200, response.text
         after = client.get(path).json()
         assert after["application"]["decision"] == choice
         assert after["effective_evaluation"] == before["effective_evaluation"]
         assert after["application"]["views"] == before["application"]["views"]
         assert (
-            client.post(
-                path + "/decisions", headers=h, json={**expectation, "decision": choice}
+            client.patch(
+                path + "/decision",
+                headers=review_headers(h, {**expectation, "decision": choice}),
+                json={**expectation, "decision": choice},
             ).status_code
             == 409
         )
@@ -202,9 +237,9 @@ def test_decisions_preserve_evaluation_alerts_and_detect_conflicts(context):
     ]
     client.cookies.clear()
     assert (
-        client.post(
-            path + "/decisions",
-            headers=h,
+        client.patch(
+            path + "/decision",
+            headers=review_headers(h, {**expectation, "decision": "shortlisted"}),
             json={**expectation, "decision": "shortlisted"},
         ).status_code
         == 401

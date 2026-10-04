@@ -2,8 +2,9 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import Field, StrictInt, model_validator
+from pydantic import Field, StrictBool, StrictInt, model_validator
 from talent_engine.campaigns.schemas import Model
+from talent_engine.evaluations.schemas import Evaluation
 
 
 class ReviewExpectation(Model):
@@ -79,6 +80,7 @@ class ReviewEvent(Model):
     application_id: UUID
     evaluation_id: UUID | None
     author_id: UUID
+    author_login: str | None = None
     created_at: datetime
     review_revision: int
     kind: str
@@ -93,3 +95,67 @@ class ReviewEvent(Model):
 class DecisionInput(ReviewExpectation):
     decision: Literal["to_review", "shortlisted", "not_selected"]
     reason: str = Field(default="", max_length=2000)
+
+
+class AnalysisInput(ReviewExpectation):
+    reason: Literal["retry_sources", "reanalyze"]
+    base_run_id: UUID
+    source_ids: list[UUID] = Field(default_factory=list, max_length=30)
+
+    @model_validator(mode="after")
+    def unique_sources(self):
+        if (
+            len(set(self.source_ids)) != len(self.source_ids)
+            or self.reason == "retry_sources"
+            and not self.source_ids
+        ):
+            raise ValueError("Select distinct failed sources")
+        return self
+
+
+class AnalysisReceipt(Model):
+    id: UUID
+    application_id: UUID
+    reason: Literal["retry_sources", "reanalyze"]
+    state: Literal["queued"] = "queued"
+    created_at: datetime
+
+
+class Reapplication(Model):
+    origin_event_id: UUID
+    correction: CorrectionInput
+
+
+class ActivationInput(ReviewExpectation):
+    evaluation_id: UUID
+    mode: Literal["use_new_base", "reapply_selected"]
+    reason: str = Field(min_length=1, max_length=2000)
+    confirm_discard_corrections: StrictBool = False
+    corrections: list[Reapplication] = Field(default_factory=list, max_length=20)
+
+    @model_validator(mode="after")
+    def explicit_strategy(self):
+        if not self.reason.strip() or (self.mode == "reapply_selected") != bool(
+            self.corrections
+        ):
+            raise ValueError("Explicit activation strategy required")
+        targets = [
+            (c.correction.target_kind, c.correction.criterion_id)
+            for c in self.corrections
+        ]
+        if len(set(targets)) != len(targets):
+            raise ValueError("One correction per target")
+        for item in self.corrections:
+            if (
+                item.correction.review_revision != self.review_revision
+                or item.correction.effective_evaluation_id
+                != self.effective_evaluation_id
+                or item.correction.action != "set"
+            ):
+                raise ValueError("Reapplication must confirm the current version")
+        return self
+
+
+class EvaluationVersion(Model):
+    base: Evaluation
+    corrected: Evaluation | None
