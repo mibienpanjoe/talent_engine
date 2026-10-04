@@ -133,7 +133,14 @@ export function CampaignActions({
         </Button>
         {campaign.public_url && (
           <Button asChild variant="secondary">
-            <Link href={campaign.public_url}>Ouvrir le formulaire public</Link>
+            <Link
+              href={campaign.public_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Ouvrir le formulaire public dans un nouvel onglet"
+            >
+              Ouvrir le formulaire public ↗
+            </Link>
           </Button>
         )}
       </div>
