@@ -17,8 +17,8 @@ sont remplacés. Le fichier original reste téléchargeable en accès privé.
 Un CV reste une déclaration, même s'il est transmis sous forme de fichier.
 Le même PDF reçu plusieurs fois dans un dossier donne une seule source et
 n'ajoute aucun poids. Les coordonnées de contact et réponses de type email
-ne deviennent pas des extraits destinés au modèle. Une URL est signalée comme
-indisponible jusqu'à l'implémentation de sa récupération.
+ne deviennent pas des extraits destinés au modèle. Les portfolios publics
+fournis sont collectés selon les limites ci-dessous.
 
 L'extraction suit [la documentation pypdf](https://pypdf.readthedocs.io/en/stable/user/extract-text.html).
 Elle tourne dans un sous-processus sans identifiants de service : mémoire
@@ -76,3 +76,28 @@ La [tarification officielle](https://ai.google.dev/gemini-api/docs/pricing)
 dépend du modèle et du palier. Ne pas promettre une gratuité permanente.
 `amina-scan-demo.pdf` est la version intégralement fictive, rasterisée sur trois
 pages, de l’autre document de recette Amina.
+
+## Portfolios publics
+
+Le collecteur lit la page fournie et au plus deux pages pertinentes du même
+hôte, à profondeur un. Il extrait uniquement le texte statique ; une page
+qui exige JavaScript reste explicitement indisponible. Chaque réponse est
+limitée à 2 MiB, l’ensemble du texte à 200 000 caractères, sans troncature
+silencieuse, dans le budget commun de 50 secondes. Pas de cookies,
+authentification, proxy ambiant ni contournement d’accès.
+
+HTTP(S) sur ports par défaut uniquement : toutes les adresses DNS doivent
+être publiques, puis la connexion utilise une IP validée avec le nom original
+pour Host et TLS. Les trois redirections maximum subissent les mêmes contrôles.
+Les IP locales, privées et mécanismes de transition IPv6 sont bloqués. Les
+tests couvrent aussi le rebinding et une vraie réponse HTTP Connection: close.
+
+Chaque page conserve URL finale, date, empreinte du corps reçu et texte
+extrait ; chaque citation conserve URL et offsets dans ce texte. La fiche
+montre le texte historique et un lien vers l’origine. Une page restreinte,
+trop volumineuse ou hors budget n’empêche pas la réception du dossier.
+Les 429 et erreurs transitoires utilisent les reprises du worker.
+
+Le parcours dépôt → collecte → appréciation → fiche a été exercé sur le
+portfolio public fourni par son propriétaire, avec vérification des offsets
+et empreintes. La collecte valide la provenance, pas la calibration du modèle.

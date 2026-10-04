@@ -10,6 +10,7 @@ from talent_engine.campaigns.data import snapshots
 from talent_engine.documents.data import uploads
 from talent_engine.evaluations.service import evaluate
 from talent_engine.integrations.llm import ProviderFailure
+from talent_engine.integrations.public_web import WebFailure
 from talent_engine.sources.extraction import collect_sources
 
 
@@ -21,7 +22,15 @@ class StepFailure(Exception):
         super().__init__(code)
 
 
-def process(engine, claim, *, upload_directory=None, gateway=None, ocr_gateway=None):
+def process(
+    engine,
+    claim,
+    *,
+    upload_directory=None,
+    gateway=None,
+    ocr_gateway=None,
+    portfolio_web=None,
+):
     if claim.step == "evaluate":
         try:
             return evaluate(engine, claim, gateway=gateway)
@@ -83,8 +92,9 @@ def process(engine, claim, *, upload_directory=None, gateway=None, ocr_gateway=N
             upload_directory or Path("/tmp/talent-engine-uploads"),
             ocr_gateway=ocr_gateway,
             retry_errors=claim.attempt < 3,
+            portfolio_web=portfolio_web,
         )
-    except ProviderFailure as error:
+    except (ProviderFailure, WebFailure) as error:
         raise StepFailure(
             error.code, retryable=error.retryable, retry_after=error.retry_after
         ) from None

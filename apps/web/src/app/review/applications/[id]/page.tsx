@@ -158,6 +158,21 @@ export default async function ApplicationPage({
                         Document original
                       </a>
                     )}
+                    {source.extraction_metadata?.web?.find(
+                      (page) => page.status === "succeeded",
+                    ) && (
+                      <a
+                        href={
+                          source.extraction_metadata.web.find(
+                            (page) => page.status === "succeeded",
+                          )!.url
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Page publique recueillie
+                      </a>
+                    )}
                     {source.extraction_metadata?.ocr?.some(
                       (attempt) => attempt.status === "succeeded",
                     ) && (
@@ -169,6 +184,25 @@ export default async function ApplicationPage({
                     <details className="provenance-details">
                       <summary>Version de la source</summary>
                       <p>{source.extractor_version}</p>
+                      {source.extraction_metadata?.web?.map((page, index) => (
+                        <p key={index}>
+                          {page.url} ·{" "}
+                          {page.status === "succeeded"
+                            ? "Recueillie"
+                            : page.error_code === "url_blocked"
+                              ? "Accès réseau bloqué"
+                              : page.error_code === "source_javascript_required"
+                                ? "Rendu JavaScript nécessaire, non pris en charge"
+                                : page.error_code === "source_access_restricted"
+                                  ? "Accès protégé"
+                                  : "Page indisponible"}{" "}
+                          ·{" "}
+                          {new Date(page.fetched_at).toLocaleString("fr-FR", {
+                            timeZone: "UTC",
+                          })}{" "}
+                          UTC.
+                        </p>
+                      ))}
                       <p className="hash-text">
                         Empreinte originale : {source.content_hash}
                       </p>

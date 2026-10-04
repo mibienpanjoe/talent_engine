@@ -67,11 +67,15 @@ export function EvidenceButton({
             <p>
               {evidence.locator.kind === "pdf"
                 ? `${evidence.locator.method === "ocr" ? "Texte OCR" : "Document"} · page ${evidence.locator.page}`
-                : "Réponse au formulaire"}{" "}
+                : evidence.locator.kind === "web"
+                  ? "Page de portfolio"
+                  : "Réponse au formulaire"}{" "}
               ·{" "}
               {evidence.nature === "declaration"
                 ? "Déclaration du candidat"
-                : "Élément consultable"}
+                : evidence.nature === "contextual_explanation"
+                  ? "Explication fournie"
+                  : "Élément consultable"}
             </p>
             <blockquote className="evidence-quote preserve-lines">
               {evidence.text}
@@ -79,6 +83,15 @@ export function EvidenceButton({
             {uploadId && (
               <a href={`/api/v1/uploads/${uploadId}/download`}>
                 Ouvrir le document original
+              </a>
+            )}
+            {evidence.locator.kind === "web" && (
+              <a
+                href={evidence.locator.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Ouvrir la page d’origine
               </a>
             )}
             <details className="provenance-details">

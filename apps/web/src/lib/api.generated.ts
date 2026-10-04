@@ -883,7 +883,7 @@ export interface components {
              */
             id: string;
             /** Locator */
-            locator: components["schemas"]["AnswerLocator"] | components["schemas"]["PDFLocator"];
+            locator: components["schemas"]["AnswerLocator"] | components["schemas"]["PDFLocator"] | components["schemas"]["WebLocator"];
             /**
              * Nature
              * @enum {string}
@@ -901,6 +901,10 @@ export interface components {
         ExtractionMetadata: {
             /** Ocr */
             ocr?: components["schemas"]["OCRAttempt"][];
+            /** Source Url */
+            source_url?: string | null;
+            /** Web */
+            web?: components["schemas"]["WebCollection"][];
         };
         /** FileAnswer */
         FileAnswer: {
@@ -1566,6 +1570,41 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+        };
+        /** WebCollection */
+        WebCollection: {
+            /** Content Hash */
+            content_hash?: string | null;
+            /** Error Code */
+            error_code?: string | null;
+            /**
+             * Fetched At
+             * Format: date-time
+             */
+            fetched_at: string;
+            /** Http Status */
+            http_status?: number | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "succeeded" | "failed";
+            /** Url */
+            url: string;
+        };
+        /** WebLocator */
+        WebLocator: {
+            /** End */
+            end: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "web";
+            /** Start */
+            start: number;
+            /** Url */
+            url: string;
         };
     };
     responses: never;

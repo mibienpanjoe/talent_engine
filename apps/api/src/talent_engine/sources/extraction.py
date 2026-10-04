@@ -7,7 +7,10 @@ import time
 from pathlib import Path
 from uuid import UUID, uuid5
 
+from talent_engine.integrations.public_web import WebFailure, normalize_url
+
 from .ocr import transcribe_pages
+from .portfolio import collect_portfolio
 
 EXTRACTOR_VERSION = "pdf-text-v1+pypdf-6.19.0"
 
@@ -68,29 +71,32 @@ def make_source(
             part = text[start : start + 2000]
             if not part.strip():
                 continue
-            locator = (
-                dict(
+            if kind == "portfolio":
+                locator = dict(
+                    kind="web", url=page["url"], start=start, end=start + len(part)
+                )
+            elif kind == "document":
+                locator = dict(
                     kind="pdf",
                     page=page["page"],
                     start=start,
                     end=start + len(part),
                     method=page.get("method", "text"),
                 )
-                if kind == "document"
-                else dict(
+            else:
+                locator = dict(
                     kind="answer",
                     question_id=question_ids[0],
                     start=start,
                     end=start + len(part),
                 )
-            )
             excerpts.append(
                 dict(
                     id=str(uuid5(source_id, json.dumps(locator, sort_keys=True))),
                     source_version_id=str(source_id),
                     text=part,
                     locator=locator,
-                    nature="declaration",
+                    nature=page.get("nature", "declaration"),
                     excerpt_hash=digest(part),
                 )
             )
@@ -122,9 +128,11 @@ def collect_sources(
     *,
     ocr_gateway=None,
     retry_errors=False,
+    portfolio_web=None,
 ):
     deadline = time.monotonic() + 50
     sources = []
+    links = {}
     for answer in answers:
         if answer["kind"] in ("file", "email"):
             continue
@@ -135,10 +143,36 @@ def collect_sources(
         )
         qid = str(answer["question_id"])
         external = answer["kind"] == "url"
+        if external:
+            try:
+                text = normalize_url(text)[0]
+            except WebFailure:
+                pass
+            key = digest(text)
+            if key in links:
+                links[key]["question_ids"] = sorted(
+                    set(links[key]["question_ids"] + [qid])
+                )
+                continue
+            extraction = collect_portfolio(
+                text, deadline=deadline, web=portfolio_web, retry_errors=retry_errors
+            )
+            source = make_source(
+                application_id,
+                "portfolio:" + key,
+                "portfolio",
+                extraction.pop("content_hash"),
+                [qid],
+                extraction,
+                version="portfolio-html-v1",
+            )
+            links[key] = source
+            sources.append(source)
+            continue
         extraction = dict(
-            state="unavailable" if external else "available",
-            error_code="external_retrieval_pending" if external else None,
-            pages=[] if external else [dict(page=None, text=text)],
+            state="available",
+            error_code=None,
+            pages=[dict(page=None, text=text)],
             ocr_pages=[],
         )
         sources.append(

@@ -1209,7 +1209,8 @@
             "discriminator": {
               "mapping": {
                 "answer": "#/components/schemas/AnswerLocator",
-                "pdf": "#/components/schemas/PDFLocator"
+                "pdf": "#/components/schemas/PDFLocator",
+                "web": "#/components/schemas/WebLocator"
               },
               "propertyName": "kind"
             },
@@ -1219,6 +1220,9 @@
               },
               {
                 "$ref": "#/components/schemas/PDFLocator"
+              },
+              {
+                "$ref": "#/components/schemas/WebLocator"
               }
             ],
             "title": "Locator"
@@ -1263,6 +1267,26 @@
             },
             "maxItems": 30,
             "title": "Ocr",
+            "type": "array"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "maxLength": 2048,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "web": {
+            "items": {
+              "$ref": "#/components/schemas/WebCollection"
+            },
+            "maxItems": 3,
+            "title": "Web",
             "type": "array"
           }
         },
@@ -3047,6 +3071,102 @@
           "type"
         ],
         "title": "ValidationError",
+        "type": "object"
+      },
+      "WebCollection": {
+        "additionalProperties": false,
+        "properties": {
+          "content_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Hash"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "fetched_at": {
+            "format": "date-time",
+            "title": "Fetched At",
+            "type": "string"
+          },
+          "http_status": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Http Status"
+          },
+          "status": {
+            "enum": [
+              "succeeded",
+              "failed"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "url": {
+            "maxLength": 2048,
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "fetched_at",
+          "status"
+        ],
+        "title": "WebCollection",
+        "type": "object"
+      },
+      "WebLocator": {
+        "additionalProperties": false,
+        "properties": {
+          "end": {
+            "minimum": 0.0,
+            "title": "End",
+            "type": "integer"
+          },
+          "kind": {
+            "const": "web",
+            "title": "Kind",
+            "type": "string"
+          },
+          "start": {
+            "minimum": 0.0,
+            "title": "Start",
+            "type": "integer"
+          },
+          "url": {
+            "maxLength": 2048,
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "url",
+          "start",
+          "end"
+        ],
+        "title": "WebLocator",
         "type": "object"
       }
     }

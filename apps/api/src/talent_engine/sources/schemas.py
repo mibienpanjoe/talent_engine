@@ -21,6 +21,22 @@ class PDFLocator(Model):
     method: Literal["text", "ocr"] = "text"
 
 
+class WebLocator(Model):
+    kind: Literal["web"]
+    url: str = Field(max_length=2048)
+    start: int = Field(ge=0)
+    end: int = Field(ge=0)
+
+
+class WebCollection(Model):
+    url: str = Field(max_length=2048)
+    fetched_at: datetime
+    status: Literal["succeeded", "failed"]
+    http_status: int | None = None
+    content_hash: str | None = None
+    error_code: str | None = None
+
+
 class OCRAttempt(Model):
     page: int = Field(ge=1, le=30)
     method: Literal["ocr"]
@@ -40,13 +56,17 @@ class OCRAttempt(Model):
 
 class ExtractionMetadata(Model):
     ocr: list[OCRAttempt] = Field(default_factory=list, max_length=30)
+    web: list[WebCollection] = Field(default_factory=list, max_length=3)
+    source_url: str | None = Field(default=None, max_length=2048)
 
 
 class Evidence(Model):
     id: UUID
     source_version_id: UUID
     text: str
-    locator: Annotated[AnswerLocator | PDFLocator, Field(discriminator="kind")]
+    locator: Annotated[
+        AnswerLocator | PDFLocator | WebLocator, Field(discriminator="kind")
+    ]
     nature: Literal[
         "declaration",
         "contextual_explanation",
