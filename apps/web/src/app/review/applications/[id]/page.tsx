@@ -1,3 +1,4 @@
+import { SourceList } from "../../../../features/reviews/source-list";
 import { DeleteApplication } from "../../../../features/reviews/delete-application";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -132,197 +133,76 @@ export default async function ApplicationPage({
             ))
           )}
         </section>
-        <AnalysisActions
-          key={`analysis:${a.review_revision}`}
-          dossier={result.data}
-        />
-        <VersionHistory
-          key={`versions:${a.review_revision}`}
-          dossier={result.data}
-        />
-        <RefreshButton />
+        <details className="analysis-tools" open={(result.data.pending_evaluation_ids?.length ?? 0) > 0}>
+          <summary>Outils d’analyse{(result.data.pending_evaluation_ids?.length ?? 0) > 0 ? " · Nouvelle analyse à comparer" : ""}</summary>
+          <AnalysisActions
+            key={`analysis:${a.review_revision}`}
+            dossier={result.data}
+          />
+          <VersionHistory
+            key={`versions:${a.review_revision}`}
+            dossier={result.data}
+          />
+          <div className="inline-actions dossier-tools">
+            <RefreshButton />
+            <PolicyDetails snapshotId={a.snapshot_id} />
+          </div>
+        </details>
+        {(result.data.sources?.length ?? 0) > 0 && <SourceList dossier={result.data} />}
+        <section className="review-section recorded-answers" aria-labelledby="answers-title">
+          <h2 id="answers-title">Réponses enregistrées</h2>
+          <div className="answer-list">
+            {answers.map((answer) => {
+              const q = questions.find((q) => q.id === answer.question_id);
+              let text: string;
+              if (answer.kind === "single_choice")
+                text =
+                  q?.options?.find((o) => o.id === answer.value)?.label ??
+                  "Choix indisponible";
+              else if (answer.kind === "multiple_choice")
+                text =
+                  answer.value
+                    .map(
+                      (id) =>
+                        q?.options?.find((o) => o.id === id)?.label ??
+                        "Choix indisponible",
+                    )
+                    .join(", ") || "Aucun choix confirmé";
+              else if (answer.kind === "file")
+                text = `${answer.value.length} document(s)`;
+              else text = String(answer.value);
+              return (
+                <article className="answer-card" key={answer.question_id}>
+                  <h3>{q?.label ?? "Question"}</h3>
+                  <p className="preserve-lines">
+                    {answer.kind === "url" && /^https?:\/\//i.test(text) ? (
+                      <a href={text} target="_blank" rel="noopener noreferrer">{text} ↗</a>
+                    ) : answer.kind === "date" ? new Date(`${text}T00:00:00Z`).toLocaleDateString("fr-FR", { timeZone: "UTC" }) : text}
+                  </p>
+                  {answer.kind === "file" && (
+                    <ul>
+                      {uploads
+                        .filter((file) => file.question_id === answer.question_id)
+                        .map((file) => (
+                          <li key={file.id}>
+                            <a href={`/api/v1/uploads/${file.id}/download`} target="_blank" rel="noopener noreferrer">
+                              {file.filename}
+                            </a>{" "}
+                            · {Math.ceil(file.bytes / 1024)} Kio
+                          </li>
+                        ))}
+                    </ul>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        </section>
         <DeleteApplication
           key={`delete:${a.review_revision}`}
           application={a}
         />
-        <PolicyDetails snapshotId={a.snapshot_id} />
-        {(result.data.sources?.length ?? 0) > 0 && (
-          <section className="review-section">
-            <h2>Sources de cette analyse</h2>
-            <ul className="source-status-list">
-              {result.data.sources?.map((source) => {
-                const file = uploads.find((f) => f.id === source.upload_id);
-                const question = questions.find(
-                  (q) => q.id === source.question_ids[0],
-                );
-                return (
-                  <li key={source.id}>
-                    <strong>
-                      {file?.filename ?? question?.label ?? "Source du dossier"}
-                    </strong>
-                    <p>
-                      {source.state === "available"
-                        ? "Texte recueilli"
-                        : source.state === "unreadable"
-                          ? "Document illisible"
-                          : source.error_code === "external_retrieval_pending"
-                            ? "Lien reçu, récupération à effectuer"
-                            : "Source indisponible"}
-                      {source.ocr_pages.length > 0 &&
-                        ` · OCR nécessaire pour ${source.ocr_pages.length} page(s) sans texte.`}
-                    </p>
-                    {file && (
-                      <a href={`/api/v1/uploads/${file.id}/download`}>
-                        Document original
-                      </a>
-                    )}
-                    {source.extraction_metadata?.web?.find(
-                      (page) => page.status === "succeeded",
-                    ) && (
-                      <a
-                        href={
-                          source.extraction_metadata.web.find(
-                            (page) => page.status === "succeeded",
-                          )!.url
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Page publique recueillie
-                      </a>
-                    )}
-                    {source.extraction_metadata?.ocr?.some(
-                      (attempt) => attempt.status === "succeeded",
-                    ) && (
-                      <p>
-                        Texte obtenu par OCR. Consultez l’original pour vérifier
-                        la transcription.
-                      </p>
-                    )}
-                    <details className="provenance-details">
-                      <summary>Version de la source</summary>
-                      <p>{source.extractor_version}</p>
-                      {source.extraction_metadata?.github && (
-                        <>
-                          <p>Contribution personnelle à vérifier séparément.</p>
-                          <a
-                            href={`${source.extraction_metadata.github.repository}/tree/${source.extraction_metadata.github.commit}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Dépôt au commit recueilli
-                          </a>
-                          <p className="hash-text">
-                            Commit : {source.extraction_metadata.github.commit}
-                          </p>
-                          <p>
-                            Recueilli le{" "}
-                            {new Date(
-                              source.extraction_metadata.github.fetched_at,
-                            ).toLocaleString("fr-FR", { timeZone: "UTC" })}{" "}
-                            UTC.
-                          </p>
-                          {source.extraction_metadata.github.files.map(
-                            (file) => (
-                              <p key={file.path}>
-                                {file.path} ·{" "}
-                                {file.status === "succeeded"
-                                  ? "Recueilli"
-                                  : "Indisponible"}
-                                {file.error_code && ` (${file.error_code})`}
-                              </p>
-                            ),
-                          )}
-                        </>
-                      )}
-                      {source.extraction_metadata?.web?.map((page, index) => (
-                        <p key={index}>
-                          {page.url} ·{" "}
-                          {page.status === "succeeded"
-                            ? "Recueillie"
-                            : page.error_code === "url_blocked"
-                              ? "Accès réseau bloqué"
-                              : page.error_code === "source_javascript_required"
-                                ? "Rendu JavaScript nécessaire, non pris en charge"
-                                : page.error_code === "source_access_restricted"
-                                  ? "Accès protégé"
-                                  : "Page indisponible"}{" "}
-                          ·{" "}
-                          {new Date(page.fetched_at).toLocaleString("fr-FR", {
-                            timeZone: "UTC",
-                          })}{" "}
-                          UTC.
-                        </p>
-                      ))}
-                      <p className="hash-text">
-                        Empreinte originale : {source.content_hash}
-                      </p>
-                      {source.extraction_metadata?.ocr?.map((attempt) => (
-                        <p key={attempt.page}>
-                          OCR · page {attempt.page} :{" "}
-                          {attempt.status === "succeeded"
-                            ? `${attempt.provider} / ${attempt.effective_model}`
-                            : attempt.error_code === "provider_rate_limited"
-                              ? "Quota fournisseur atteint"
-                              : attempt.error_code === "llm_not_configured"
-                                ? "Service OCR non configuré"
-                                : attempt.error_code ===
-                                    "source_budget_exceeded"
-                                  ? "Budget de lecture atteint"
-                                  : "Transcription indisponible"}
-                          .
-                        </p>
-                      ))}
-                    </details>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
-        )}
-        <section className="empty-state">
-          <h2>Réponses enregistrées</h2>
-          {answers.map((answer) => {
-            const q = questions.find((q) => q.id === answer.question_id);
-            let text: string;
-            if (answer.kind === "single_choice")
-              text =
-                q?.options?.find((o) => o.id === answer.value)?.label ??
-                "Choix indisponible";
-            else if (answer.kind === "multiple_choice")
-              text =
-                answer.value
-                  .map(
-                    (id) =>
-                      q?.options?.find((o) => o.id === id)?.label ??
-                      "Choix indisponible",
-                  )
-                  .join(", ") || "Aucun choix confirmé";
-            else if (answer.kind === "file")
-              text = `${answer.value.length} document(s)`;
-            else text = String(answer.value);
-            return (
-              <section key={answer.question_id}>
-                <h3>{q?.label ?? "Question"}</h3>
-                <p className="preserve-lines">{text}</p>
-                {answer.kind === "file" && (
-                  <ul>
-                    {uploads
-                      .filter((file) => file.question_id === answer.question_id)
-                      .map((file) => (
-                        <li key={file.id}>
-                          <a href={`/api/v1/uploads/${file.id}/download`}>
-                            {file.filename}
-                          </a>{" "}
-                          · {Math.ceil(file.bytes / 1024)} Kio
-                        </li>
-                      ))}
-                  </ul>
-                )}
-              </section>
-            );
-          })}
-        </section>
+
       </main>
     </>
   );

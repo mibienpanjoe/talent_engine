@@ -26,9 +26,16 @@ export function EvaluationDetails({ dossier }: { dossier: Detail }) {
         id={id}
         label={
           excerpt?.locator.kind === "pdf"
-            ? `Preuve ${index + 1} · page ${excerpt.locator.page}`
-            : `Preuve ${index + 1}`
+            ? `Extrait ${index + 1} · ${dossier.uploads?.find(file => file.id === source?.upload_id)?.filename ?? "Document"} · p. ${excerpt.locator.page}`
+            : excerpt?.locator.kind === "human"
+              ? `Observation humaine ${index + 1}`
+              : excerpt?.locator.kind === "github"
+                ? `GitHub · extrait ${index + 1}`
+                : excerpt?.locator.kind === "web"
+                  ? `Portfolio · extrait ${index + 1}`
+                  : `Réponse du candidat · extrait ${index + 1}`
         }
+        className="criterion-proof"
         uploadId={source?.upload_id}
       />
     );
@@ -156,7 +163,7 @@ export function EvaluationDetails({ dossier }: { dossier: Detail }) {
               {requirements.find((r) => r.id === assessment.criterion_id)
                 ?.expectation ?? "Exigence publiée"}
             </h3>
-            <p className="criterion-level">
+            <p className={`criterion-level criterion-level--${assessment.level === null ? "unknown" : assessment.level >= 3 ? "supported" : "limited"}`}>
               {assessment.level === null
                 ? assessmentLabels[assessment.status]
                 : `Niveau ${assessment.level} / 4`}
@@ -169,19 +176,26 @@ export function EvaluationDetails({ dossier }: { dossier: Detail }) {
                 ))}
               </ul>
             )}
-            <div className="inline-actions">
-              {assessment.evidence_ids.map(proof)}
-              <CorrectionEditor
-                key={`${assessment.criterion_id}:${dossier.application.review_revision}`}
-                initialValue={
-                  assessment.level === null
-                    ? assessment.status
-                    : String(assessment.level)
-                }
-                dossier={dossier}
-                criterionId={assessment.criterion_id}
-                kind="assessment"
-              />
+            <div className="criterion-actions">
+              <div className="criterion-evidence">
+                <h4>Éléments justificatifs · {assessment.evidence_ids.length}</h4>
+                {assessment.evidence_ids.length ? (
+                  <div className="inline-actions">{assessment.evidence_ids.map(proof)}</div>
+                ) : <p>Aucun extrait cité pour cette appréciation.</p>}
+              </div>
+              <div className="criterion-correction">
+                <CorrectionEditor
+                  key={`${assessment.criterion_id}:${dossier.application.review_revision}`}
+                  initialValue={
+                    assessment.level === null
+                      ? assessment.status
+                      : String(assessment.level)
+                  }
+                  dossier={dossier}
+                  criterionId={assessment.criterion_id}
+                  kind="assessment"
+                />
+              </div>
             </div>
           </article>
         ))}
@@ -222,15 +236,22 @@ export function EvaluationDetails({ dossier }: { dossier: Detail }) {
                 </p>
                 {value && <p>Réponse : {value}</p>}
                 <p>{condition.rationale}</p>
-                <div className="inline-actions">
-                  {condition.evidence_ids?.map(proof)}
-                  <CorrectionEditor
-                    key={`${condition.criterion_id}:${dossier.application.review_revision}`}
-                    initialValue={condition.status}
-                    dossier={dossier}
-                    criterionId={condition.criterion_id}
-                    kind="condition"
-                  />
+                <div className="criterion-actions">
+                  <div className="criterion-evidence">
+                    <h4>Éléments justificatifs · {condition.evidence_ids?.length ?? 0}</h4>
+                    {condition.evidence_ids?.length ? (
+                      <div className="inline-actions">{condition.evidence_ids.map(proof)}</div>
+                    ) : <p>Vérification à partir de la réponse structurée du candidat.</p>}
+                  </div>
+                  <div className="criterion-correction">
+                    <CorrectionEditor
+                      key={`${condition.criterion_id}:${dossier.application.review_revision}`}
+                      initialValue={condition.status}
+                      dossier={dossier}
+                      criterionId={condition.criterion_id}
+                      kind="condition"
+                    />
+                  </div>
                 </div>
               </article>
             );

@@ -1,4 +1,5 @@
 "use client";
+import { ConfigurationSummary } from "./configuration-summary";
 import { TitleEditor } from "./title-editor";
 import { CampaignActions } from "./campaign-actions";
 import { FormPreview } from "./form-preview";
@@ -130,7 +131,7 @@ export function DraftEditor({ initial }: { initial: Campaign | null }) {
   return (
     <div className="campaign-editor">
       <Link href="/review">← Mes campagnes</Link>
-      <h1>{campaign ? "Configurer la campagne" : "Nouvelle campagne"}</h1>
+      <h1>{locked ? "Consulter la campagne" : campaign ? "Configurer la campagne" : "Nouvelle campagne"}</h1>
       {campaign && (
         <CampaignActions
           key={campaign.revision}
@@ -138,10 +139,12 @@ export function DraftEditor({ initial }: { initial: Campaign | null }) {
           dirty={dirty}
         />
       )}
-      <p>
-        Décrivez le besoin, puis les éléments que vous souhaitez examiner. Les
-        barèmes sont définis par les familles d’évaluation.
-      </p>
+      {!locked && (
+        <p>
+          Décrivez le besoin, puis les éléments que vous souhaitez examiner. Les
+          barèmes sont définis par les familles d’évaluation.
+        </p>
+      )}
       {locked && (
         <Alert>
           Cette configuration est figée. Dupliquez la campagne pour la modifier.
@@ -150,82 +153,88 @@ export function DraftEditor({ initial }: { initial: Campaign | null }) {
       {campaign?.configuration_locked_at && campaign.state === "published" && (
         <TitleEditor campaign={campaign} saved={setCampaign} />
       )}
-      <fieldset disabled={busy || locked} className="editor-fields">
-        <legend>Le besoin</legend>
-        <label className="ui-field">
-          Type
-          <select
-            className="ui-input"
-            value={config.type}
-            onChange={(e) =>
-              change({
-                ...config,
-                type: e.target.value as Configuration["type"],
-              })
-            }
-          >
-            <option value="training">Formation</option>
-            <option value="recruitment">Recrutement</option>
-          </select>
-        </label>
-        <Field
-          id="campaign-title"
-          label="Titre"
-          maxLength={200}
-          value={config.title}
-          onChange={(e) => change({ ...config, title: e.target.value })}
-        />
-        <Field
-          id="campaign-domain"
-          label="Domaine"
-          maxLength={200}
-          value={config.domain}
-          onChange={(e) => change({ ...config, domain: e.target.value })}
-        />
-        <label className="ui-field">
-          Description du besoin
-          <textarea
-            className="ui-input"
-            rows={4}
-            maxLength={10000}
-            value={config.description}
-            onChange={(e) => change({ ...config, description: e.target.value })}
+      {locked ? (
+        <ConfigurationSummary config={config} />
+      ) : (
+        <>
+          <fieldset disabled={busy || locked} className="editor-fields">
+            <legend>Le besoin</legend>
+            <label className="ui-field">
+              Type
+              <select
+                className="ui-input"
+                value={config.type}
+                onChange={(e) =>
+                  change({
+                    ...config,
+                    type: e.target.value as Configuration["type"],
+                  })
+                }
+              >
+                <option value="training">Formation</option>
+                <option value="recruitment">Recrutement</option>
+              </select>
+            </label>
+            <Field
+              id="campaign-title"
+              label="Titre"
+              maxLength={200}
+              value={config.title}
+              onChange={(e) => change({ ...config, title: e.target.value })}
+            />
+            <Field
+              id="campaign-domain"
+              label="Domaine"
+              maxLength={200}
+              value={config.domain}
+              onChange={(e) => change({ ...config, domain: e.target.value })}
+            />
+            <label className="ui-field">
+              Description du besoin
+              <textarea
+                className="ui-input"
+                rows={4}
+                maxLength={10000}
+                value={config.description}
+                onChange={(e) => change({ ...config, description: e.target.value })}
+              />
+            </label>
+            <Field
+              id="target-level"
+              label="Niveau visé"
+              maxLength={500}
+              value={config.target_level}
+              onChange={(e) => change({ ...config, target_level: e.target.value })}
+            />
+            <Field
+              id="deadline"
+              label="Échéance (UTC, facultative)"
+              type="datetime-local"
+              value={config.deadline?.slice(0, 16) ?? ""}
+              onChange={(e) =>
+                change({
+                  ...config,
+                  deadline: e.target.value ? `${e.target.value}:00Z` : null,
+                })
+              }
+            />
+          </fieldset>
+          <QuestionsEditor
+            config={config}
+            disabled={!!(busy || locked)}
+            change={change}
+            question={question}
+            removeQuestion={removeQuestion}
+            moveQuestion={moveQuestion}
           />
-        </label>
-        <Field
-          id="target-level"
-          label="Niveau visé"
-          maxLength={500}
-          value={config.target_level}
-          onChange={(e) => change({ ...config, target_level: e.target.value })}
-        />
-        <Field
-          id="deadline"
-          label="Échéance (UTC, facultative)"
-          type="datetime-local"
-          value={config.deadline?.slice(0, 16) ?? ""}
-          onChange={(e) =>
-            change({
-              ...config,
-              deadline: e.target.value ? `${e.target.value}:00Z` : null,
-            })
-          }
-        />
-      </fieldset>
-      <QuestionsEditor
-        config={config}
-        disabled={!!(busy || locked)}
-        change={change}
-        question={question}
-        removeQuestion={removeQuestion}
-        moveQuestion={moveQuestion}
-      />
-      <RequirementsEditor
-        config={config}
-        disabled={!!(busy || locked)}
-        change={change}
-        requirement={requirement}
-      />
+          <RequirementsEditor
+            config={config}
+            disabled={!!(busy || locked)}
+            change={change}
+            requirement={requirement}
+          />
+        </>
+      )}
       {issues.length > 0 && (
         <Alert>
           <div>
@@ -254,12 +263,16 @@ export function DraftEditor({ initial }: { initial: Campaign | null }) {
       )}
       <div className="save-actions">
         <FormPreview configuration={config} />
-        <Button disabled={busy || locked} onClick={save}>
-          {busy ? "Enregistrement…" : "Enregistrer le brouillon"}
-        </Button>
-        <span role="status">
-          {dirty ? "Modifications non enregistrées" : "Version enregistrée"}
-        </span>
+        {!locked && (
+          <>
+            <Button disabled={busy} onClick={save}>
+              {busy ? "Enregistrement…" : "Enregistrer le brouillon"}
+            </Button>
+            <span role="status">
+              {dirty ? "Modifications non enregistrées" : "Version enregistrée"}
+            </span>
+          </>
+        )}
         {failed && campaign && (
           <Button variant="secondary" onClick={() => location.reload()}>
             Recharger la version enregistrée

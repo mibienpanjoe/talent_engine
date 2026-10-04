@@ -66,8 +66,9 @@ export function TitleEditor({
     }
   }
   return (
-    <section className="empty-state" aria-label="Correction du titre affiché">
-      <h2>Titre affiché</h2>
+    <details className="title-editor">
+      <summary>Titre affiché</summary>
+      <div className="title-editor-content">
       <p>
         Le titre peut être corrigé. Les questions, le besoin et les barèmes
         utilisés pour les candidatures restent figés.
@@ -118,6 +119,7 @@ export function TitleEditor({
         ) : (
           <p>Aucune correction enregistrée.</p>
         ))}
-    </section>
+      </div>
+    </details>
   );
 }
