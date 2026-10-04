@@ -104,3 +104,43 @@ def test_gateway_requires_private_http_or_https_and_server_key():
     with pytest.raises(ProviderFailure) as raised:
         Gateway(LLMSettings()).chat([])
     assert raised.value.code == "llm_not_configured"
+
+
+def test_embedding_transport_pins_model_and_validates_indices_and_vectors(
+    gateway_server,
+):
+    from talent_engine.integrations.embeddings import Embeddings
+
+    gateway, state = gateway_server
+    settings = gateway.settings.model_copy(
+        update={"embedding_model": "test-family", "embedding_dimensions": 2}
+    )
+    state["body"] = {
+        "model": "test-family",
+        "provider": "test-provider",
+        "data": [{"index": 1, "embedding": [0, 2]}, {"index": 0, "embedding": [2, 0]}],
+        "usage": {"prompt_tokens": 4},
+    }
+    reply = Embeddings(settings).embed(["first", "second"])
+    assert reply.vectors == [[1, 0], [0, 1]] and reply.provider == "test-provider"
+    assert (
+        state["authorization_received"] and state["request"]["model"] == "test-family"
+    )
+    for body in [
+        dict(state["body"], model="other-family"),
+        dict(state["body"], data=[{"index": 0, "embedding": [1]}]),
+        dict(
+            state["body"],
+            data=[
+                {"index": 0, "embedding": [True, 0]},
+                {"index": 1, "embedding": [1, 0]},
+            ],
+        ),
+    ]:
+        state["body"] = body
+        with pytest.raises(ProviderFailure, match="embedding_response_invalid"):
+            Embeddings(settings).embed(["first", "second"])
+    state.update(status=429, headers={"Retry-After": "30"})
+    with pytest.raises(ProviderFailure) as raised:
+        Embeddings(settings).embed(["first"])
+    assert raised.value.retryable and raised.value.retry_after == 30

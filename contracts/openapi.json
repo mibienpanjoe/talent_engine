@@ -1209,7 +1209,9 @@
             "discriminator": {
               "mapping": {
                 "answer": "#/components/schemas/AnswerLocator",
-                "pdf": "#/components/schemas/PDFLocator"
+                "github": "#/components/schemas/GitHubLocator",
+                "pdf": "#/components/schemas/PDFLocator",
+                "web": "#/components/schemas/WebLocator"
               },
               "propertyName": "kind"
             },
@@ -1219,6 +1221,12 @@
               },
               {
                 "$ref": "#/components/schemas/PDFLocator"
+              },
+              {
+                "$ref": "#/components/schemas/WebLocator"
+              },
+              {
+                "$ref": "#/components/schemas/GitHubLocator"
               }
             ],
             "title": "Locator"
@@ -1252,6 +1260,51 @@
           "excerpt_hash"
         ],
         "title": "Evidence",
+        "type": "object"
+      },
+      "ExtractionMetadata": {
+        "additionalProperties": false,
+        "properties": {
+          "github": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GitHubSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ocr": {
+            "items": {
+              "$ref": "#/components/schemas/OCRAttempt"
+            },
+            "maxItems": 30,
+            "title": "Ocr",
+            "type": "array"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "maxLength": 2048,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
+          "web": {
+            "items": {
+              "$ref": "#/components/schemas/WebCollection"
+            },
+            "maxItems": 3,
+            "title": "Web",
+            "type": "array"
+          }
+        },
+        "title": "ExtractionMetadata",
         "type": "object"
       },
       "FileAnswer": {
@@ -1317,6 +1370,167 @@
           }
         },
         "title": "FormLimits",
+        "type": "object"
+      },
+      "GitHubFile": {
+        "additionalProperties": false,
+        "properties": {
+          "blob_sha": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Blob Sha"
+          },
+          "content_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Hash"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "path": {
+            "maxLength": 512,
+            "title": "Path",
+            "type": "string"
+          },
+          "size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size"
+          },
+          "status": {
+            "enum": [
+              "succeeded",
+              "failed"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "status"
+        ],
+        "title": "GitHubFile",
+        "type": "object"
+      },
+      "GitHubLocator": {
+        "additionalProperties": false,
+        "properties": {
+          "commit": {
+            "pattern": "^[0-9a-f]{40}$",
+            "title": "Commit",
+            "type": "string"
+          },
+          "end": {
+            "minimum": 0.0,
+            "title": "End",
+            "type": "integer"
+          },
+          "kind": {
+            "const": "github",
+            "title": "Kind",
+            "type": "string"
+          },
+          "path": {
+            "maxLength": 512,
+            "title": "Path",
+            "type": "string"
+          },
+          "repository": {
+            "maxLength": 2048,
+            "title": "Repository",
+            "type": "string"
+          },
+          "start": {
+            "minimum": 0.0,
+            "title": "Start",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind",
+          "repository",
+          "commit",
+          "path",
+          "start",
+          "end"
+        ],
+        "title": "GitHubLocator",
+        "type": "object"
+      },
+      "GitHubSnapshot": {
+        "additionalProperties": false,
+        "properties": {
+          "commit": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9a-f]{40}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commit"
+          },
+          "fetched_at": {
+            "format": "date-time",
+            "title": "Fetched At",
+            "type": "string"
+          },
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/GitHubFile"
+            },
+            "maxItems": 6,
+            "title": "Files",
+            "type": "array"
+          },
+          "personal_role_verified": {
+            "const": false,
+            "default": false,
+            "title": "Personal Role Verified",
+            "type": "boolean"
+          },
+          "repository": {
+            "maxLength": 2048,
+            "title": "Repository",
+            "type": "string"
+          }
+        },
+        "required": [
+          "repository",
+          "fetched_at",
+          "files"
+        ],
+        "title": "GitHubSnapshot",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -1455,6 +1669,142 @@
         "title": "NumberAnswer",
         "type": "object"
       },
+      "OCRAttempt": {
+        "additionalProperties": false,
+        "properties": {
+          "duration_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Seconds"
+          },
+          "effective_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Model"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "finished_at": {
+            "format": "date-time",
+            "title": "Finished At",
+            "type": "string"
+          },
+          "image_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Hash"
+          },
+          "method": {
+            "const": "ocr",
+            "title": "Method",
+            "type": "string"
+          },
+          "page": {
+            "maximum": 30.0,
+            "minimum": 1.0,
+            "title": "Page",
+            "type": "integer"
+          },
+          "prompt_version": {
+            "title": "Prompt Version",
+            "type": "string"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "requested_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Model"
+          },
+          "response_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Response Model"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "succeeded",
+              "failed"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "text_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text Hash"
+          }
+        },
+        "required": [
+          "page",
+          "method",
+          "prompt_version",
+          "status",
+          "started_at",
+          "finished_at"
+        ],
+        "title": "OCRAttempt",
+        "type": "object"
+      },
       "Option": {
         "additionalProperties": false,
         "properties": {
@@ -1488,6 +1838,15 @@
           "kind": {
             "const": "pdf",
             "title": "Kind",
+            "type": "string"
+          },
+          "method": {
+            "default": "text",
+            "enum": [
+              "text",
+              "ocr"
+            ],
+            "title": "Method",
             "type": "string"
           },
           "page": {
@@ -1741,6 +2100,16 @@
               }
             ],
             "title": "Response Model"
+          },
+          "retrieval": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Retrieval"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "started_at": {
             "format": "date-time",
@@ -2234,6 +2603,152 @@
         "title": "Requirement",
         "type": "object"
       },
+      "Retrieval": {
+        "additionalProperties": false,
+        "properties": {
+          "blocked_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Blocked Ids",
+            "type": "array"
+          },
+          "cache_hits": {
+            "maximum": 84.0,
+            "minimum": 0.0,
+            "title": "Cache Hits",
+            "type": "integer"
+          },
+          "cache_misses": {
+            "maximum": 84.0,
+            "minimum": 0.0,
+            "title": "Cache Misses",
+            "type": "integer"
+          },
+          "dimensions": {
+            "maximum": 3072.0,
+            "minimum": 1.0,
+            "title": "Dimensions",
+            "type": "integer"
+          },
+          "duration_seconds": {
+            "minimum": 0.0,
+            "title": "Duration Seconds",
+            "type": "number"
+          },
+          "identity": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Identity",
+            "type": "string"
+          },
+          "input_tokens": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Tokens"
+          },
+          "model": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Model",
+            "type": "string"
+          },
+          "omitted_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Omitted Ids",
+            "type": "array"
+          },
+          "providers": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 10,
+            "title": "Providers",
+            "type": "array"
+          },
+          "query_hashes": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Query Hashes",
+            "type": "object"
+          },
+          "rankings": {
+            "additionalProperties": {
+              "items": {
+                "$ref": "#/components/schemas/RetrievalRank"
+              },
+              "type": "array"
+            },
+            "title": "Rankings",
+            "type": "object"
+          },
+          "selected_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 64,
+            "title": "Selected Ids",
+            "type": "array"
+          },
+          "version": {
+            "const": "evidence-retrieval-v1",
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "version",
+          "model",
+          "dimensions",
+          "identity",
+          "providers",
+          "input_tokens",
+          "duration_seconds",
+          "cache_hits",
+          "cache_misses",
+          "selected_ids",
+          "rankings",
+          "blocked_ids",
+          "omitted_ids",
+          "query_hashes"
+        ],
+        "title": "Retrieval",
+        "type": "object"
+      },
+      "RetrievalRank": {
+        "additionalProperties": false,
+        "properties": {
+          "evidence_id": {
+            "format": "uuid",
+            "title": "Evidence Id",
+            "type": "string"
+          },
+          "similarity": {
+            "maximum": 1.0,
+            "minimum": -1.0,
+            "title": "Similarity",
+            "type": "number"
+          }
+        },
+        "required": [
+          "evidence_id",
+          "similarity"
+        ],
+        "title": "RetrievalRank",
+        "type": "object"
+      },
       "Reviewer": {
         "additionalProperties": false,
         "properties": {
@@ -2337,6 +2852,9 @@
               }
             ],
             "title": "Error Code"
+          },
+          "extraction_metadata": {
+            "$ref": "#/components/schemas/ExtractionMetadata"
           },
           "extractor_version": {
             "title": "Extractor Version",
@@ -2884,6 +3402,102 @@
           "type"
         ],
         "title": "ValidationError",
+        "type": "object"
+      },
+      "WebCollection": {
+        "additionalProperties": false,
+        "properties": {
+          "content_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Hash"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "fetched_at": {
+            "format": "date-time",
+            "title": "Fetched At",
+            "type": "string"
+          },
+          "http_status": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Http Status"
+          },
+          "status": {
+            "enum": [
+              "succeeded",
+              "failed"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "url": {
+            "maxLength": 2048,
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "fetched_at",
+          "status"
+        ],
+        "title": "WebCollection",
+        "type": "object"
+      },
+      "WebLocator": {
+        "additionalProperties": false,
+        "properties": {
+          "end": {
+            "minimum": 0.0,
+            "title": "End",
+            "type": "integer"
+          },
+          "kind": {
+            "const": "web",
+            "title": "Kind",
+            "type": "string"
+          },
+          "start": {
+            "minimum": 0.0,
+            "title": "Start",
+            "type": "integer"
+          },
+          "url": {
+            "maxLength": 2048,
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "url",
+          "start",
+          "end"
+        ],
+        "title": "WebLocator",
         "type": "object"
       }
     }

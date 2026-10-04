@@ -343,14 +343,14 @@ def complete(engine, settings, claim, output):
             return fail_locked(
                 db, settings, claim, step, timestamp, "step_timeout", retryable=True
             )
-        if (
-            claim.step == "source_manifest"
-            and output.get("version") == "received-sources-v2"
-        ):
+        if claim.step == "source_manifest" and output.get("version") in {
+            "received-sources-v2",
+            "received-sources-v3",
+        }:
             output = persist(db, claim, output)
         final = claim.step == "evaluate"
         if final:
-            if output.get("version") != "evaluation-v1":
+            if output.get("version") not in ("evaluation-v1", "evaluation-v2"):
                 return fail_locked(
                     db, settings, claim, step, timestamp, "assessment_invalid"
                 )

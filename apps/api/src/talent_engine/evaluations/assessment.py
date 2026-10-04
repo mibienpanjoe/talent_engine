@@ -88,7 +88,7 @@ def validate_assessments(response, policy, evidence):
     return [by_id[k] for k in criteria]
 
 
-def build_messages(policy, configuration, evidence):
+def build_messages(policy, configuration, evidence, *, selected_ids=None):
     automatic = [
         c
         for c in policy["criteria"]
@@ -97,11 +97,21 @@ def build_messages(policy, configuration, evidence):
     relevant = {qid for c in automatic for qid in c["source_question_ids"]}
     allowed, blocked, omitted = {}, [], []
     budget = 40000
-    for identifier, excerpt in evidence.items():
+    order = list(evidence)
+    if selected_ids is not None:
+        prioritized = [
+            k for k in selected_ids if EXPLICIT_ZERO.search(evidence[k]["text"])
+        ]
+        order = list(dict.fromkeys(prioritized + list(selected_ids) + order))
+    for identifier in order:
+        excerpt = evidence[identifier]
         if not relevant.intersection(excerpt["question_ids"]):
             continue
         if INSTRUCTION.search(excerpt["text"]):
             blocked.append(identifier)
+            continue
+        if selected_ids is not None and identifier not in selected_ids:
+            omitted.append(identifier)
             continue
         if len(excerpt["text"]) > budget:
             omitted.append(identifier)

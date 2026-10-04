@@ -41,7 +41,8 @@ vectorielle et la traçabilité de sa famille appartiennent à T27.
 
 L'adaptateur est `talent_engine.integrations.llm.Gateway`. Il lit uniquement
 les variables serveur `TALENT_LLM_BASE_URL`, `TALENT_LLM_API_KEY`,
-`TALENT_LLM_MODEL` et `TALENT_LLM_TIMEOUT_SECONDS`. Sans URL ou clé,
+`TALENT_LLM_MODEL`, `TALENT_LLM_OCR_MODEL`, `TALENT_LLM_EMBEDDING_MODEL`,
+`TALENT_LLM_EMBEDDING_DIMENSIONS` et `TALENT_LLM_TIMEOUT_SECONDS`. Sans URL ou clé,
 `llm_not_configured` est un échec explicite. Aucun secret n'est transmis au
 web, inclus dans un prompt, conservé dans le dépôt ou journalisé.
 
@@ -81,7 +82,7 @@ sondes réelles ci-dessus et ne les remplacent pas.
 
 ## Modèle retenu pour l’appréciation de démo
 
-T22 utilise par défaut `gemini-3.5-flash-lite`, vérifié sur le PDF fictif
+T22 utilisait par défaut `gemini-3.5-flash-lite`, vérifié sur le PDF fictif
 détaillé : fournisseur Google, niveaux observés 4/3/4 en 2,68 s. Sur les mêmes
 preuves, le routage `auto:fast` avait donné 4/4/4 avec Groq. Ce constat motive
 un modèle demandé explicite ; il ne constitue pas une calibration ni une
@@ -92,3 +93,9 @@ Le parcours intégré final, avec ce même modèle demandé, a ensuite produit
 3/3/4 et 81,25 sur le PDF fictif Amina ; chaque citation a été contrôlée dans
 le texte persisté. La différence avec l'essai précédent reste documentée :
 ces appréciations ponctuelles ne sont pas une mesure absolue de la personne.
+
+T27 sépare les usages : appréciation `gpt-oss-120b`, OCR
+`gemini-3.5-flash-lite`, embeddings `gemini-embedding-001` en 3072 dimensions.
+Le [rapport de choix et de récupération](ai-adapters.md) décrit la comparaison
+répétée, ses écarts, les budgets et l’invalidation du cache. Ces réglages sont
+des choix de démonstration ; le responsable conserve la décision humaine.

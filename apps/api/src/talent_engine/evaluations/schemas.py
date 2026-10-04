@@ -78,6 +78,28 @@ class ConditionResult(Model):
 Eligibility = Literal["eligible", "condition_unmet", "needs_review", "not_applicable"]
 
 
+class RetrievalRank(Model):
+    evidence_id: UUID
+    similarity: float = Field(ge=-1, le=1, allow_inf_nan=False)
+
+
+class Retrieval(Model):
+    version: Literal["evidence-retrieval-v1"]
+    model: str = Field(min_length=1, max_length=200)
+    dimensions: int = Field(ge=1, le=3072)
+    identity: str = Field(pattern=r"^[0-9a-f]{64}$")
+    providers: list[str] = Field(max_length=10)
+    input_tokens: int | None = Field(ge=0)
+    duration_seconds: float = Field(ge=0, allow_inf_nan=False)
+    cache_hits: int = Field(ge=0, le=84)
+    cache_misses: int = Field(ge=0, le=84)
+    selected_ids: list[UUID] = Field(max_length=64)
+    rankings: dict[str, list[RetrievalRank]]
+    blocked_ids: list[UUID]
+    omitted_ids: list[UUID]
+    query_hashes: dict[str, str]
+
+
 class Provenance(Model):
     mode: Literal["live", "preloaded"]
     fixture_version: str | None = Field(default=None, max_length=100)
@@ -95,6 +117,7 @@ class Provenance(Model):
     duration_seconds: float
     started_at: datetime
     finished_at: datetime
+    retrieval: Retrieval | None = None
 
     @model_validator(mode="after")
     def honest_origin(self):

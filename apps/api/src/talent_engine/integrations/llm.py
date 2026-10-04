@@ -21,7 +21,14 @@ class LLMSettings(BaseSettings):
     )
     base_url: str | None = None
     api_key: SecretStr = SecretStr("")
-    model: str = Field(default="gemini-3.5-flash-lite", min_length=1, max_length=200)
+    model: str = Field(default="gpt-oss-120b", min_length=1, max_length=200)
+    ocr_model: str = Field(
+        default="gemini-3.5-flash-lite", min_length=1, max_length=200
+    )
+    embedding_model: str = Field(
+        default="gemini-embedding-001", min_length=1, max_length=200
+    )
+    embedding_dimensions: int = Field(default=3072, ge=1, le=3072)
     timeout_seconds: float = Field(default=30, gt=0, le=30)
 
     @field_validator("base_url")
@@ -58,7 +65,7 @@ class LLMSettings(BaseSettings):
             raise ValueError("Invalid gateway key")
         return value
 
-    @field_validator("model")
+    @field_validator("model", "embedding_model", "ocr_model")
     @classmethod
     def safe_model(cls, value):
         if any(ord(c) < 32 for c in value):
@@ -104,7 +111,14 @@ class Gateway:
     def __init__(self, settings=None):
         self.settings = settings or LLMSettings()
 
-    def chat(self, messages, *, response_format=None, max_tokens=6000):
+    def chat(
+        self,
+        messages,
+        *,
+        response_format=None,
+        max_tokens=6000,
+        max_request_bytes=200000,
+    ):
         settings = self.settings
         if not settings.base_url or not settings.api_key.get_secret_value():
             raise ProviderFailure("llm_not_configured")
@@ -118,7 +132,7 @@ class Gateway:
         if response_format is not None:
             payload["response_format"] = response_format
         data = json.dumps(payload, ensure_ascii=False).encode()
-        if len(data) > 200000:
+        if len(data) > min(max_request_bytes, 3145728):
             raise ProviderFailure("llm_context_limit")
         request = urllib.request.Request(
             settings.base_url + "/chat/completions",

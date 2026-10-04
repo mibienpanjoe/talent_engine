@@ -101,8 +101,8 @@ export function EvaluationDetails({ dossier }: { dossier: Detail }) {
         {provenance.omitted_evidence_ids.length > 0 && (
           <p>
             {provenance.omitted_evidence_ids.length} extrait(s) supplémentaires
-            hors limite de lecture de cette analyse. Consultez les documents
-            originaux pour les vérifier.
+            non transmis au modèle lors de cette lecture ciblée. Consultez les
+            documents originaux pour les vérifier.
           </p>
         )}
         <details className="provenance-details">
@@ -116,6 +116,23 @@ export function EvaluationDetails({ dossier }: { dossier: Detail }) {
           </p>
           {provenance.requested_model && (
             <p>Modèle demandé : {provenance.requested_model}.</p>
+          )}
+          {provenance.retrieval && (
+            <>
+              <p>
+                Recherche des passages : {provenance.retrieval.model} ·{" "}
+                {provenance.retrieval.dimensions} dimensions.
+              </p>
+              <p>
+                {provenance.evidence_ids.length} passage(s) transmis au modèle.{" "}
+                {provenance.retrieval.cache_hits} vecteur(s) réutilisé(s),{" "}
+                {provenance.retrieval.cache_misses} calculé(s).
+              </p>
+              <p>
+                Cette lecture ciblée ne garantit pas une vérification exhaustive
+                des sources.
+              </p>
+            </>
           )}
           <p>
             Politique : {evaluation.policy_version}. Consignes :{" "}

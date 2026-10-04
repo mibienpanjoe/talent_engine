@@ -111,6 +111,8 @@ export default async function ApplicationPage({
                         )[step.state]
                       }
                       {step.attempts > 0 && ` · tentative ${step.attempts}/3`}
+                      {step.error_code === "provider_rate_limited" &&
+                        " · quota fournisseur atteint"}
                     </li>
                   ))}
                 </ol>
@@ -156,12 +158,103 @@ export default async function ApplicationPage({
                         Document original
                       </a>
                     )}
+                    {source.extraction_metadata?.web?.find(
+                      (page) => page.status === "succeeded",
+                    ) && (
+                      <a
+                        href={
+                          source.extraction_metadata.web.find(
+                            (page) => page.status === "succeeded",
+                          )!.url
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Page publique recueillie
+                      </a>
+                    )}
+                    {source.extraction_metadata?.ocr?.some(
+                      (attempt) => attempt.status === "succeeded",
+                    ) && (
+                      <p>
+                        Texte obtenu par OCR. Consultez l’original pour vérifier
+                        la transcription.
+                      </p>
+                    )}
                     <details className="provenance-details">
                       <summary>Version de la source</summary>
                       <p>{source.extractor_version}</p>
+                      {source.extraction_metadata?.github && (
+                        <>
+                          <p>Contribution personnelle à vérifier séparément.</p>
+                          <a
+                            href={`${source.extraction_metadata.github.repository}/tree/${source.extraction_metadata.github.commit}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Dépôt au commit recueilli
+                          </a>
+                          <p className="hash-text">
+                            Commit : {source.extraction_metadata.github.commit}
+                          </p>
+                          <p>
+                            Recueilli le{" "}
+                            {new Date(
+                              source.extraction_metadata.github.fetched_at,
+                            ).toLocaleString("fr-FR", { timeZone: "UTC" })}{" "}
+                            UTC.
+                          </p>
+                          {source.extraction_metadata.github.files.map(
+                            (file) => (
+                              <p key={file.path}>
+                                {file.path} ·{" "}
+                                {file.status === "succeeded"
+                                  ? "Recueilli"
+                                  : "Indisponible"}
+                                {file.error_code && ` (${file.error_code})`}
+                              </p>
+                            ),
+                          )}
+                        </>
+                      )}
+                      {source.extraction_metadata?.web?.map((page, index) => (
+                        <p key={index}>
+                          {page.url} ·{" "}
+                          {page.status === "succeeded"
+                            ? "Recueillie"
+                            : page.error_code === "url_blocked"
+                              ? "Accès réseau bloqué"
+                              : page.error_code === "source_javascript_required"
+                                ? "Rendu JavaScript nécessaire, non pris en charge"
+                                : page.error_code === "source_access_restricted"
+                                  ? "Accès protégé"
+                                  : "Page indisponible"}{" "}
+                          ·{" "}
+                          {new Date(page.fetched_at).toLocaleString("fr-FR", {
+                            timeZone: "UTC",
+                          })}{" "}
+                          UTC.
+                        </p>
+                      ))}
                       <p className="hash-text">
                         Empreinte originale : {source.content_hash}
                       </p>
+                      {source.extraction_metadata?.ocr?.map((attempt) => (
+                        <p key={attempt.page}>
+                          OCR · page {attempt.page} :{" "}
+                          {attempt.status === "succeeded"
+                            ? `${attempt.provider} / ${attempt.effective_model}`
+                            : attempt.error_code === "provider_rate_limited"
+                              ? "Quota fournisseur atteint"
+                              : attempt.error_code === "llm_not_configured"
+                                ? "Service OCR non configuré"
+                                : attempt.error_code ===
+                                    "source_budget_exceeded"
+                                  ? "Budget de lecture atteint"
+                                  : "Transcription indisponible"}
+                          .
+                        </p>
+                      ))}
                     </details>
                   </li>
                 );

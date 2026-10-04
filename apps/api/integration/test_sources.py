@@ -84,7 +84,8 @@ def test_scan_has_no_fabricated_excerpts(context, tmp_path):
     with engine.connect() as db:
         source = db.execute(select(sources)).mappings().one()
         assert (
-            source["state"] == "unavailable" and source["error_code"] == "ocr_required"
+            source["state"] == "unavailable"
+            and source["error_code"] == "llm_not_configured"
         )
         assert db.scalar(select(func.count()).select_from(excerpts)) == 0
 

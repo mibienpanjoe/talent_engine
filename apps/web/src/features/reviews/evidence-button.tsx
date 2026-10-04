@@ -66,12 +66,18 @@ export function EvidenceButton({
           <>
             <p>
               {evidence.locator.kind === "pdf"
-                ? `Document · page ${evidence.locator.page}`
-                : "Réponse au formulaire"}{" "}
+                ? `${evidence.locator.method === "ocr" ? "Texte OCR" : "Document"} · page ${evidence.locator.page}`
+                : evidence.locator.kind === "web"
+                  ? "Page de portfolio"
+                  : evidence.locator.kind === "github"
+                    ? `Dépôt GitHub · ${evidence.locator.path}`
+                    : "Réponse au formulaire"}{" "}
               ·{" "}
               {evidence.nature === "declaration"
                 ? "Déclaration du candidat"
-                : "Élément consultable"}
+                : evidence.nature === "contextual_explanation"
+                  ? "Explication fournie"
+                  : "Élément consultable"}
             </p>
             <blockquote className="evidence-quote preserve-lines">
               {evidence.text}
@@ -80,6 +86,30 @@ export function EvidenceButton({
               <a href={`/api/v1/uploads/${uploadId}/download`}>
                 Ouvrir le document original
               </a>
+            )}
+            {evidence.locator.kind === "web" && (
+              <a
+                href={evidence.locator.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Ouvrir la page d’origine
+              </a>
+            )}
+            {evidence.locator.kind === "github" && (
+              <>
+                <p>
+                  Le dépôt ne suffit pas à établir la contribution personnelle.
+                </p>
+                <a
+                  href={`${evidence.locator.repository}/blob/${evidence.locator.commit}/${evidence.locator.path.split("/").map(encodeURIComponent).join("/")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Ouvrir le fichier au commit recueilli
+                </a>
+                <p className="hash-text">Commit : {evidence.locator.commit}</p>
+              </>
             )}
             <details className="provenance-details">
               <summary>Vérifier la provenance</summary>

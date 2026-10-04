@@ -883,7 +883,7 @@ export interface components {
              */
             id: string;
             /** Locator */
-            locator: components["schemas"]["AnswerLocator"] | components["schemas"]["PDFLocator"];
+            locator: components["schemas"]["AnswerLocator"] | components["schemas"]["PDFLocator"] | components["schemas"]["WebLocator"] | components["schemas"]["GitHubLocator"];
             /**
              * Nature
              * @enum {string}
@@ -896,6 +896,16 @@ export interface components {
             source_version_id: string;
             /** Text */
             text: string;
+        };
+        /** ExtractionMetadata */
+        ExtractionMetadata: {
+            github?: components["schemas"]["GitHubSnapshot"] | null;
+            /** Ocr */
+            ocr?: components["schemas"]["OCRAttempt"][];
+            /** Source Url */
+            source_url?: string | null;
+            /** Web */
+            web?: components["schemas"]["WebCollection"][];
         };
         /** FileAnswer */
         FileAnswer: {
@@ -936,6 +946,62 @@ export interface components {
              * @default 31457280
              */
             max_total_bytes: number;
+        };
+        /** GitHubFile */
+        GitHubFile: {
+            /** Blob Sha */
+            blob_sha?: string | null;
+            /** Content Hash */
+            content_hash?: string | null;
+            /** Error Code */
+            error_code?: string | null;
+            /** Path */
+            path: string;
+            /** Size */
+            size?: number | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "succeeded" | "failed";
+        };
+        /** GitHubLocator */
+        GitHubLocator: {
+            /** Commit */
+            commit: string;
+            /** End */
+            end: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "github";
+            /** Path */
+            path: string;
+            /** Repository */
+            repository: string;
+            /** Start */
+            start: number;
+        };
+        /** GitHubSnapshot */
+        GitHubSnapshot: {
+            /** Commit */
+            commit?: string | null;
+            /**
+             * Fetched At
+             * Format: date-time
+             */
+            fetched_at: string;
+            /** Files */
+            files: components["schemas"]["GitHubFile"][];
+            /**
+             * Personal Role Verified
+             * @default false
+             * @constant
+             */
+            personal_role_verified: false;
+            /** Repository */
+            repository: string;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -996,6 +1062,49 @@ export interface components {
             /** Value */
             value: number;
         };
+        /** OCRAttempt */
+        OCRAttempt: {
+            /** Duration Seconds */
+            duration_seconds?: number | null;
+            /** Effective Model */
+            effective_model?: string | null;
+            /** Error Code */
+            error_code?: string | null;
+            /**
+             * Finished At
+             * Format: date-time
+             */
+            finished_at: string;
+            /** Image Hash */
+            image_hash?: string | null;
+            /**
+             * Method
+             * @constant
+             */
+            method: "ocr";
+            /** Page */
+            page: number;
+            /** Prompt Version */
+            prompt_version: string;
+            /** Provider */
+            provider?: string | null;
+            /** Requested Model */
+            requested_model?: string | null;
+            /** Response Model */
+            response_model?: string | null;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "succeeded" | "failed";
+            /** Text Hash */
+            text_hash?: string | null;
+        };
         /** Option */
         Option: {
             /**
@@ -1015,6 +1124,12 @@ export interface components {
              * @enum {string}
              */
             kind: "pdf";
+            /**
+             * Method
+             * @default text
+             * @enum {string}
+             */
+            method: "text" | "ocr";
             /** Page */
             page: number;
             /** Start */
@@ -1094,6 +1209,7 @@ export interface components {
             requested_model: string | null;
             /** Response Model */
             response_model: string | null;
+            retrieval?: components["schemas"]["Retrieval"] | null;
             /**
              * Started At
              * Format: date-time
@@ -1254,6 +1370,54 @@ export interface components {
             /** Source Question Ids */
             source_question_ids: string[];
         };
+        /** Retrieval */
+        Retrieval: {
+            /** Blocked Ids */
+            blocked_ids: string[];
+            /** Cache Hits */
+            cache_hits: number;
+            /** Cache Misses */
+            cache_misses: number;
+            /** Dimensions */
+            dimensions: number;
+            /** Duration Seconds */
+            duration_seconds: number;
+            /** Identity */
+            identity: string;
+            /** Input Tokens */
+            input_tokens: number | null;
+            /** Model */
+            model: string;
+            /** Omitted Ids */
+            omitted_ids: string[];
+            /** Providers */
+            providers: string[];
+            /** Query Hashes */
+            query_hashes: {
+                [key: string]: string;
+            };
+            /** Rankings */
+            rankings: {
+                [key: string]: components["schemas"]["RetrievalRank"][];
+            };
+            /** Selected Ids */
+            selected_ids: string[];
+            /**
+             * Version
+             * @constant
+             */
+            version: "evidence-retrieval-v1";
+        };
+        /** RetrievalRank */
+        RetrievalRank: {
+            /**
+             * Evidence Id
+             * Format: uuid
+             */
+            evidence_id: string;
+            /** Similarity */
+            similarity: number;
+        };
         /** Reviewer */
         Reviewer: {
             /**
@@ -1305,6 +1469,7 @@ export interface components {
             content_hash: string;
             /** Error Code */
             error_code: string | null;
+            extraction_metadata?: components["schemas"]["ExtractionMetadata"];
             /** Extractor Version */
             extractor_version: string;
             /**
@@ -1511,6 +1676,41 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+        };
+        /** WebCollection */
+        WebCollection: {
+            /** Content Hash */
+            content_hash?: string | null;
+            /** Error Code */
+            error_code?: string | null;
+            /**
+             * Fetched At
+             * Format: date-time
+             */
+            fetched_at: string;
+            /** Http Status */
+            http_status?: number | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "succeeded" | "failed";
+            /** Url */
+            url: string;
+        };
+        /** WebLocator */
+        WebLocator: {
+            /** End */
+            end: number;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            kind: "web";
+            /** Start */
+            start: number;
+            /** Url */
+            url: string;
         };
     };
     responses: never;

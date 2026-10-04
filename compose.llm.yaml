@@ -5,8 +5,11 @@ services:
     environment:
       TALENT_LLM_BASE_URL: ${TALENT_LLM_BASE_URL:-http://freellmapi:3001/v1}
       TALENT_LLM_API_KEY: ${TALENT_LLM_API_KEY:?Supply the existing gateway key server-side}
-      TALENT_LLM_MODEL: ${TALENT_LLM_MODEL:-gemini-3.5-flash-lite}
+      TALENT_LLM_MODEL: ${TALENT_LLM_MODEL:-gpt-oss-120b}
+      TALENT_LLM_OCR_MODEL: ${TALENT_LLM_OCR_MODEL:-gemini-3.5-flash-lite}
       TALENT_LLM_TIMEOUT_SECONDS: ${TALENT_LLM_TIMEOUT_SECONDS:-30}
+      TALENT_LLM_EMBEDDING_MODEL: ${TALENT_LLM_EMBEDDING_MODEL:-gemini-embedding-001}
+      TALENT_LLM_EMBEDDING_DIMENSIONS: ${TALENT_LLM_EMBEDDING_DIMENSIONS:-3072}
     networks:
       - default
       - llm_gateway
