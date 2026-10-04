@@ -98,11 +98,6 @@ export function CampaignActions({
       className="campaign-actions"
       aria-label="Publication et cycle de campagne"
     >
-      <p>
-        <Link href={`/review/campaigns/${campaign.id}/applications`}>
-          Voir les candidatures reçues
-        </Link>
-      </p>
       <h2>
         {
           {
@@ -123,15 +118,7 @@ export function CampaignActions({
           Enregistrez vos modifications avant de publier ou de créer une copie.
         </p>
       )}
-      {campaign.public_url && (
-        <p>
-          <Link href={campaign.public_url}>Ouvrir le formulaire public</Link>
-        </p>
-      )}
-      {campaign.active_snapshot_id && (
-        <PolicyDetails snapshotId={campaign.active_snapshot_id} />
-      )}
-      <div className="inline-actions">
+      <div className="campaign-actions-main">
         {!locked && (
           <Button disabled={busy || dirty} onClick={() => action("publish")}>
             {campaign.state === "published"
@@ -139,51 +126,71 @@ export function CampaignActions({
               : "Publier la campagne"}
           </Button>
         )}
-        <Button
-          variant="secondary"
-          disabled={busy || dirty}
-          onClick={() => action("duplicate", "draft")}
-        >
-          Dupliquer le brouillon
+        <Button asChild variant={locked ? "primary" : "secondary"}>
+          <Link href={`/review/campaigns/${campaign.id}/applications`}>
+            Voir les candidatures reçues
+          </Link>
         </Button>
-        {campaign.active_snapshot_id && (
-          <Button
-            variant="secondary"
-            disabled={busy}
-            onClick={() => action("duplicate", "published")}
-          >
-            Dupliquer la version publiée
+        {campaign.public_url && (
+          <Button asChild variant="secondary">
+            <Link href={campaign.public_url}>Ouvrir le formulaire public</Link>
           </Button>
         )}
+      </div>
+      <div className="campaign-actions-tools">
         <Button
-          variant="secondary"
+          variant="ghost"
           disabled={busy || dirty}
           onClick={() => action("test", "draft")}
         >
           Essayer en privé
         </Button>
-        {campaign.state === "published" && (
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="secondary" disabled={busy}>
-                Fermer la campagne
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogTitle className="dialog-title">
-                Fermer cette campagne ?
-              </DialogTitle>
-              <DialogDescription className="dialog-description">
-                Les dossiers reçus restent accessibles. Aucun nouveau dépôt ne
-                sera accepté et cette campagne ne pourra pas être rouverte.
-              </DialogDescription>
-              <Button disabled={busy} onClick={() => action("close")}>
-                Confirmer la fermeture
-              </Button>
-            </DialogContent>
-          </Dialog>
+        {campaign.active_snapshot_id && (
+          <PolicyDetails snapshotId={campaign.active_snapshot_id} />
         )}
       </div>
+      <details className="campaign-management">
+        <summary>Gérer la campagne</summary>
+        <div className="inline-actions">
+          <Button
+            variant="secondary"
+            disabled={busy || dirty}
+            onClick={() => action("duplicate", "draft")}
+          >
+            Dupliquer le brouillon
+          </Button>
+          {campaign.active_snapshot_id && (
+            <Button
+              variant="secondary"
+              disabled={busy}
+              onClick={() => action("duplicate", "published")}
+            >
+              Dupliquer la version publiée
+            </Button>
+          )}
+          {campaign.state === "published" && (
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="ghost" className="campaign-close" disabled={busy}>
+                  Fermer la campagne
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogTitle className="dialog-title">
+                  Fermer cette campagne ?
+                </DialogTitle>
+                <DialogDescription className="dialog-description">
+                  Les dossiers reçus restent accessibles. Aucun nouveau dépôt ne
+                  sera accepté et cette campagne ne pourra pas être rouverte.
+                </DialogDescription>
+                <Button disabled={busy} onClick={() => action("close")}>
+                  Confirmer la fermeture
+                </Button>
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
+      </details>
       {message && <Alert>{message}</Alert>}
     </section>
   );

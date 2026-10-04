@@ -55,14 +55,16 @@ export function VersionHistory({ dossier }: { dossier: Detail }) {
           ses corrections restent affichés.
         </p>
       )}
-      <Button variant="secondary" disabled={busy} onClick={() => load()}>
-        {busy ? "Chargement…" : "Comparer les analyses"}
-      </Button>
-      {next && (
-        <Button variant="secondary" disabled={busy} onClick={() => load(next)}>
-          Analyses plus anciennes
+      <div className="inline-actions">
+        <Button variant="secondary" disabled={busy} onClick={() => load()}>
+          {busy ? "Chargement…" : "Comparer les analyses"}
         </Button>
-      )}
+        {next && (
+          <Button variant="secondary" disabled={busy} onClick={() => load(next)}>
+            Analyses plus anciennes
+          </Button>
+        )}
+      </div>
       {error && <Alert tone="danger">{error}</Alert>}
       {versions &&
         (versions.length ? (

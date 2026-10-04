@@ -77,8 +77,22 @@ textarea.ui-input { resize:vertical; }
 .form-preview form { margin-top:1.5rem; }
 .question-choices { min-width:0; border:1px solid var(--input-border); border-radius:var(--radius-control); padding:1rem; }
 .preserve-lines { white-space:pre-wrap; overflow-wrap:anywhere; }
-.campaign-actions { border-bottom:1px solid var(--border); padding-bottom:2rem; margin-block:2rem; }
-.campaign-actions h2 { font-size:1.25rem; }
+.campaign-actions { border:1px solid var(--border); background:var(--surface); border-radius:var(--radius-surface); padding:1.5rem; margin-block:2rem; display:grid; gap:1.25rem; }
+.campaign-actions h2 { font-size:1.25rem; margin:0; }
+.campaign-actions > p { margin:0; }
+.campaign-actions-main, .campaign-actions-tools { display:flex; gap:.75rem; flex-wrap:wrap; align-items:center; }
+.campaign-actions-tools .ui-button { background:transparent; border-color:transparent; color:var(--muted); }
+.campaign-actions-tools .ui-button:hover:not(:disabled) { background:var(--raised); }
+.campaign-management { border-top:1px solid var(--border); padding-top:1rem; }
+.campaign-management summary { cursor:pointer; color:var(--muted); width:fit-content; min-height:44px; padding-block:.75rem; }
+.campaign-management[open] summary { margin-bottom:.5rem; color:var(--text); }
+.campaign-close { color:var(--danger); }
+@media (max-width:600px) {
+  .campaign-actions { padding:1rem; }
+  .campaign-actions-main { align-items:stretch; flex-direction:column; }
+  .campaign-actions-main .ui-button { width:100%; }
+  .campaign-management .inline-actions { align-items:stretch; flex-direction:column; }
+}
 .public-form { display:grid; gap:1.5rem; margin-top:2rem; }
 .submission-fields { display:grid; gap:1.5rem; padding:0; margin:0; border:0; min-width:0; }
 .submission-fields legend { font-weight:600; margin-bottom:1rem; }
@@ -117,3 +131,32 @@ textarea.ui-input { resize:vertical; }
 .source-status-list li { padding-block:1.25rem; border-bottom:1px solid var(--border); overflow-wrap:anywhere; }
 @media(max-width:768px) { .review-row { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:480px) { .review-row, .evaluation-metrics { grid-template-columns:1fr; gap:1rem; } .review-views a { width:100%; justify-content:space-between; } .review-filters .ui-field { min-width:100%; } }
+
+/* Keep related controls together and leave space between content and actions. */
+.dialog-content { display:grid; gap:1.25rem; }
+.dialog-content > p, .dialog-content > h2 { margin-block:0; }
+.dialog-actions { display:flex; flex-wrap:wrap; gap:.75rem; }
+.dossier-tools { margin-top:1.5rem; }
+.review-section > h2 { margin-bottom:1rem; }
+.ui-alert > div > .ui-button { display:flex; margin-top:1rem; }
+@media (max-width:480px) {
+  .dialog-actions { flex-direction:column; align-items:stretch; }
+  .save-actions { align-items:stretch; flex-direction:column; }
+  .save-actions .ui-button { width:100%; }
+  .campaign-list li { flex-direction:column; gap:.5rem; }
+}
+
+.configuration-summary { display:grid; gap:1rem; margin-top:2rem; }
+.configuration-summary > h2 { font-size:1.25rem; font-weight:600; }
+.configuration-summary > details, .title-editor { border:1px solid var(--border); border-radius:var(--radius-control); padding:1rem 1.25rem; }
+.title-editor { margin-top:1.5rem; }
+.configuration-summary summary, .title-editor summary { cursor:pointer; min-height:44px; padding-block:.75rem; font-weight:500; }
+.title-editor-content { display:grid; gap:1.25rem; padding-block:1rem; }
+.title-editor-content > p { margin:0; }
+.configuration-facts { display:grid; gap:1rem; margin-block:1rem; }
+.configuration-facts dt { color:var(--muted); font-size:.875rem; }
+.configuration-facts dd { margin:.375rem 0 0; line-height:1.65; overflow-wrap:anywhere; }
+.configuration-item { padding-block:1.25rem; border-top:1px solid var(--border); }
+.configuration-item h3, .configuration-item h4 { font-weight:500; }
+.configuration-item p, .configuration-item ul { margin-block:.75rem; line-height:1.65; }
+.configuration-item ul { padding-left:1.25rem; }

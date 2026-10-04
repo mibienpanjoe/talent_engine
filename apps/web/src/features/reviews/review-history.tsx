@@ -56,14 +56,16 @@ export function ReviewHistory({ dossier }: { dossier: Detail }) {
   return (
     <section className="review-section">
       <h2>Historique de la revue</h2>
-      <Button variant="secondary" disabled={busy} onClick={() => load()}>
-        {busy ? "Chargement…" : "Consulter l’historique"}
-      </Button>
-      {next && (
-        <Button variant="secondary" disabled={busy} onClick={() => load(next)}>
-          Suite de l’historique
+      <div className="inline-actions">
+        <Button variant="secondary" disabled={busy} onClick={() => load()}>
+          {busy ? "Chargement…" : "Consulter l’historique"}
         </Button>
-      )}
+        {next && (
+          <Button variant="secondary" disabled={busy} onClick={() => load(next)}>
+            Suite de l’historique
+          </Button>
+        )}
+      </div>
       {error && <Alert tone="danger">{error}</Alert>}
       {items &&
         (items.length ? (

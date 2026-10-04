@@ -140,12 +140,14 @@ export default async function ApplicationPage({
           key={`versions:${a.review_revision}`}
           dossier={result.data}
         />
-        <RefreshButton />
+        <div className="inline-actions dossier-tools">
+          <RefreshButton />
+          <PolicyDetails snapshotId={a.snapshot_id} />
+        </div>
         <DeleteApplication
           key={`delete:${a.review_revision}`}
           application={a}
         />
-        <PolicyDetails snapshotId={a.snapshot_id} />
         {(result.data.sources?.length ?? 0) > 0 && (
           <section className="review-section">
             <h2>Sources de cette analyse</h2>
