@@ -104,7 +104,14 @@ class Gateway:
     def __init__(self, settings=None):
         self.settings = settings or LLMSettings()
 
-    def chat(self, messages, *, response_format=None, max_tokens=6000):
+    def chat(
+        self,
+        messages,
+        *,
+        response_format=None,
+        max_tokens=6000,
+        max_request_bytes=200000,
+    ):
         settings = self.settings
         if not settings.base_url or not settings.api_key.get_secret_value():
             raise ProviderFailure("llm_not_configured")
@@ -118,7 +125,7 @@ class Gateway:
         if response_format is not None:
             payload["response_format"] = response_format
         data = json.dumps(payload, ensure_ascii=False).encode()
-        if len(data) > 200000:
+        if len(data) > min(max_request_bytes, 3145728):
             raise ProviderFailure("llm_context_limit")
         request = urllib.request.Request(
             settings.base_url + "/chat/completions",

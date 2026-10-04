@@ -1,7 +1,8 @@
 # Extraction et provenance des pièces
 
 Le worker extrait les réponses et PDF textuels après la réception durable,
-sans appel externe et sans verrou SQL pendant l'extraction. La migration
+sans verrou SQL pendant l’extraction. L’OCR conditionnel appelle la passerelle
+serveur seulement pour les pages sans texte et les images. La migration
 `0010_sources` ajoute les versions de sources, extraits et associations
 à l'exécution. Les références composites empêchent de rattacher une preuve
 à une autre candidature.
@@ -26,13 +27,13 @@ Elle tourne dans un sous-processus sans identifiants de service : mémoire
 font au plus 2 000 caractères. L'empreinte est revérifiée avant lecture.
 Un document corrompu ou modifié devient `unreadable`. Une page sans texte
 est signalée dans `ocr_pages`, avec `ocr_required` ; aucune transcription
-n'est inventée. L'OCR proprement dit appartient à T24.
+n'est inventée. Le worker transcrit uniquement ces pages par l’adaptateur OCR décrit ci-dessous.
 
 L'enregistrement des sources et du manifeste se fait dans le commit du
 checkpoint, après vérification du bail et de la génération du dossier.
 Un worker expiré ou un dossier supprimé ne peut pas publier de preuves.
 Les checkpoints précédemment réussis ne sont pas réécrits à la mise à jour
-du pipeline. Le format de manifeste courant est `received-sources-v2`.
+du pipeline. Le format de manifeste courant est `received-sources-v3`.
 
 `fixtures/documents/textual-demo.pdf` est un document intégralement fictif,
 avec deux pages de texte. Les tests exercent sa réception HTTP, son extraction
@@ -42,3 +43,36 @@ document fictif de trois pages, utilisé pour exercer le parcours complet :
 dépôt HTTP, extraction, appréciation réelle via FreeLLMAPI, persistance du
 score et affichage des citations dans la fiche privée. Cette recette ne
 constitue pas une calibration des barèmes ni des modèles.
+
+## OCR conditionnel
+
+PDF textuel : aucun appel visuel. Scan : rendu de chaque page sans texte dans
+un sous-processus sans credentials, via [PDFium](https://pypdfium2.readthedocs.io/en/stable/python_api.html).
+PNG/JPEG : décodage isolé et orientation corrigée. Mémoire 512 MiB, CPU 8 s,
+délai de rendu 9 s ; image normalisée à 1600 pixels sur le plus grand côté
+et 2 MiB maximum. Le contrôle de l’empreinte originale précède le rendu.
+L’ensemble de la collecte dispose de 50 s avant le plafond worker de 60 s ;
+les pages hors budget restent explicitement indisponibles.
+
+La passerelle FreeLLMAPI configurée reçoit uniquement cette image et une
+consigne de transcription, sans métadonnées de contact ajoutées ni politique. Le modèle
+demandé est celui configuré côté worker, actuellement `gemini-3.5-flash-lite`.
+La transcription reste une sortie non fiable : aucune interprétation de ses
+instructions, extraction d’extraits puis validation des appréciations séparées.
+Les textes OCR et le fichier original restent distincts et consultables.
+Le résultat ne garantit pas l’exactitude de tous les caractères ; le responsable
+peut comparer la transcription à l’original depuis la fiche.
+
+La migration `0013_ocr_provenance` conserve, par page, modèle demandé/effectif,
+fournisseur, version de consigne, empreintes de l’image et du texte, dates et
+durée, ou code d’erreur. Un 429/5xx/délai réseau utilise les reprises existantes
+(jusqu’à trois tentatives) ; à la dernière tentative les pages indisponibles
+restent dans la source sans texte inventé. Les autres pages extraites restent
+exploitables. L’origine OCR est affichée dans le dialogue de preuve.
+
+L’accès actuel à la passerelle et les appels Google ont été exercés ; aucun
+coût effectif ni palier de facturation du compte n’est déduit d’un HTTP 200.
+La [tarification officielle](https://ai.google.dev/gemini-api/docs/pricing)
+dépend du modèle et du palier. Ne pas promettre une gratuité permanente.
+`amina-scan-demo.pdf` est la version intégralement fictive, rasterisée sur trois
+pages, de l’autre document de recette Amina.

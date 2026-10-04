@@ -111,6 +111,8 @@ export default async function ApplicationPage({
                         )[step.state]
                       }
                       {step.attempts > 0 && ` · tentative ${step.attempts}/3`}
+                      {step.error_code === "provider_rate_limited" &&
+                        " · quota fournisseur atteint"}
                     </li>
                   ))}
                 </ol>
@@ -156,12 +158,36 @@ export default async function ApplicationPage({
                         Document original
                       </a>
                     )}
+                    {source.extraction_metadata?.ocr?.some(
+                      (attempt) => attempt.status === "succeeded",
+                    ) && (
+                      <p>
+                        Texte obtenu par OCR. Consultez l’original pour vérifier
+                        la transcription.
+                      </p>
+                    )}
                     <details className="provenance-details">
                       <summary>Version de la source</summary>
                       <p>{source.extractor_version}</p>
                       <p className="hash-text">
                         Empreinte originale : {source.content_hash}
                       </p>
+                      {source.extraction_metadata?.ocr?.map((attempt) => (
+                        <p key={attempt.page}>
+                          OCR · page {attempt.page} :{" "}
+                          {attempt.status === "succeeded"
+                            ? `${attempt.provider} / ${attempt.effective_model}`
+                            : attempt.error_code === "provider_rate_limited"
+                              ? "Quota fournisseur atteint"
+                              : attempt.error_code === "llm_not_configured"
+                                ? "Service OCR non configuré"
+                                : attempt.error_code ===
+                                    "source_budget_exceeded"
+                                  ? "Budget de lecture atteint"
+                                  : "Transcription indisponible"}
+                          .
+                        </p>
+                      ))}
                     </details>
                   </li>
                 );

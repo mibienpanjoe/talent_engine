@@ -21,7 +21,7 @@ class StepFailure(Exception):
         super().__init__(code)
 
 
-def process(engine, claim, *, upload_directory=None, gateway=None):
+def process(engine, claim, *, upload_directory=None, gateway=None, ocr_gateway=None):
     if claim.step == "evaluate":
         try:
             return evaluate(engine, claim, gateway=gateway)
@@ -75,13 +75,17 @@ def process(engine, claim, *, upload_directory=None, gateway=None):
         else:
             raise StepFailure("evaluation_unavailable")
     # Extraction happens after releasing the database connection.
-    return dict(
-        version="received-sources-v2",
-        snapshot_id=snapshot_id,
-        sources=collect_sources(
+    try:
+        sources = collect_sources(
             app_id,
             answers,
             documents,
             upload_directory or Path("/tmp/talent-engine-uploads"),
-        ),
-    )
+            ocr_gateway=ocr_gateway,
+            retry_errors=claim.attempt < 3,
+        )
+    except ProviderFailure as error:
+        raise StepFailure(
+            error.code, retryable=error.retryable, retry_after=error.retry_after
+        ) from None
+    return dict(version="received-sources-v3", snapshot_id=snapshot_id, sources=sources)

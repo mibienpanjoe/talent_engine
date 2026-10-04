@@ -1254,6 +1254,21 @@
         "title": "Evidence",
         "type": "object"
       },
+      "ExtractionMetadata": {
+        "additionalProperties": false,
+        "properties": {
+          "ocr": {
+            "items": {
+              "$ref": "#/components/schemas/OCRAttempt"
+            },
+            "maxItems": 30,
+            "title": "Ocr",
+            "type": "array"
+          }
+        },
+        "title": "ExtractionMetadata",
+        "type": "object"
+      },
       "FileAnswer": {
         "additionalProperties": false,
         "properties": {
@@ -1455,6 +1470,142 @@
         "title": "NumberAnswer",
         "type": "object"
       },
+      "OCRAttempt": {
+        "additionalProperties": false,
+        "properties": {
+          "duration_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Seconds"
+          },
+          "effective_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Model"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "finished_at": {
+            "format": "date-time",
+            "title": "Finished At",
+            "type": "string"
+          },
+          "image_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Hash"
+          },
+          "method": {
+            "const": "ocr",
+            "title": "Method",
+            "type": "string"
+          },
+          "page": {
+            "maximum": 30.0,
+            "minimum": 1.0,
+            "title": "Page",
+            "type": "integer"
+          },
+          "prompt_version": {
+            "title": "Prompt Version",
+            "type": "string"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "requested_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Model"
+          },
+          "response_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Response Model"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "succeeded",
+              "failed"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "text_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text Hash"
+          }
+        },
+        "required": [
+          "page",
+          "method",
+          "prompt_version",
+          "status",
+          "started_at",
+          "finished_at"
+        ],
+        "title": "OCRAttempt",
+        "type": "object"
+      },
       "Option": {
         "additionalProperties": false,
         "properties": {
@@ -1488,6 +1639,15 @@
           "kind": {
             "const": "pdf",
             "title": "Kind",
+            "type": "string"
+          },
+          "method": {
+            "default": "text",
+            "enum": [
+              "text",
+              "ocr"
+            ],
+            "title": "Method",
             "type": "string"
           },
           "page": {
@@ -2337,6 +2497,9 @@
               }
             ],
             "title": "Error Code"
+          },
+          "extraction_metadata": {
+            "$ref": "#/components/schemas/ExtractionMetadata"
           },
           "extractor_version": {
             "title": "Extractor Version",

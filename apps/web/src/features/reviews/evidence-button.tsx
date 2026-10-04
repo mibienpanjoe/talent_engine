@@ -66,7 +66,7 @@ export function EvidenceButton({
           <>
             <p>
               {evidence.locator.kind === "pdf"
-                ? `Document · page ${evidence.locator.page}`
+                ? `${evidence.locator.method === "ocr" ? "Texte OCR" : "Document"} · page ${evidence.locator.page}`
                 : "Réponse au formulaire"}{" "}
               ·{" "}
               {evidence.nature === "declaration"

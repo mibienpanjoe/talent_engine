@@ -897,6 +897,11 @@ export interface components {
             /** Text */
             text: string;
         };
+        /** ExtractionMetadata */
+        ExtractionMetadata: {
+            /** Ocr */
+            ocr?: components["schemas"]["OCRAttempt"][];
+        };
         /** FileAnswer */
         FileAnswer: {
             /**
@@ -996,6 +1001,49 @@ export interface components {
             /** Value */
             value: number;
         };
+        /** OCRAttempt */
+        OCRAttempt: {
+            /** Duration Seconds */
+            duration_seconds?: number | null;
+            /** Effective Model */
+            effective_model?: string | null;
+            /** Error Code */
+            error_code?: string | null;
+            /**
+             * Finished At
+             * Format: date-time
+             */
+            finished_at: string;
+            /** Image Hash */
+            image_hash?: string | null;
+            /**
+             * Method
+             * @constant
+             */
+            method: "ocr";
+            /** Page */
+            page: number;
+            /** Prompt Version */
+            prompt_version: string;
+            /** Provider */
+            provider?: string | null;
+            /** Requested Model */
+            requested_model?: string | null;
+            /** Response Model */
+            response_model?: string | null;
+            /**
+             * Started At
+             * Format: date-time
+             */
+            started_at: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "succeeded" | "failed";
+            /** Text Hash */
+            text_hash?: string | null;
+        };
         /** Option */
         Option: {
             /**
@@ -1015,6 +1063,12 @@ export interface components {
              * @enum {string}
              */
             kind: "pdf";
+            /**
+             * Method
+             * @default text
+             * @enum {string}
+             */
+            method: "text" | "ocr";
             /** Page */
             page: number;
             /** Start */
@@ -1305,6 +1359,7 @@ export interface components {
             content_hash: string;
             /** Error Code */
             error_code: string | null;
+            extraction_metadata?: components["schemas"]["ExtractionMetadata"];
             /** Extractor Version */
             extractor_version: string;
             /**

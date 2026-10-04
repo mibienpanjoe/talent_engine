@@ -28,11 +28,9 @@ sources = Table(
     Column("error_code", String(100)),
     Column("ocr_pages", JSONB, nullable=False),
     Column("pages", JSONB, nullable=False),
+    Column("extraction_metadata", JSONB, nullable=False, server_default="{}"),
     Column("created_at", DateTime(timezone=True), nullable=False),
     UniqueConstraint("id", "application_id"),
-    UniqueConstraint(
-        "application_id", "source_key", "content_hash", "extractor_version"
-    ),
 )
 excerpts = Table(
     "evidence_excerpts",

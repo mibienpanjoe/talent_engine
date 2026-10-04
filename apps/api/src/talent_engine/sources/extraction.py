@@ -3,13 +3,16 @@ import json
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
 from uuid import UUID, uuid5
+
+from .ocr import transcribe_pages
 
 EXTRACTOR_VERSION = "pdf-text-v1+pypdf-6.19.0"
 
 
-def extract_pdf(path, expected_hash):
+def extract_pdf(path, expected_hash, *, timeout=9):
     try:
         result = subprocess.run(
             [
@@ -19,7 +22,7 @@ def extract_pdf(path, expected_hash):
                 expected_hash,
             ],
             capture_output=True,
-            timeout=9,
+            timeout=timeout,
             env={"PATH": os.defpath},
             check=True,
         )
@@ -66,7 +69,13 @@ def make_source(
             if not part.strip():
                 continue
             locator = (
-                dict(kind="pdf", page=page["page"], start=start, end=start + len(part))
+                dict(
+                    kind="pdf",
+                    page=page["page"],
+                    start=start,
+                    end=start + len(part),
+                    method=page.get("method", "text"),
+                )
                 if kind == "document"
                 else dict(
                     kind="answer",
@@ -100,11 +109,21 @@ def make_source(
         error_code=extraction["error_code"],
         ocr_pages=extraction["ocr_pages"],
         pages=extraction["pages"],
+        extraction_metadata=extraction.get("extraction_metadata", {"ocr": []}),
         excerpts=excerpts,
     )
 
 
-def collect_sources(application_id, answers, documents, directory):
+def collect_sources(
+    application_id,
+    answers,
+    documents,
+    directory,
+    *,
+    ocr_gateway=None,
+    retry_errors=False,
+):
+    deadline = time.monotonic() + 50
     sources = []
     for answer in answers:
         if answer["kind"] in ("file", "email"):
@@ -141,11 +160,33 @@ def collect_sources(application_id, answers, documents, directory):
                 set(unique[key]["question_ids"] + [str(document["question_id"])])
             )
             continue
-        if document["media_type"] == "application/pdf":
-            extraction = extract_pdf(Path(directory) / document["storage_key"], key)
+        remaining = deadline - time.monotonic()
+        if remaining < 1:
+            extraction = dict(
+                state="unavailable",
+                error_code="source_budget_exceeded",
+                pages=[],
+                ocr_pages=[],
+            )
+        elif document["media_type"] == "application/pdf":
+            extraction = extract_pdf(
+                Path(directory) / document["storage_key"],
+                key,
+                timeout=min(9, remaining),
+            )
         else:
             extraction = dict(
                 state="unavailable", error_code="ocr_required", pages=[], ocr_pages=[1]
+            )
+        if extraction["ocr_pages"]:
+            extraction = transcribe_pages(
+                Path(directory) / document["storage_key"],
+                key,
+                extraction,
+                pdf=document["media_type"] == "application/pdf",
+                gateway=ocr_gateway,
+                deadline=deadline,
+                retry_errors=retry_errors,
             )
         source = make_source(
             application_id,
@@ -155,6 +196,7 @@ def collect_sources(application_id, answers, documents, directory):
             [str(document["question_id"])],
             extraction,
             upload_id=document["id"],
+            version=EXTRACTOR_VERSION + "+ocr-v1",
         )
         unique[key] = source
         sources.append(source)
