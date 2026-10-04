@@ -1,9 +1,74 @@
 {
   "components": {
     "schemas": {
+      "AnalysisProgress": {
+        "additionalProperties": false,
+        "properties": {
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "next_attempt_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Attempt At"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/StepProgress"
+            },
+            "title": "Steps",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "reason",
+          "state",
+          "error_code",
+          "next_attempt_at",
+          "steps"
+        ],
+        "title": "AnalysisProgress",
+        "type": "object"
+      },
       "ApplicationDetail": {
         "additionalProperties": false,
         "properties": {
+          "analyses": {
+            "items": {
+              "$ref": "#/components/schemas/AnalysisProgress"
+            },
+            "title": "Analyses",
+            "type": "array"
+          },
           "answers": {
             "items": {
               "discriminator": {
@@ -1589,6 +1654,77 @@
           "option_ids"
         ],
         "title": "SlotsCondition",
+        "type": "object"
+      },
+      "StepProgress": {
+        "additionalProperties": false,
+        "properties": {
+          "attempts": {
+            "maximum": 3.0,
+            "minimum": 0.0,
+            "title": "Attempts",
+            "type": "integer"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "state": {
+            "enum": [
+              "queued",
+              "running",
+              "waiting",
+              "succeeded",
+              "failed"
+            ],
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "state",
+          "attempts",
+          "started_at",
+          "finished_at",
+          "error_code"
+        ],
+        "title": "StepProgress",
         "type": "object"
       },
       "SubmissionInput": {

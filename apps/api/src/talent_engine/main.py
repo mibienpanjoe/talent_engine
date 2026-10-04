@@ -11,6 +11,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException
 
 from talent_engine.access import build_access_router
+from talent_engine.analyses import repository as analysis_repository
 from talent_engine.applications.router import build_application_router
 from talent_engine.body_limit import BodyLimit
 from talent_engine.campaigns.lifecycle import build_lifecycle_router
@@ -29,6 +30,7 @@ class Health(BaseModel):
 def create_app(
     settings: Settings | None = None, *, engine: Engine | None = None
 ) -> FastAPI:
+    _ = analysis_repository.steps  # Register shared persistence schema.
     settings = settings or Settings()
     engine = engine or build_engine(settings)
 

@@ -6,6 +6,7 @@ from urllib.parse import urlsplit
 from uuid import UUID
 
 from pydantic import EmailStr, Field, StrictFloat, StrictInt, StrictStr, field_validator
+from talent_engine.analyses.schemas import AnalysisProgress
 from talent_engine.campaigns.lifecycle import PublishedSnapshot
 from talent_engine.campaigns.schemas import Model
 from talent_engine.documents.schemas import Upload
@@ -171,6 +172,7 @@ class ApplicationPage(Model):
 
 
 class ApplicationDetail(Model):
+    analyses: list[AnalysisProgress] = Field(default_factory=list)
     snapshot: PublishedSnapshot
     application: ApplicationSummary
     answers: list[Answer]

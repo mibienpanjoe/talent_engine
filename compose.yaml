@@ -37,6 +37,21 @@ services:
       timeout: 5s
       retries: 6
     restart: unless-stopped
+  worker:
+    image: ${COMPOSE_PROJECT_NAME:-talent-engine}-api
+    environment:
+      TALENT_DATABASE_URL: postgresql+psycopg://talent:${TALENT_DB_PASSWORD}@db:5432/talent
+      TALENT_PUBLIC_ORIGIN: ${TALENT_PUBLIC_ORIGIN:-http://localhost:3003}
+      TALENT_LOCAL_DEVELOPMENT: 'true'
+      TALENT_CSRF_SECRET: ${TALENT_CSRF_SECRET:?Set TALENT_CSRF_SECRET in .env}
+      TALENT_UPLOAD_DIRECTORY: /app/private-uploads
+    volumes:
+      - private_uploads:/app/private-uploads
+    command: ["python", "-m", "talent_engine.analyses.worker"]
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
   migrate:
     image: ${COMPOSE_PROJECT_NAME:-talent-engine}-api
     build:

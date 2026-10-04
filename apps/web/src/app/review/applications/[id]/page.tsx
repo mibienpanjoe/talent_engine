@@ -19,7 +19,13 @@ export default async function ApplicationPage({
   if (result.response.status === 404 || result.response.status === 422)
     notFound();
   if (!result.data) throw new Error("Application unavailable");
-  const { application: a, answers, snapshot, uploads = [] } = result.data;
+  const {
+    application: a,
+    answers,
+    snapshot,
+    uploads = [],
+    analyses = [],
+  } = result.data;
   const questions = snapshot.configuration.questions;
   return (
     <>
@@ -51,6 +57,61 @@ export default async function ApplicationPage({
             }[a.processing_state]
           }
         </p>
+        <section aria-label="Progression du traitement" className="empty-state">
+          <h2>Traitement du dossier</h2>
+          {analyses.length === 0 ? (
+            <p>La tâche est enregistrée, en attente d’acquisition.</p>
+          ) : (
+            analyses.map((run) => (
+              <section key={run.id}>
+                {run.error_code && (
+                  <p role="alert">
+                    {run.error_code === "evaluation_unavailable"
+                      ? "Le service d’évaluation n’est pas configuré. Vos données restent enregistrées."
+                      : run.error_code === "attempts_exhausted"
+                        ? "Les trois tentatives de traitement ont été épuisées. Le dossier reste enregistré."
+                        : "Une étape du traitement a échoué. Le dossier reste enregistré."}
+                  </p>
+                )}
+                {run.next_attempt_at && (
+                  <p>
+                    Nouvelle tentative prévue le{" "}
+                    {new Date(run.next_attempt_at).toLocaleString("fr-FR", {
+                      timeZone: "UTC",
+                    })}{" "}
+                    UTC.
+                  </p>
+                )}
+                <ol>
+                  {run.steps.map((step) => (
+                    <li key={step.name}>
+                      {(
+                        {
+                          extract_answers: "Réponses",
+                          source_manifest: "Sources reçues",
+                          evaluate: "Évaluation",
+                        } as Record<string, string>
+                      )[step.name] ?? "Traitement"}
+                      {" : "}
+                      {
+                        (
+                          {
+                            queued: "en attente",
+                            running: "en cours",
+                            waiting: "reprise programmée",
+                            succeeded: "enregistrées",
+                            failed: "incident",
+                          } as Record<string, string>
+                        )[step.state]
+                      }
+                      {step.attempts > 0 && ` · tentative ${step.attempts}/3`}
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            ))
+          )}
+        </section>
         <RefreshButton />
         <PolicyDetails snapshotId={a.snapshot_id} />
         <section className="empty-state">

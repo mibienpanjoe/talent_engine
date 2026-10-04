@@ -403,8 +403,28 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AnalysisProgress */
+        AnalysisProgress: {
+            /** Error Code */
+            error_code: string | null;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Next Attempt At */
+            next_attempt_at: string | null;
+            /** Reason */
+            reason: string;
+            /** State */
+            state: string;
+            /** Steps */
+            steps: components["schemas"]["StepProgress"][];
+        };
         /** ApplicationDetail */
         ApplicationDetail: {
+            /** Analyses */
+            analyses?: components["schemas"]["AnalysisProgress"][];
             /** Answers */
             answers: (components["schemas"]["ShortAnswer"] | components["schemas"]["LongAnswer"] | components["schemas"]["EmailAnswer"] | components["schemas"]["NumberAnswer"] | components["schemas"]["DateAnswer"] | components["schemas"]["ChoiceAnswer"] | components["schemas"]["ChoicesAnswer"] | components["schemas"]["UrlAnswer"] | components["schemas"]["FileAnswer"])[];
             application: components["schemas"]["ApplicationSummary"];
@@ -1016,6 +1036,24 @@ export interface components {
              * Format: uuid
              */
             question_id: string;
+        };
+        /** StepProgress */
+        StepProgress: {
+            /** Attempts */
+            attempts: number;
+            /** Error Code */
+            error_code: string | null;
+            /** Finished At */
+            finished_at: string | null;
+            /** Name */
+            name: string;
+            /** Started At */
+            started_at: string | null;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "queued" | "running" | "waiting" | "succeeded" | "failed";
         };
         /** SubmissionInput */
         SubmissionInput: {

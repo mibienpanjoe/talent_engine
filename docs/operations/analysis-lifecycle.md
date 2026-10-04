@@ -1,7 +1,7 @@
 # Talent Engine — Exécution persistante des analyses
 
-**Date :** 2026-10-03. **Statut :** référence T04 ; worker et transactions non
-implémentés. Voir [réception](../applications/submission-contract.md) et
+**Date :** 2026-10-04. **Statut :** contrat T04 ; orchestration de réception
+implémentée en T18, adaptateurs de collecte et d’évaluation encore à raccorder. Voir [réception](../applications/submission-contract.md) et
 [revue](../review/review-and-corrections.md).
 
 ## 1. Exécution, étapes et états
@@ -131,3 +131,32 @@ La fiche distingue état actuel, prochaine reprise et version effective.
   nouvelle évaluation proposée, corrections précédentes intactes.
 - Supprimer pendant appel : tâche annulée, résultat tardif rejeté, stockage
   nettoyé/repris sans ressusciter le dossier.
+
+
+## Implémentation T18
+
+Le service Compose `worker` acquiert via SKIP LOCKED, verrouille candidature
+puis tâche, consomme la tentative avant le travail et conserve token et
+génération. Une étape réussie est immutable ; la prochaine étape reçoit un
+nouveau lease. Heartbeat et sorties recontrôlent lease, génération et suppression.
+Le budget est de trois tentatives par étape, y compris après crash. Les
+bornes par défaut sont 90 s / 30 s pour lease/heartbeat, 60 s par étape et
+600 s actives par exécution, reprises différées 30/120 s avec jitter 0–10 s.
+Les réglages `TALENT_WORKER_*` sont validés au démarrage.
+
+Les étapes livrées sont la validation/extraction des réponses structurées et
+le manifeste des documents et liens effectivement reçus. Elles ne téléchargent
+aucune URL et n’extraient pas encore le texte des PDF : T19–T22 apportent ces
+adaptateurs. L’étape d’évaluation termine avec `evaluation_unavailable`, sans
+score ni version effective artificielle. Le dossier affiche les étapes,
+tentatives, attente et incident réels ; la réception reste confirmée.
+
+Les événements JSON corrèlent job/run/étape/tentative/génération et codes
+assainis. Ils excluent réponses, URLs, contact, tokens et contenu de documents.
+Le worker collecte les temporaires au démarrage puis chaque heure. Une panne
+base/stockage est signalée et retentée sans trace contenant des paramètres SQL.
+
+Preuves : tests PostgreSQL de concurrence, fencing, budget de trois crashes,
+attentes différées, suppression en vol ; un vrai processus est tué après un
+checkpoint et l’acquisition suivante. Deux processus reprennent après expiration
+avec tentatives 1/2/1 : le checkpoint déjà réussi n’est pas recalculé.

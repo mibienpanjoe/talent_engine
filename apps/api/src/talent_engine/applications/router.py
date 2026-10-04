@@ -7,7 +7,7 @@ from talent_engine.campaigns.lifecycle import public_campaign, snapshot_result
 from talent_engine.campaigns.repository import owned, snapshots
 from talent_engine.errors import AccessError, Error
 
-from .repository import applications
+from .repository import analysis_runs, applications, jobs
 from .schemas import (
     ApplicationDetail,
     ApplicationPage,
@@ -169,9 +169,51 @@ def build_application_router(engine, settings):
                 .mappings()
                 .one()
             )
+            from talent_engine.analyses.repository import steps
+            from talent_engine.analyses.schemas import AnalysisProgress, StepProgress
             from talent_engine.documents.repository import uploads
             from talent_engine.documents.schemas import Upload
 
+            histories = (
+                db.execute(
+                    select(analysis_runs, jobs.c.next_attempt_at)
+                    .join(jobs, jobs.c.run_id == analysis_runs.c.id)
+                    .where(analysis_runs.c.application_id == application_id)
+                    .order_by(analysis_runs.c.created_at.desc())
+                    .limit(20)
+                )
+                .mappings()
+                .all()
+            )
+            step_rows = (
+                db.execute(
+                    select(steps)
+                    .where(steps.c.run_id.in_([r["id"] for r in histories]))
+                    .order_by(steps.c.position)
+                )
+                .mappings()
+                .all()
+            )
+            progress = [
+                AnalysisProgress(
+                    **{
+                        k: r[k]
+                        for k in (
+                            "id",
+                            "reason",
+                            "state",
+                            "error_code",
+                            "next_attempt_at",
+                        )
+                    },
+                    steps=[
+                        StepProgress(**{k: step[k] for k in StepProgress.model_fields})
+                        for step in step_rows
+                        if step["run_id"] == r["id"]
+                    ],
+                )
+                for r in histories
+            ]
             documents = [
                 Upload(**{k: r[k] for k in Upload.model_fields})
                 for r in db.execute(
@@ -185,6 +227,7 @@ def build_application_router(engine, settings):
             answers=row["answers"],
             snapshot=snapshot_result(snapshot),
             uploads=documents,
+            analyses=progress,
         )
 
     return router

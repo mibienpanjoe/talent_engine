@@ -59,11 +59,18 @@ jobs = Table(
     Column("lease_token", Uuid),
     Column("lease_until", DateTime(timezone=True)),
     Column("worker_id", String(100)),
+    Column("application_generation", BigInteger, nullable=False, server_default="1"),
     Column("next_attempt_at", DateTime(timezone=True)),
     Column("error_code", String(100)),
     Column("created_at", DateTime(timezone=True), nullable=False),
 )
 Index("ix_jobs_state_lease", jobs.c.state, jobs.c.lease_until)
+Index(
+    "uq_jobs_active_application",
+    jobs.c.application_id,
+    unique=True,
+    postgresql_where=jobs.c.state.in_(["queued", "running", "waiting"]),
+)
 receipts = Table(
     "receipts",
     metadata,
